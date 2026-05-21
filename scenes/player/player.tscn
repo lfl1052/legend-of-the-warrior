@@ -1,0 +1,188 @@
+[gd_scene format=3 uid="uid://b1plyrwarrior"]
+
+[ext_resource type="Script" path="res://scripts/player/player_controller.gd" id="1_player"]
+[ext_resource type="Script" path="res://scripts/general/character.gd" id="2_character"]
+[ext_resource type="Script" path="res://scripts/general/physics_check.gd" id="3_physics"]
+[ext_resource type="Script" path="res://scripts/general/attack.gd" id="4_attack"]
+[ext_resource type="Script" path="res://scripts/player/player_heal_skill.gd" id="5_heal"]
+[ext_resource type="Script" path="res://scripts/player/player_skill_slash.gd" id="6_slash"]
+[ext_resource type="Texture2D" uid="uid://c0jdsy6rvu02o" path="res://art/imported/Generic-Character/png/blue/char_blue_1.png" id="7_sprite"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_body"]
+radius = 12.0
+height = 40.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_attack"]
+size = Vector2(56, 40)
+
+[sub_resource type="Animation" id="Animation_idle"]
+resource_name = "idle"
+length = 0.4
+loop_mode = 1
+
+[sub_resource type="Animation" id="Animation_run"]
+resource_name = "run"
+length = 0.4
+loop_mode = 1
+
+[sub_resource type="Animation" id="Animation_walk"]
+resource_name = "walk"
+length = 0.5
+loop_mode = 1
+
+[sub_resource type="Animation" id="Animation_jump"]
+resource_name = "jump"
+length = 0.4
+
+[sub_resource type="Animation" id="Animation_fall"]
+resource_name = "fall"
+length = 0.4
+loop_mode = 1
+
+[sub_resource type="Animation" id="Animation_attack1"]
+resource_name = "attack1"
+length = 0.3
+tracks/0/type = "method"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("..")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.28),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"on_attack_animation_finished"
+}]
+}
+
+[sub_resource type="Animation" id="Animation_attack2"]
+resource_name = "attack2"
+length = 0.32
+tracks/0/type = "method"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("..")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.3),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"on_attack_animation_finished"
+}]
+}
+
+[sub_resource type="Animation" id="Animation_attack3"]
+resource_name = "attack3"
+length = 0.4
+tracks/0/type = "method"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("..")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.38),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"on_attack_animation_finished"
+}]
+}
+
+[sub_resource type="Animation" id="Animation_hurt"]
+resource_name = "hurt"
+length = 0.3
+tracks/0/type = "method"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("..")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.28),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"on_hurt_animation_finished"
+}]
+}
+
+[sub_resource type="Animation" id="Animation_dead"]
+resource_name = "dead"
+length = 0.6
+
+[sub_resource type="Animation" id="Animation_slide"]
+resource_name = "slide"
+length = 0.42
+
+[sub_resource type="Animation" id="Animation_wall"]
+resource_name = "wall"
+length = 0.4
+loop_mode = 1
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_main"]
+_data = {
+"attack1": SubResource("Animation_attack1"),
+"attack2": SubResource("Animation_attack2"),
+"attack3": SubResource("Animation_attack3"),
+"dead": SubResource("Animation_dead"),
+"fall": SubResource("Animation_fall"),
+"hurt": SubResource("Animation_hurt"),
+"idle": SubResource("Animation_idle"),
+"jump": SubResource("Animation_jump"),
+"run": SubResource("Animation_run"),
+"slide": SubResource("Animation_slide"),
+"walk": SubResource("Animation_walk"),
+"wall": SubResource("Animation_wall")
+}
+
+[node name="Player" type="CharacterBody2D" groups=["player"]]
+collision_layer = 2
+collision_mask = 209
+script = ExtResource("1_player")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+texture = ExtResource("7_sprite")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_main")
+}
+autoplay = "idle"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_body")
+
+[node name="PhysicsCheck" type="Node2D" parent="."]
+script = ExtResource("3_physics")
+ground_layer = 129
+wall_layer = 1
+
+[node name="Character" type="Node" parent="."]
+script = ExtResource("2_character")
+max_health = 5.0
+max_power = 100.0
+
+[node name="AttackPivot" type="Node2D" parent="."]
+
+[node name="Attack" type="Area2D" parent="AttackPivot"]
+collision_layer = 8
+collision_mask = 4
+monitorable = false
+script = ExtResource("4_attack")
+damage = 1
+per_target_one_hit = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackPivot/Attack"]
+position = Vector2(40, 0)
+shape = SubResource("RectangleShape2D_attack")
+
+[node name="HealSkill" type="Node" parent="."]
+script = ExtResource("5_heal")
+
+[node name="SkillSlash" type="Node" parent="."]
+script = ExtResource("6_slash")

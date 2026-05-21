@@ -1,0 +1,162 @@
+[gd_scene format=3 uid="uid://b3lvldemo0001"]
+
+[ext_resource type="PackedScene" uid="uid://b1plyrwarrior" path="res://scenes/player/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" uid="uid://b3snailenemy01" path="res://scenes/enemy/snail.tscn" id="2_snail"]
+[ext_resource type="PackedScene" uid="uid://b3beeenemy0001" path="res://scenes/enemy/bee.tscn" id="3_bee"]
+[ext_resource type="Script" path="res://scripts/utilities/camera_control.gd" id="4_camera"]
+[ext_resource type="Script" path="res://scripts/ui/fade_canvas.gd" id="5_fade"]
+[ext_resource type="Script" path="res://scripts/ui/player_stat_bar.gd" id="6_stat_bar"]
+[ext_resource type="Script" path="res://scripts/ui/reward_notification_ui.gd" id="7_reward"]
+[ext_resource type="Script" path="res://scripts/transition/teleport_point.gd" id="8_teleport"]
+[ext_resource type="Script" path="res://scripts/player/save_point.gd" id="9_save_point"]
+[ext_resource type="Resource" uid="uid://b3reswarriormenu1" path="res://data/scene_warrior_menu.tres" id="10_menu_res"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ground"]
+size = Vector2(2400, 80)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
+size = Vector2(80, 800)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_camera_bounds"]
+size = Vector2(4000, 2000)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_teleport"]
+size = Vector2(80, 120)
+
+[node name="LevelDemo" type="Node2D"]
+
+[node name="Background" type="CanvasLayer" parent="."]
+layer = -10
+
+[node name="ColorRect" type="ColorRect" parent="Background"]
+offset_right = 1920.0
+offset_bottom = 1080.0
+color = Color(0.18, 0.24, 0.35, 1)
+mouse_filter = 2
+
+[node name="World" type="Node2D" parent="."]
+
+[node name="Ground" type="StaticBody2D" parent="World"]
+position = Vector2(0, 600)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/Ground"]
+shape = SubResource("RectangleShape2D_ground")
+
+[node name="LeftWall" type="StaticBody2D" parent="World"]
+position = Vector2(-1240, 200)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/LeftWall"]
+shape = SubResource("RectangleShape2D_wall")
+
+[node name="RightWall" type="StaticBody2D" parent="World"]
+position = Vector2(1240, 200)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/RightWall"]
+shape = SubResource("RectangleShape2D_wall")
+
+[node name="CameraBounds" type="Area2D" parent="World" groups=["camera_bounds"]]
+position = Vector2(0, 200)
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/CameraBounds"]
+shape = SubResource("RectangleShape2D_camera_bounds")
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector2(0, 400)
+
+[node name="Snail" parent="." instance=ExtResource("2_snail")]
+position = Vector2(280, 540)
+
+[node name="Bee" parent="." instance=ExtResource("3_bee")]
+position = Vector2(-300, 350)
+
+[node name="SavePoint" type="Node2D" parent="."]
+position = Vector2(160, 540)
+script = ExtResource("9_save_point")
+save_id_prefix = "level_demo_save_point"
+
+[node name="Sprite2D" type="Sprite2D" parent="SavePoint"]
+modulate = Color(0.95, 0.83, 0.32, 1)
+
+[node name="TeleportToMenu" type="Area2D" parent="." groups=["interactable"]]
+position = Vector2(-960, 540)
+collision_layer = 32
+collision_mask = 0
+monitorable = true
+script = ExtResource("8_teleport")
+scene_to_go = ExtResource("10_menu_res")
+position_to_go = Vector2(0, 0)
+fade_screen = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TeleportToMenu"]
+shape = SubResource("RectangleShape2D_teleport")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+script = ExtResource("4_camera")
+follow_player = true
+follow_lerp = 6.0
+shake_strength = 8.0
+shake_duration = 0.25
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="HUD" type="Control" parent="UI"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="PlayerStatBar" type="Control" parent="UI/HUD"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("6_stat_bar")
+health_fill_path = NodePath("HealthBar")
+power_fill_path = NodePath("PowerBar")
+
+[node name="HealthBar" type="ProgressBar" parent="UI/HUD/PlayerStatBar"]
+offset_left = 36.0
+offset_top = 36.0
+offset_right = 360.0
+offset_bottom = 64.0
+max_value = 100.0
+value = 100.0
+
+[node name="PowerBar" type="ProgressBar" parent="UI/HUD/PlayerStatBar"]
+offset_left = 36.0
+offset_top = 76.0
+offset_right = 360.0
+offset_bottom = 100.0
+max_value = 100.0
+value = 100.0
+
+[node name="RewardNotification" type="Control" parent="UI/HUD"]
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 0.0
+offset_left = -300.0
+offset_top = 100.0
+offset_right = 300.0
+offset_bottom = 160.0
+mouse_filter = 2
+script = ExtResource("7_reward")
+label_path = NodePath("Label")
+
+[node name="Label" type="Label" parent="UI/HUD/RewardNotification"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 36
+
+[node name="FadeCanvas" type="CanvasLayer" parent="."]
+layer = 100
+script = ExtResource("5_fade")

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="GameSceneResource" format=3 uid="uid://cl71gtwm2y8hu"]
+
+[ext_resource type="Script" path="res://scripts/resources/game_scene_resource.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+scene_path = "res://scenes/levels/warrior_menu.tscn"
+display_name = "warrior-menu"
+scene_type = 1

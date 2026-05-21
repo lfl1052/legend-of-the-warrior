@@ -1,0 +1,55 @@
+# ---------- Godot 4 ----------
+# 编辑器缓存（每台机器自动生成，绝不提交）
+.godot/
+# 旧版 Godot 3 导入缓存（保险起见也忽略）
+.import/
+
+# 导出/构建产物
+/build/
+/dist/
+/exports/
+/android/
+/ios/
+*.pck
+*.zip
+
+# 平台特定生成物
+export.cfg
+export_presets.cfg.bak
+
+# ---------- IDE / 编辑器 ----------
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+*~
+
+# ---------- 操作系统 ----------
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+# Linux
+.Trash-*
+
+# ---------- Claude / 工作流本地状态 ----------
+.claude/settings.local.json
+.spec-workflow/approvals/
+.spec-workflow/archive/
+
+# ---------- 测试 / 临时 ----------
+reports/
+*.log
+*.tmp
+tmp/
+gdunit4-temp/
+
+# ---------- 备份文件 ----------
+*.bak
+*.orig
