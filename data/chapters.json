@@ -1,0 +1,14 @@
+[
+  {
+    "id": "chapter_0_menu",
+    "display_name_key": "ui.chapter.menu",
+    "scene_ids": ["warrior_menu"],
+    "unlock_requirement": ""
+  },
+  {
+    "id": "chapter_1",
+    "display_name_key": "ui.chapter.one",
+    "scene_ids": ["level_demo"],
+    "unlock_requirement": ""
+  }
+]

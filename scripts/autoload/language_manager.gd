@@ -56,8 +56,8 @@ func _load_saved_language() -> String:
 	var err := cfg.load("user://settings.cfg")
 	if err != OK:
 		return DEFAULT_LANGUAGE
-	var lang := cfg.get_value("locale", SAVE_KEY, DEFAULT_LANGUAGE)
-	return String(lang) if SUPPORTED.has(lang) else DEFAULT_LANGUAGE
+	var lang: String = String(cfg.get_value("locale", SAVE_KEY, DEFAULT_LANGUAGE))
+	return lang if SUPPORTED.has(lang) else DEFAULT_LANGUAGE
 
 
 func _save_language(lang: String) -> void:

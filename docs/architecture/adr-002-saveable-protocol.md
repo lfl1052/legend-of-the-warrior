@@ -234,4 +234,4 @@ func load_save_data(data: Dictionary) -> void:
 - ADR-0001（信号总线）— 触发存档的 `save_data_requested` 信号
 - ADR-0003（场景资源）— `scene_to_save` 字段保存当前 GameSceneResource 元数据
 - 代码：`scripts/autoload/data_manager.gd`、`scripts/utilities/i_saveable.gd`、`scripts/utilities/persistence_key_utility.gd`、`scripts/player/save_point.gd`
-- 测试：`tests/smoke_test.gd::test_save_point_writes_save_file_to_disk`
+- 测试：`tests/e2e/smoke_test.gd::test_save_point_writes_save_file_to_disk`

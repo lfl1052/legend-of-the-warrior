@@ -175,7 +175,7 @@ func _ready() -> void:
 
 - [x] `scripts/` 中无任何 `get_node("/root/...")` 直连其它系统业务节点
 - [x] 跨系统事件统一走 GameEvents（已验证 save / scene / encounter / ui / audio）
-- [x] 冒烟测试 `tests/smoke_test.gd` 通过（new_game_started → scene_load_requested 链路完整）
+- [x] 冒烟测试 `tests/e2e/smoke_test.gd` 通过（new_game_started → scene_load_requested 链路完整）
 - [ ] code review 流程把"跨系统通信不走 GameEvents"列为 forbidden pattern（已写入 `.claude/docs/technical-preferences.md`）
 
 ## GDD Requirements Addressed

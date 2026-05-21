@@ -48,7 +48,7 @@
 - **架构 ADR**: 3 条（ADR-001/002/003）
 - **测试框架**: GdUnit4 v4.4.3（`addons/gdUnit4`）
 - **单元测试**: 3 份（`tests/unit/test_character.gd`, `test_persistence_key_utility.gd`, `test_game_events.gd`）
-- **冒烟测试**: 1 份（`tests/smoke_test.gd`，e2e 手动运行）
+- **冒烟测试**: 1 份（`tests/e2e/smoke_test.gd`，e2e 手动运行）
 
 ## GDD 反向编写顺序（推荐）
 

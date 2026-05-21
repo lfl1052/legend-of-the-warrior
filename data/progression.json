@@ -1,0 +1,29 @@
+{
+  "default_max_health": 5.0,
+  "default_max_power": 100.0,
+  "heal_ratio": 0.45,
+  "future_unlock_slots": [],
+  "milestones": [
+    {
+      "id": "milestone_heal",
+      "unlock_slot": "heal",
+      "display_name_key": "ui.milestone.heal",
+      "tutorial_economy_tokens_required": 0,
+      "upgrade_tokens_required": 0
+    },
+    {
+      "id": "milestone_skill_slash",
+      "unlock_slot": "skill-1",
+      "display_name_key": "ui.milestone.skill_slash",
+      "tutorial_economy_tokens_required": 0,
+      "upgrade_tokens_required": 1
+    },
+    {
+      "id": "milestone_map",
+      "unlock_slot": "map",
+      "display_name_key": "ui.milestone.map",
+      "tutorial_economy_tokens_required": 3,
+      "upgrade_tokens_required": 0
+    }
+  ]
+}

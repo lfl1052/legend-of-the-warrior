@@ -1,0 +1,16 @@
+[
+  {
+    "id": "menu_to_demo",
+    "from_scene": "warrior_menu",
+    "to_scene": "level_demo",
+    "spawn_point": { "x": 0.0, "y": 400.0, "z": 0.0 },
+    "requires_unlock": ""
+  },
+  {
+    "id": "demo_to_menu",
+    "from_scene": "level_demo",
+    "to_scene": "warrior_menu",
+    "spawn_point": { "x": 0.0, "y": 0.0, "z": 0.0 },
+    "requires_unlock": ""
+  }
+]

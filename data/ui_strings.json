@@ -1,0 +1,23 @@
+[
+  { "key": "ui.map.header",            "zh": "路线地图",          "en": "Map" },
+  { "key": "ui.map.footer",            "zh": "按 M 关闭",         "en": "Press M to close" },
+  { "key": "ui.map.no_routes",         "zh": "暂无可用路线",       "en": "No known routes" },
+
+  { "key": "ui.progression.header",    "zh": "进阶面板",          "en": "Progression" },
+  { "key": "ui.progression.no_slots",  "zh": "尚未解锁任何能力",   "en": "No abilities unlocked" },
+  { "key": "ui.progression.all_ready", "zh": "全部能力已解锁",     "en": "All abilities unlocked" },
+
+  { "key": "ui.chapter.menu",          "zh": "主菜单",            "en": "Main Menu" },
+  { "key": "ui.chapter.one",           "zh": "第一章 — 试炼之路", "en": "Chapter 1 — Trial Path" },
+
+  { "key": "ui.milestone.heal",        "zh": "治疗术",            "en": "Heal" },
+  { "key": "ui.milestone.skill_slash", "zh": "斩击技",            "en": "Slash" },
+  { "key": "ui.milestone.map",         "zh": "地图卷轴",          "en": "Map Scroll" },
+
+  { "key": "ui.reward.tutorial_token", "zh": "获得教程代币",       "en": "Tutorial token gained" },
+  { "key": "ui.reward.upgrade_token",  "zh": "获得升级代币",       "en": "Upgrade token gained" },
+  { "key": "ui.reward.map_token",      "zh": "获得地图代币",       "en": "Map token gained" },
+  { "key": "ui.reward.health_refill",  "zh": "生命值已恢复",       "en": "Health restored" },
+  { "key": "ui.reward.power_refill",   "zh": "能量值已恢复",       "en": "Power restored" },
+  { "key": "ui.reward.unlock",         "zh": "解锁新能力",         "en": "New ability unlocked" }
+]

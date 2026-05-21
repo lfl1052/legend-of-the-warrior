@@ -65,14 +65,14 @@
 
 ## Testing
 
-- **Framework**: TBD — 待选 GUT 或 GdUnit4（当前仅有端到端冒烟测试 `tests/smoke_test.gd`）
+- **Framework**: GdUnit4 v4.4.3（`addons/gdUnit4`），与 Godot 4.6.1 存在已知兼容问题，详见 `tests/README.md` 与 Story 1-9 跟踪
 - **Minimum Coverage**: 关键系统（存档 / 战斗 / 状态机）目标 70%；UI 与表现层不强制
 - **Required Tests**:
   - 存档：has_saved_game / load_data / save_data 往返
   - 战斗：take_damage / die / 攻击命中判定
   - 状态机：状态切换不漏 transition、不重复 enter/exit
   - 经济（lot table）：drop_chance 不会越界
-- **Smoke Test**: `tests/smoke_test.tscn` — 启动菜单 → 加载关卡 → 玩家自动化攻击 → 存档点写盘 → 回菜单 (5 步)
+- **Smoke Test**: `tests/e2e/smoke_test.tscn` — 启动菜单 → 加载关卡 → 玩家自动化攻击 → 存档点写盘 → 回菜单 (5 步)
 
 ## Forbidden Patterns
 

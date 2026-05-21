@@ -1,0 +1,40 @@
+[
+  {
+    "id": "tutorial_chest_basic",
+    "description": "教程区基础宝箱：少量教程代币",
+    "entries": [
+      { "reward_id": "tutorial-economy-token", "amount": 1, "weight": 100 }
+    ]
+  },
+  {
+    "id": "tutorial_chest_rich",
+    "description": "教程区丰厚宝箱：教程代币 + 一次回血",
+    "entries": [
+      { "reward_id": "tutorial-economy-token", "amount": 3, "weight": 100 },
+      { "reward_id": "health-refill", "amount": 1, "weight": 100 }
+    ]
+  },
+  {
+    "id": "level_demo_chest_unlock_heal",
+    "description": "Demo 关卡：解锁治疗技能槽",
+    "entries": [
+      { "reward_id": "unlock-slot", "unlock_slot": "heal", "amount": 1, "weight": 100 }
+    ]
+  },
+  {
+    "id": "level_demo_chest_upgrade",
+    "description": "Demo 关卡：升级代币",
+    "entries": [
+      { "reward_id": "upgrade-token", "amount": 1, "weight": 100 },
+      { "reward_id": "power-refill", "amount": 1, "weight": 100 }
+    ]
+  },
+  {
+    "id": "level_demo_chest_map",
+    "description": "Demo 关卡：解锁地图槽",
+    "entries": [
+      { "reward_id": "unlock-slot", "unlock_slot": "map", "amount": 1, "weight": 100 },
+      { "reward_id": "map-token", "amount": 1, "weight": 100 }
+    ]
+  }
+]

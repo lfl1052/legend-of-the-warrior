@@ -12,10 +12,15 @@ extends Node
 ##   character_pos  : Dictionary  id -> {x,y,z}
 ##   float_data     : Dictionary  key -> float
 
-const SAVE_DIR := "user://SAVE_DATA/"
-const SAVE_FILE := SAVE_DIR + "data.sav"
-const SAVE_QUARANTINE := SAVE_DIR + "data.sav.bak"
+const DEFAULT_SAVE_DIR := "user://SAVE_DATA/"
+const DEFAULT_SAVE_FILE := DEFAULT_SAVE_DIR + "data.sav"
+const DEFAULT_SAVE_QUARANTINE := DEFAULT_SAVE_DIR + "data.sav.bak"
 const CURRENT_SCHEMA_VERSION := 1
+
+# 路径运行期可改写（测试用）。生产代码不应触碰，只读 DEFAULT_* 常量。
+var save_dir: String = DEFAULT_SAVE_DIR
+var save_file: String = DEFAULT_SAVE_FILE
+var save_quarantine: String = DEFAULT_SAVE_QUARANTINE
 
 # ISaveable 协议：实现需要 get_save_id() / get_save_data(data:Dictionary) / load_save_data(data:Dictionary)
 var _saveables: Array[Object] = []
@@ -64,18 +69,18 @@ func save() -> void:
 	capture_runtime_state()
 	_data["schema_version"] = CURRENT_SCHEMA_VERSION
 	_ensure_save_dir()
-	var f := FileAccess.open(SAVE_FILE, FileAccess.WRITE)
+	var f := FileAccess.open(save_file, FileAccess.WRITE)
 	if f == null:
-		push_error("DataManager: 无法写入存档 %s" % SAVE_FILE)
+		push_error("DataManager: 无法写入存档 %s" % save_file)
 		return
 	f.store_string(JSON.stringify(_data))
 
 
 func load_from_disk() -> void:
-	if not FileAccess.file_exists(SAVE_FILE):
+	if not FileAccess.file_exists(save_file):
 		_data = _make_empty_data()
 		return
-	var raw := FileAccess.get_file_as_string(SAVE_FILE)
+	var raw := FileAccess.get_file_as_string(save_file)
 	var parsed: Variant = JSON.parse_string(raw)
 	if typeof(parsed) != TYPE_DICTIONARY:
 		_quarantine_corrupted()
@@ -146,7 +151,29 @@ func try_get_saved_scene_path() -> String:
 
 
 func has_saved_game() -> bool:
-	return FileAccess.file_exists(SAVE_FILE)
+	return FileAccess.file_exists(save_file)
+
+
+# ----- 测试辅助（生产代码不应调用） -------------------------------------------
+
+## 仅供测试：重定向存档路径到隔离目录，并清空内存数据。
+## 调用方负责调用 [method clear_test_overrides] 还原。
+func override_save_paths_for_test(new_dir: String) -> void:
+	if not new_dir.ends_with("/"):
+		new_dir += "/"
+	save_dir = new_dir
+	save_file = new_dir + "data.sav"
+	save_quarantine = new_dir + "data.sav.bak"
+	_data = _make_empty_data()
+	_saveables.clear()
+
+
+func clear_test_overrides() -> void:
+	save_dir = DEFAULT_SAVE_DIR
+	save_file = DEFAULT_SAVE_FILE
+	save_quarantine = DEFAULT_SAVE_QUARANTINE
+	_data = _make_empty_data()
+	_saveables.clear()
 
 
 # ----- 内部 ------------------------------------------------------------------
@@ -156,15 +183,16 @@ func _on_new_game() -> void:
 
 
 func _ensure_save_dir() -> void:
-	if not DirAccess.dir_exists_absolute(SAVE_DIR):
-		DirAccess.make_dir_recursive_absolute(SAVE_DIR)
+	if not DirAccess.dir_exists_absolute(save_dir):
+		DirAccess.make_dir_recursive_absolute(save_dir)
 
 
 func _quarantine_corrupted() -> void:
-	if FileAccess.file_exists(SAVE_FILE):
-		DirAccess.copy_absolute(SAVE_FILE, SAVE_QUARANTINE)
-		DirAccess.remove_absolute(SAVE_FILE)
-	push_warning("DataManager: 检测到损坏存档，已隔离至 %s" % SAVE_QUARANTINE)
+	_ensure_save_dir()
+	if FileAccess.file_exists(save_file):
+		DirAccess.copy_absolute(save_file, save_quarantine)
+		DirAccess.remove_absolute(save_file)
+	push_warning("DataManager: 检测到损坏存档，已隔离至 %s" % save_quarantine)
 
 
 static func _make_empty_data() -> Dictionary:
