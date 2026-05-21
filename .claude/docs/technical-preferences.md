@@ -65,7 +65,7 @@
 
 ## Testing
 
-- **Framework**: GdUnit4 v4.4.3（`addons/gdUnit4`），与 Godot 4.6.1 存在已知兼容问题，详见 `tests/README.md` 与 Story 1-9 跟踪
+- **Framework**: GdUnit4 v6.1.3（`addons/gdUnit4`），CLI 已在 Godot 4.6.1 下验证通过（`addons\gdUnit4\runtest.cmd --add tests/unit` 退出码 0，详见 `tests/README.md`）
 - **Minimum Coverage**: 关键系统（存档 / 战斗 / 状态机）目标 70%；UI 与表现层不强制
 - **Required Tests**:
   - 存档：has_saved_game / load_data / save_data 往返

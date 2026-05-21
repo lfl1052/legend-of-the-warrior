@@ -4,7 +4,7 @@
 
 | 子目录 | 用途 | 框架 | 运行频率 |
 |--------|------|------|----------|
-| `tests/unit/` | 单元测试，Arrange / Act / Assert，无副作用 | GdUnit4 v4.4.3 | 每次 PR 必跑 |
+| `tests/unit/` | 单元测试，Arrange / Act / Assert，无副作用 | GdUnit4 v6.1.3 | 每次 PR 必跑 |
 | `tests/e2e/`  | 端到端冒烟测试，串联场景切换 + 自动化输入 | 自定义脚本（非 GdUnit4） | 关键节点 + 发版前 |
 
 ---
@@ -40,17 +40,10 @@ set GODOT_BIN=E:\Godot\Godot.exe
 addons\gdUnit4\runtest.cmd --add tests/unit
 ```
 
-### ⚠️ 已知问题：GdUnit4 v4.4.3 与 Godot 4.6.1 不兼容
+退出码 0 = 全部 PASS，非 0 = 至少一个用例失败 / 解析错误。
 
-GdUnit4 的 vendored 源码引用了 Godot 4.5 之前的 API，在 4.6.1 下解析失败：
-
-- `FileAccess.get_as_text(true)` — 4.6 移除了 bool 参数（`GdUnitFileAccess.gd:191`）
-- `Callable.call(...)` 严格签名校验 — `CallableDoubler.gd:84` 的 override 与父签名不符
-- `DirAccess.current_dir` — 已改名（`GdUnitCmdTool.gd:108`）
-
-**当前状态**：测试脚本本身是合法 GDScript（已通过单文件解析校验）。需要把 GdUnit4 升级到与 4.6.1 兼容的版本，跟踪故事 [Story 1-9](../production/stories/1-9-upgrade-gdunit4.md)。
-
-**临时绕行**：通过 GdUnit4 编辑器面板运行（GUI 模式不会触发 `--headless` 路径下的所有问题），或等 1-9 升级到 4.5+。
+> 如果某次刚切换/升级 GdUnit4 版本，CLI 第一次跑可能因 `class_name` 缓存未刷新而报 `Identifier ... not declared` 解析错误。
+> 解决：先跑一次 `"E:\Godot\Godot.exe" --headless --path . --quit --import` 让 Godot 重建脚本缓存，再跑 `runtest.cmd`。
 
 ---
 

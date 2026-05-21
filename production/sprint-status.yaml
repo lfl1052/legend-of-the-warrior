@@ -15,6 +15,7 @@ start: "2026-05-21"
 end: "2026-06-03"
 generated: "2026-05-21"
 updated: "2026-05-21"
+last_action: "Story 1-9 升级 GdUnit4 done — 36 用例 PASS / Exit 0"
 
 stories:
   - id: "1-1"
@@ -81,7 +82,7 @@ stories:
     name: "dev-only validator: 检查 GameSceneResource.scene_path 文件存在"
     file: "production/stories/1-7-scene-resource-validator.md"
     priority: should-have
-    status: backlog
+    status: ready-for-dev
     owner: "gameplay-programmer"
     estimate_days: 0.5
     blocker: ""
@@ -101,8 +102,8 @@ stories:
     name: "升级 GdUnit4 到兼容 Godot 4.6.1 的版本"
     file: "production/stories/1-9-upgrade-gdunit4.md"
     priority: should-have
-    status: backlog
+    status: done
     owner: "godot-gdscript-specialist"
     estimate_days: 0.5
     blocker: ""
-    completed: ""
+    completed: "2026-05-21"
