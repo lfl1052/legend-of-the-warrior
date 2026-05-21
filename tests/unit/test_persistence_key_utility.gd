@@ -36,7 +36,7 @@ func test_resolve_key_with_data_definition_child_returns_id() -> void:
 	var node := Node.new()
 	add_child(node)
 	auto_free(node)
-	var def := load("res://scripts/utilities/data_definition.gd").new()
+	var def: DataDefinition = load("res://scripts/utilities/data_definition.gd").new()
 	def.id = "test_id_123"
 	node.add_child(def)
 	# Act

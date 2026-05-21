@@ -65,23 +65,25 @@ func test_game_events_has_reward_signal() -> void:
 
 func test_raise_new_game_emits_signal() -> void:
 	# Arrange
-	var received := false
-	var on_received := func() -> void: received = true
+	# 用 dict 包装基本类型：GDScript lambda 对基本类型按值捕获，
+	# 直接 `var received := false` + lambda 内 `received = true` 改不到外部。
+	var state := {"received": false}
+	var on_received := func() -> void: state["received"] = true
 	_events.new_game_started.connect(on_received)
 	# Act
 	_events.raise_new_game_started()
 	# Assert
-	assert_bool(received).is_true()
+	assert_bool(state["received"]).is_true()
 	_events.new_game_started.disconnect(on_received)
 
 
 func test_raise_volume_changed_emits_with_amount() -> void:
 	# Arrange
-	var received_value: float = -1.0
-	var on_received := func(amount: float) -> void: received_value = amount
+	var state := {"value": -1.0}
+	var on_received := func(amount: float) -> void: state["value"] = amount
 	_events.volume_changed.connect(on_received)
 	# Act
 	_events.raise_volume_changed(0.75)
 	# Assert
-	assert_float(received_value).is_equal(0.75)
+	assert_float(state["value"]).is_equal(0.75)
 	_events.volume_changed.disconnect(on_received)

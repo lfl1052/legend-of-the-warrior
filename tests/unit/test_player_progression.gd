@@ -54,17 +54,19 @@ func test_player_progression_repeated_chest_does_not_double_reward() -> void:
 
 func test_player_progression_unlock_slot_is_idempotent() -> void:
 	# Arrange：监听 unlock_changed 信号，统计 emit 次数
-	var emit_count: int = 0
-	var on_changed := func(_slot: StringName) -> void: emit_count += 1
+	# 用 dict 包装计数器：GDScript lambda 对基本类型按值捕获，
+	# 直接 `var emit_count: int = 0` + lambda 内 `emit_count += 1` 改不到外部。
+	var state := {"emit_count": 0}
+	var on_changed := func(_slot: StringName) -> void: state["emit_count"] += 1
 	_progression.unlock_changed.connect(on_changed)
 	# Act：解锁同一槽位两次
 	_progression.unlock_slot(&"heal")
 	_progression.unlock_slot(&"heal")
 	# Assert：信号只触发一次，槽位记录稳定
-	assert_int(emit_count).is_equal(1)
+	assert_int(state["emit_count"]).is_equal(1)
 	assert_bool(_progression.has_unlock_slot(&"heal")).is_true()
 	# 解锁不同槽位应能正常触发
 	_progression.unlock_slot(&"map")
-	assert_int(emit_count).is_equal(2)
+	assert_int(state["emit_count"]).is_equal(2)
 	assert_bool(_progression.has_unlock_slot(&"map")).is_true()
 	_progression.unlock_changed.disconnect(on_changed)

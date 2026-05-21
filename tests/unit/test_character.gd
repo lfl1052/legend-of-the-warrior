@@ -95,9 +95,10 @@ func test_character_take_damage_emits_died_signal() -> void:
 	var attacker := Node.new()
 	add_child(attacker)
 	auto_free(attacker)
-	# Act & Assert: 致死伤害触发 died 信号
+	# Act：用 call_deferred 让伤害发生在下一帧，await assert_signal 才能等到 emit
+	_character.call_deferred("take_damage", attacker, 999.0)
+	# Assert
 	await assert_signal(_character).is_emitted("died")
-	_character.take_damage(attacker, 999.0)
 
 
 # ----- heal -------------------------------------------------------------------
