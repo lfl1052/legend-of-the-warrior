@@ -14,12 +14,11 @@ extends Node
 ##
 ## 运行方式：
 ##   editor: 把 main_scene 临时切到 tests/smoke_test.tscn 后按 F5
-##   cli  : godot --path . tests/smoke_test.tscn
+##   cli  : godot --headless --verbose --path . --scene res://tests/e2e/smoke_test.tscn
 
 const STEP_TIMEOUT := 12.0
 const ATTACK_BURST_DURATION := 1.6
 const MENU_SCENE_PATH := "res://scenes/levels/warrior_menu.tscn"
-
 var _logs: Array[String] = []
 
 
@@ -83,6 +82,7 @@ func test_menu_new_game_loads_level_demo() -> bool:
 		return false
 	# Act --------------------------------------------------------------------
 	btn.emit_signal("pressed")
+	await get_tree().process_frame
 	# Assert -----------------------------------------------------------------
 	return await _await_scene_root_named("LevelDemo")
 
@@ -124,16 +124,18 @@ func test_player_automation_attack_damages_enemy() -> bool:
 		_log("  ERR  Player 不是 PlayerController（脚本未挂上）")
 		return false
 	# Act：右移 → 跳跃 → 连击 ---------------------------------------------
+	var target := root.get_node_or_null("Bee") as Node2D
+	if target == null:
+		target = root.get_node_or_null("Snail") as Node2D
+	if target != null:
+		player.global_position = target.global_position + Vector2(-42, 0)
+		player.velocity = Vector2.ZERO
 	player.enable_automation(true)
-	player.automation_move(1.0)
-	await get_tree().create_timer(0.6).timeout
-	player.automation_jump()
-	await get_tree().create_timer(0.4).timeout
 	var burst := ATTACK_BURST_DURATION
 	while burst > 0.0:
 		player.automation_attack()
-		await get_tree().create_timer(0.25).timeout
-		burst -= 0.25
+		await get_tree().create_timer(0.35).timeout
+		burst -= 0.35
 	player.automation_move(0.0)
 	player.enable_automation(false)
 	# Assert -----------------------------------------------------------------
@@ -144,7 +146,7 @@ func test_player_automation_attack_damages_enemy() -> bool:
 	else:
 		# 攻击命中是物理时序敏感的，CI 帧率不稳时给 soft fail
 		_log("  WARN 未侦测到敌人受击，按宽松通过")
-	return true
+	return any_damaged
 
 
 func test_save_point_writes_save_file_to_disk() -> bool:
@@ -231,6 +233,6 @@ func _finish(ok: bool, summary: String) -> void:
 	_log("结果：%s — %s" % ["PASS" if ok else "FAIL", summary])
 	_log("=========================================")
 	_purge_save_dir()                              # 用例后再清一次
-	if OS.has_feature("editor"):
-		return
+	if is_instance_valid(AudioManager) and AudioManager.has_method("shutdown_for_tests"):
+		AudioManager.shutdown_for_tests()
 	get_tree().quit(0 if ok else 1)

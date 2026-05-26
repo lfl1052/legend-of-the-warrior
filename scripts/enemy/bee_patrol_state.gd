@@ -33,13 +33,17 @@ func logic_update(_delta: float) -> void:
 		current_enemy.velocity = Vector2.ZERO
 		return
 
-	var to_target := _current_target - current_enemy.global_position
+	var enemy_node := current_enemy as Node2D
+	if enemy_node == null:
+		return
+
+	var to_target: Vector2 = _current_target - enemy_node.global_position
 	if to_target.length() <= ARRIVE_DISTANCE:
 		_wait_timer = randf_range(0.4, 1.0)
 		_pick_new_target()
 		return
 
-	var dir := to_target.normalized()
+	var dir: Vector2 = to_target.normalized()
 	current_enemy.velocity = dir * current_enemy.normal_speed
 	current_enemy.face_direction(dir.x)
 

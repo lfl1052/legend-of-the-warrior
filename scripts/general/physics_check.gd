@@ -17,11 +17,13 @@ extends Node2D
 @export var bottom_offset: Vector2 = Vector2.ZERO
 @export var left_offset: Vector2 = Vector2.ZERO
 @export var right_offset: Vector2 = Vector2.ZERO
+@export var front_ground_offset: Vector2 = Vector2.ZERO
 @export var auto_derive_offsets: bool = true
 
 var is_ground: bool = false
 var touch_left: bool = false
 var touch_right: bool = false
+var front_is_ground: bool = false
 
 var _query: PhysicsShapeQueryParameters2D
 var _shape: CircleShape2D
@@ -43,6 +45,7 @@ func _physics_process(_delta: float) -> void:
 	is_ground = _check(bottom_offset, ground_layer)
 	touch_left = _check(left_offset, wall_layer)
 	touch_right = _check(right_offset, wall_layer)
+	front_is_ground = has_ground_ahead(1)
 
 
 func _check(local_offset: Vector2, mask: int) -> bool:
@@ -56,6 +59,25 @@ func _check(local_offset: Vector2, mask: int) -> bool:
 	if parent is PhysicsBody2D:
 		_query.exclude = [parent.get_rid()]
 	return not space.intersect_shape(_query, 1).is_empty()
+
+
+func has_ground_ahead(direction: int) -> bool:
+	var dir := -1 if direction < 0 else 1
+	var offset := front_ground_offset
+	if offset == Vector2.ZERO:
+		offset = bottom_offset + Vector2(check_radius * 2.0, 0.0)
+	offset.x = absf(offset.x) * dir
+	return _check(offset, ground_layer)
+
+
+func touches_wall_in_direction(direction: int) -> bool:
+	if direction < 0:
+		return touch_left
+	return touch_right
+
+
+func should_turn_for_patrol(direction: int) -> bool:
+	return touches_wall_in_direction(direction) or not has_ground_ahead(direction)
 
 
 func _derive_offsets_from_parent() -> void:
@@ -80,3 +102,4 @@ func _derive_offsets_from_parent() -> void:
 	bottom_offset = collider.position + Vector2(0.0, size.y)
 	left_offset = collider.position + Vector2(-size.x, 0.0)
 	right_offset = collider.position + Vector2(size.x, 0.0)
+	front_ground_offset = collider.position + Vector2(size.x + check_radius * 1.5, size.y + check_radius)

@@ -34,7 +34,7 @@ func _on_fade_requested(target_color: Color, duration: float, fade_in: bool) -> 
 
 	# fade_in=true 表示从黑屏淡入到亮（透明）；false 表示淡出到 target_color
 	var goal := target_color
-	if fade_in:
+	if not fade_in:
 		goal = Color(target_color.r, target_color.g, target_color.b, 0.0)
 
 	if duration <= 0.0:

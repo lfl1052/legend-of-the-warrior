@@ -42,7 +42,7 @@ func _process(_delta: float) -> void:
 		_sign_sprite.visible = should_show
 
 	if _sign_sprite != null and _player_visual != null:
-		var target_scale := _sign_sprite.scale
+		var target_scale: Vector2 = _sign_sprite.scale
 		target_scale.x = absf(target_scale.x) * signf(_player_visual.scale.x if _player_visual.scale.x != 0.0 else 1.0)
 		_sign_sprite.scale = target_scale
 

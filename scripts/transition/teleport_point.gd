@@ -18,4 +18,5 @@ func trigger_action() -> void:
 	if scene_to_go == null:
 		push_warning("TeleportPoint: scene_to_go 未配置")
 		return
-	GameEvents.raise_scene_load_requested(scene_to_go, position_to_go, fade_screen)
+	var target_position := Vector3(position_to_go.x, position_to_go.y, 0.0)
+	GameEvents.raise_scene_load_requested(scene_to_go, target_position, fade_screen)

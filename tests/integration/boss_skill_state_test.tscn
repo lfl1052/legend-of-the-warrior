@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3 uid="uid://c6bosstestscene1"]
+
+[ext_resource type="PackedScene" path="res://scenes/enemy/boss_enemy.tscn" id="1_boss"]
+[ext_resource type="PackedScene" uid="uid://b1plyrwarrior" path="res://scenes/player/player.tscn" id="2_player"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ground"]
+size = Vector2(1000, 80)
+
+[node name="BossSkillStateTest" type="Node2D"]
+
+[node name="Ground" type="StaticBody2D" parent="."]
+position = Vector2(0, 140)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ground"]
+shape = SubResource("RectangleShape2D_ground")
+
+[node name="BossEnemy" parent="." instance=ExtResource("1_boss")]
+position = Vector2(0, 80)
+skill_cooldown = 0.35
+skill_trigger_range = 220.0
+skill_windup_duration = 0.05
+skill_active_duration = 0.05
+skill_recovery_duration = 0.05
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector2(96, 80)

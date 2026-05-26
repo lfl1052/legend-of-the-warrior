@@ -20,7 +20,7 @@ var _data_def: DataDefinition
 
 func _ready() -> void:
 	add_to_group(&"interactable")
-	_data_def = _ensure_data_definition()
+	_data_def = _find_data_definition()
 	if auto_register_save:
 		DataManager.register(self)
 
@@ -37,6 +37,7 @@ func trigger_action() -> void:
 		return
 	_opened = true
 	_play_open_anim()
+	GameEvents.raise_play_sfx(&"chest_open", global_position)
 	_apply_rewards()
 	_disable_collider()
 
@@ -52,6 +53,10 @@ func _play_open_anim() -> void:
 func _apply_rewards() -> void:
 	if loot_table_id == &"":
 		return
+	var chest_id := get_save_id()
+	var progression: Node = _find_player_progression()
+	if progression != null:
+		progression.call("try_apply_chest_rewards", chest_id, loot_table_id)
 	var table := RuntimeData.try_get_loot_table(loot_table_id)
 	if table.is_empty():
 		return
@@ -62,7 +67,20 @@ func _apply_rewards() -> void:
 		var reward_id := StringName(entry.get("reward_id", ""))
 		if reward_id == &"":
 			continue
-		GameEvents.raise_reward_notification(reward_id, entry)
+		var payload := (entry as Dictionary).duplicate()
+		payload["_progression_applied"] = progression != null
+		GameEvents.raise_reward_notification(reward_id, payload)
+
+
+func _find_player_progression() -> Node:
+	for node in get_tree().get_nodes_in_group(&"player_progression"):
+		if node.has_method("try_apply_chest_rewards"):
+			return node
+	for player in get_tree().get_nodes_in_group(&"player"):
+		for child in player.get_children():
+			if child.has_method("try_apply_chest_rewards"):
+				return child
+	return null
 
 
 func _disable_collider() -> void:
@@ -71,14 +89,11 @@ func _disable_collider() -> void:
 		col.set_deferred("disabled", true)
 
 
-func _ensure_data_definition() -> DataDefinition:
+func _find_data_definition() -> DataDefinition:
 	for child in get_children():
 		if child is DataDefinition:
 			return child
-	var def := DataDefinition.new()
-	def.name = "DataDefinition"
-	add_child(def)
-	return def
+	return null
 
 
 # ----- 存档接口 ----------------------------------------------------------------

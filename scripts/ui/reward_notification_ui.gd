@@ -16,6 +16,7 @@ extends Control
 var _label: Label
 var _queue: Array[Dictionary] = []
 var _busy: bool = false
+var _current_tween: Tween = null
 
 
 func _ready() -> void:
@@ -26,13 +27,21 @@ func _ready() -> void:
 		GameEvents.reward_notification.connect(_on_reward_notification)
 
 
+func _exit_tree() -> void:
+	if GameEvents.reward_notification.is_connected(_on_reward_notification):
+		GameEvents.reward_notification.disconnect(_on_reward_notification)
+	_cancel_current_tween()
+	_queue.clear()
+	_busy = false
+
+
 func _on_reward_notification(reward_id: StringName, payload) -> void:
 	var data := _resolve_payload(reward_id, payload)
 	if data.is_empty():
 		return
 	_queue.append(data)
 	if not _busy:
-		_run_queue()
+		_play_next()
 
 
 func show_message(key: String, fallback_chinese: String, fallback_english: String) -> void:
@@ -51,7 +60,7 @@ func show_message(key: String, fallback_chinese: String, fallback_english: Strin
 				entry.english = localized
 	_queue.append(entry)
 	if not _busy:
-		_run_queue()
+		_play_next()
 
 
 func _resolve_payload(reward_id: StringName, payload) -> Dictionary:
@@ -76,21 +85,34 @@ func _resolve_payload(reward_id: StringName, payload) -> Dictionary:
 	return entry
 
 
-func _run_queue() -> void:
+func _play_next() -> void:
+	_cancel_current_tween()
+	if _queue.is_empty():
+		_busy = false
+		return
 	_busy = true
-	while not _queue.is_empty():
-		var entry: Dictionary = _queue.pop_front()
-		if _label != null:
-			_label.text = entry.chinese if LanguageManager.current_language == "zh" else entry.english
-		await _play_once(bool(entry.get("major", false)))
-	_busy = false
+	var entry: Dictionary = _queue.pop_front()
+	if _label != null:
+		_label.text = entry.chinese if LanguageManager.current_language == "zh" else entry.english
+	_play_once(bool(entry.get("major", false)))
 
 
 func _play_once(is_major: bool) -> void:
 	var hold := major_visible_duration if is_major else visible_duration
-	var tween := create_tween()
-	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	tween.tween_property(self, "modulate:a", 1.0, enter_duration).from(0.0)
-	tween.tween_interval(hold)
-	tween.tween_property(self, "modulate:a", 0.0, fade_duration)
-	await tween.finished
+	_current_tween = create_tween()
+	_current_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	_current_tween.tween_property(self, "modulate:a", 1.0, enter_duration).from(0.0)
+	_current_tween.tween_interval(hold)
+	_current_tween.tween_property(self, "modulate:a", 0.0, fade_duration)
+	_current_tween.finished.connect(_on_current_tween_finished)
+
+
+func _on_current_tween_finished() -> void:
+	_current_tween = null
+	_play_next()
+
+
+func _cancel_current_tween() -> void:
+	if _current_tween != null and _current_tween.is_valid():
+		_current_tween.kill()
+	_current_tween = null

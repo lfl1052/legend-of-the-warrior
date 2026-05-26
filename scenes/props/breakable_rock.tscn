@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3 uid="uid://s2breakablerock"]
+
+[ext_resource type="Script" path="res://scripts/general/breakable.gd" id="1_breakable"]
+[ext_resource type="Script" path="res://scripts/utilities/data_definition.gd" id="2_data"]
+[ext_resource type="Texture2D" path="res://art/processed/map/terrain/rocks/props_rocks_01.png" id="3_rock"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_rock"]
+size = Vector2(32, 28)
+
+[node name="BreakableRock" type="StaticBody2D"]
+collision_layer = 4
+collision_mask = 0
+script = ExtResource("1_breakable")
+max_health = 2
+loot_table_id = &"tutorial_chest_basic"
+collider_path = NodePath("CollisionShape2D")
+
+[node name="DataDefinition" type="Node" parent="."]
+script = ExtResource("2_data")
+id = "breakable_unassigned"
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(0, -14)
+scale = Vector2(2, 2)
+texture = ExtResource("3_rock")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -14)
+shape = SubResource("RectangleShape2D_rock")

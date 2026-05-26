@@ -22,6 +22,8 @@ var _has_bounds: bool = false
 func _ready() -> void:
 	if not GameEvents.camera_shake.is_connected(_on_camera_shake):
 		GameEvents.camera_shake.connect(_on_camera_shake)
+	if not GameEvents.camera_shake_requested.is_connected(_on_camera_shake_requested):
+		GameEvents.camera_shake_requested.connect(_on_camera_shake_requested)
 	if not GameEvents.after_scene_loaded.is_connected(_on_after_scene_loaded):
 		GameEvents.after_scene_loaded.connect(_on_after_scene_loaded)
 	make_current()
@@ -32,13 +34,13 @@ func _process(delta: float) -> void:
 	if follow_player:
 		var players := get_tree().get_nodes_in_group(&"player")
 		if not players.is_empty() and players[0] is Node2D:
-			var target := (players[0] as Node2D).global_position
+			var target: Vector2 = (players[0] as Node2D).global_position
 			global_position = global_position.lerp(target, clampf(delta * follow_lerp, 0.0, 1.0))
 
 	if _has_bounds:
-		var half := get_viewport_rect().size * 0.5 / max(zoom.x, 0.0001)
-		var min_pos := _bounds.position + half
-		var max_pos := _bounds.position + _bounds.size - half
+		var half: Vector2 = get_viewport_rect().size * 0.5 / maxf(zoom.x, 0.0001)
+		var min_pos: Vector2 = _bounds.position + half
+		var max_pos: Vector2 = _bounds.position + _bounds.size - half
 		if min_pos.x <= max_pos.x:
 			global_position.x = clampf(global_position.x, min_pos.x, max_pos.x)
 		if min_pos.y <= max_pos.y:
@@ -58,6 +60,11 @@ func _process(delta: float) -> void:
 func _on_camera_shake() -> void:
 	_shake_time_left = shake_duration
 	_shake_strength = shake_strength
+
+
+func _on_camera_shake_requested(strength: float, duration: float) -> void:
+	_shake_time_left = maxf(0.0, duration)
+	_shake_strength = shake_strength * maxf(0.0, strength)
 
 
 func _on_after_scene_loaded() -> void:
@@ -80,6 +87,6 @@ func _node_aabb(node: Node2D) -> Rect2:
 	for child in node.get_children():
 		if child is CollisionShape2D and (child as CollisionShape2D).shape is RectangleShape2D:
 			var rect := (child as CollisionShape2D).shape as RectangleShape2D
-			var origin := node.global_position - rect.size * 0.5
+			var origin: Vector2 = node.global_position - rect.size * 0.5
 			return Rect2(origin, rect.size)
 	return Rect2(node.global_position, Vector2.ZERO)

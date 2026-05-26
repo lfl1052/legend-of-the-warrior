@@ -12,6 +12,7 @@ signal died_event
 
 @export var hurt_force: float = 320.0
 @export var hurt_recover_time: float = 0.42
+@export var despawn_after_death: float = 1.2
 @export var auto_register_save: bool = true
 @export var save_id_prefix: String = "enemy"
 
@@ -28,11 +29,15 @@ var is_dead: bool = false
 @onready var visual_root: Node2D = get_node_or_null(visual_root_path) as Node2D
 
 var _hurt_timer: float = 0.0
+var _visual_base_modulate: Color = Color.WHITE
+var _death_despawn_scheduled: bool = false
 
 
 func _ready() -> void:
 	add_to_group(&"enemy")
 	add_to_group(&"damageable")
+	if visual_root != null:
+		_visual_base_modulate = visual_root.modulate
 	if character != null:
 		character.took_damage.connect(_on_character_damage)
 		character.died.connect(_on_character_died)
@@ -59,6 +64,7 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		if _hurt_timer <= 0.0:
 			is_hurt = false
+			_reset_visual_modulate()
 
 
 # ----- 受击外部入口 ------------------------------------------------------------
@@ -81,20 +87,81 @@ func _on_character_damage(by: Node) -> void:
 		velocity = Vector2(dir * hurt_force, -hurt_force * 0.55)
 	if anim != null and anim.has_animation("hurt"):
 		anim.play("hurt")
+	_flash_visual(Color(1.0, 0.55, 0.55, 1.0))
 	hurt_started.emit(by)
 
 
 func _on_character_died() -> void:
 	is_dead = true
 	is_hurt = false
+	_reset_visual_modulate()
 	velocity = Vector2.ZERO
+	_record_dead_state()
+	_disable_combat_collisions()
 	if anim != null and anim.has_animation("dead"):
 		anim.play("dead")
 	died_event.emit()
+	_schedule_death_despawn()
 
 
 func _gravity() -> float:
 	return float(ProjectSettings.get_setting("physics/2d/default_gravity", 2000.0))
+
+
+func _flash_visual(color: Color) -> void:
+	if visual_root != null:
+		visual_root.modulate = color
+
+
+func _reset_visual_modulate() -> void:
+	if visual_root != null:
+		visual_root.modulate = _visual_base_modulate
+
+
+func _record_dead_state() -> void:
+	var key := get_save_id()
+	if not key.is_empty():
+		DataManager.record_float(key + "_dead", 1.0)
+
+
+func _disable_combat_collisions() -> void:
+	collision_layer = 0
+	collision_mask = 0
+	_set_collision_shapes_disabled(self, true)
+	for child in get_children():
+		if child is Area2D:
+			var area := child as Area2D
+			area.monitoring = false
+			area.monitorable = false
+			area.collision_layer = 0
+			area.collision_mask = 0
+			_set_collision_shapes_disabled(area, true)
+
+
+func _set_collision_shapes_disabled(root: Node, disabled: bool) -> void:
+	for child in root.get_children():
+		if child is CollisionShape2D:
+			(child as CollisionShape2D).set_deferred("disabled", disabled)
+		else:
+			_set_collision_shapes_disabled(child, disabled)
+
+
+func _schedule_death_despawn() -> void:
+	if _death_despawn_scheduled:
+		return
+	_death_despawn_scheduled = true
+	if despawn_after_death <= 0.0 or get_tree() == null:
+		call_deferred("_finish_death_despawn")
+		return
+	get_tree().create_timer(despawn_after_death).timeout.connect(_finish_death_despawn, CONNECT_ONE_SHOT)
+
+
+func _finish_death_despawn() -> void:
+	if not is_dead:
+		return
+	visible = false
+	if is_inside_tree():
+		queue_free()
 
 
 # ----- ISaveable ---------------------------------------------------------------
@@ -116,5 +183,7 @@ func load_save_data(data: Dictionary) -> void:
 	if floats.get(key + "_dead", 0.0) >= 0.5:
 		is_dead = true
 		visible = false
+		_disable_combat_collisions()
 		set_physics_process(false)
 		set_process(false)
+		call_deferred("queue_free")

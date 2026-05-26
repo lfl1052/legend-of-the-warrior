@@ -33,13 +33,7 @@ func logic_update(delta: float) -> void:
 	var pc: PhysicsCheck = current_enemy.physics_check
 	# 撞墙或没地面时转向
 	if pc != null:
-		var should_turn := false
-		if _direction < 0 and pc.touch_left:
-			should_turn = true
-		elif _direction > 0 and pc.touch_right:
-			should_turn = true
-		if not pc.is_ground:
-			should_turn = true
+		var should_turn := pc.should_turn_for_patrol(_direction)
 		if should_turn:
 			_direction = -_direction
 			_wait_timer = 0.4

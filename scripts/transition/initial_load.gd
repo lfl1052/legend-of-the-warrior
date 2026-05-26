@@ -18,4 +18,5 @@ func _ready() -> void:
 	if persistent_scene == null:
 		push_warning("InitialLoad: persistent_scene 未配置")
 		return
-	GameEvents.raise_scene_load_requested(persistent_scene, spawn_position, fade_screen)
+	var target_position := Vector3(spawn_position.x, spawn_position.y, 0.0)
+	GameEvents.raise_scene_load_requested(persistent_scene, target_position, fade_screen)

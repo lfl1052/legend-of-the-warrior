@@ -75,6 +75,8 @@ func _refresh_continue_state() -> void:
 
 func _select_default_button() -> void:
 	await get_tree().process_frame
+	if not is_inside_tree():
+		return
 	var target: Button = null
 	if _continue_button != null and not _continue_button.disabled:
 		target = _continue_button
@@ -82,5 +84,5 @@ func _select_default_button() -> void:
 		target = _new_game_button
 	elif _exit_button != null:
 		target = _exit_button
-	if target != null:
+	if target != null and target.is_inside_tree():
 		target.grab_focus()

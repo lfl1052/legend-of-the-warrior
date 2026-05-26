@@ -28,14 +28,21 @@ func test_game_events_has_flow_signals() -> void:
 	assert_bool(_events.has_signal("game_over")).is_true()
 	assert_bool(_events.has_signal("after_scene_loaded")).is_true()
 	assert_bool(_events.has_signal("camera_shake")).is_true()
+	assert_bool(_events.has_signal("camera_shake_requested")).is_true()
 	assert_bool(_events.has_signal("pause_toggled")).is_true()
 
 
 func test_game_events_has_audio_signals() -> void:
 	assert_bool(_events.has_signal("play_bgm")).is_true()
+	assert_bool(_events.has_signal("play_bgm_id")).is_true()
 	assert_bool(_events.has_signal("play_fx")).is_true()
+	assert_bool(_events.has_signal("play_sfx")).is_true()
 	assert_bool(_events.has_signal("volume_changed")).is_true()
 	assert_bool(_events.has_signal("volume_synced")).is_true()
+
+
+func test_game_events_has_combat_feedback_signal() -> void:
+	assert_bool(_events.has_signal("combat_hit_feedback_requested")).is_true()
 
 
 func test_game_events_has_character_signals() -> void:
@@ -87,3 +94,23 @@ func test_raise_volume_changed_emits_with_amount() -> void:
 	# Assert
 	assert_float(state["value"]).is_equal(0.75)
 	_events.volume_changed.disconnect(on_received)
+
+
+func test_raise_combat_hit_feedback_emits_payload() -> void:
+	var state := {
+		"strength": 0.0,
+		"hitstop": 0.0,
+		"position": Vector2.ZERO,
+	}
+	var on_received := func(strength: float, hitstop: float, world_pos: Vector2) -> void:
+		state["strength"] = strength
+		state["hitstop"] = hitstop
+		state["position"] = world_pos
+	_events.combat_hit_feedback_requested.connect(on_received)
+
+	_events.raise_combat_hit_feedback(1.5, 0.04, Vector2(10.0, 20.0))
+
+	assert_float(state["strength"]).is_equal(1.5)
+	assert_float(state["hitstop"]).is_equal(0.04)
+	assert_vector(state["position"]).is_equal(Vector2(10.0, 20.0))
+	_events.combat_hit_feedback_requested.disconnect(on_received)

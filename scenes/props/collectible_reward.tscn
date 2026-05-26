@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://duiok15stal8x"]
+
+[ext_resource type="Script" path="res://scripts/general/collectible_reward.gd" id="1_collectible"]
+[ext_resource type="Script" path="res://scripts/utilities/data_definition.gd" id="2_data"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_collectible"]
+radius = 14.0
+
+[node name="CollectibleReward" type="Area2D" groups=["collectible"]]
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("1_collectible")
+
+[node name="DataDefinition" type="Node" parent="."]
+script = ExtResource("2_data")
+id = "collectible_unassigned"
+
+[node name="Icon" type="Polygon2D" parent="."]
+color = Color(1, 0.82, 0.18, 1)
+polygon = PackedVector2Array(0, -15, 11, 0, 0, 15, -11, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_collectible")

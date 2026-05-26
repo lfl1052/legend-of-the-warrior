@@ -74,5 +74,5 @@ func test_attack_target_exit_clears_cooldown() -> void:
 class TestTarget extends Node2D:
 	var hit_count: int = 0
 
-	func take_damage(_attacker: Node) -> void:
+	func take_damage(_attacker: Node, _amount: float = 1.0) -> void:
 		hit_count += 1

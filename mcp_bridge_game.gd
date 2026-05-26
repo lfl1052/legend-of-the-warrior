@@ -10,15 +10,20 @@ var _deferred_release: Vector2 = Vector2.ZERO
 
 
 func _ready() -> void:
+	if _is_headless_session():
+		set_process(false)
+		return
+
 	var config := ConfigFile.new()
 	if config.load("res://mcp_ports.cfg") == OK:
 		port = config.get_value("mcp", "game_port", DEFAULT_PORT)
 	tcp_server = TCPServer.new()
 	var err := tcp_server.listen(port, "127.0.0.1")
 	if err != OK:
-		push_error("MCP Bridge Game: Failed to listen on port %d (error %d)" % [port, err])
-	else:
-		print("MCP Bridge Game: Listening on 127.0.0.1:%d" % port)
+		push_warning("MCP Bridge Game: port %d unavailable (error %d); runtime bridge disabled." % [port, err])
+		set_process(false)
+		return
+	print("MCP Bridge Game: Listening on 127.0.0.1:%d" % port)
 	RenderingServer.frame_post_draw.connect(_on_frame_post_draw)
 
 
@@ -150,3 +155,10 @@ func _serialize_node(node: Node) -> Dictionary:
 func _send_response(client: StreamPeerTCP, response: Dictionary) -> void:
 	var json_str := JSON.stringify(response)
 	client.put_data((json_str + "\n").to_utf8_buffer())
+
+
+func _is_headless_session() -> bool:
+	if DisplayServer.get_name() == "headless":
+		return true
+	var args := OS.get_cmdline_args()
+	return args.has("--headless") or (args.has("--display-driver") and args.has("headless"))

@@ -27,12 +27,31 @@ const SLIDE_SPEED := 540.0
 const SLIDE_DURATION := 0.42
 const COMBO_RESET := 0.55
 const HURT_KNOCKBACK := 220.0
+const WALL_SLIDE_MAX_SPEED := 140.0
+const ATTACK_STARTUP_TIMES := [0.0, 0.06, 0.05, 0.08]
+const ATTACK_ACTIVE_TIMES := [0.0, 0.16, 0.14, 0.20]
+const SPRITE_ANIMATION_FRAMES := {
+	"idle": [0, 1, 2, 3, 4, 5],
+	"attack1": [8, 9, 10, 11, 12, 13],
+	"attack2": [8, 9, 10, 14, 15],
+	"attack3": [8, 9, 10, 11, 12, 13, 14, 15],
+	"run": [16, 17, 18, 19, 20, 21, 22, 23],
+	"walk": [16, 17, 18, 19, 20, 21, 22, 23],
+	"jump": [24, 25, 26, 27],
+	"fall": [28, 29],
+	"wall": [27],
+	"hurt": [40, 41, 42, 43],
+	"dead": [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59],
+	"slide": [72, 73, 74],
+}
 
 @export var sprite_path: NodePath = ^"Sprite"
 @export var animation_player_path: NodePath = ^"AnimationPlayer"
 @export var character_path: NodePath = ^"Character"
 @export var physics_check_path: NodePath = ^"PhysicsCheck"
 @export var attack_root_path: NodePath = ^"AttackPivot"
+@export var attack_area_path: NodePath = ^"AttackPivot/Attack"
+@export var attack_hitbox_path: NodePath = ^"AttackPivot/Attack/CollisionShape2D"
 @export var heal_skill_path: NodePath = ^"HealSkill"
 @export var slash_skill_path: NodePath = ^"SkillSlash"
 
@@ -41,6 +60,8 @@ const HURT_KNOCKBACK := 220.0
 @export var jump_velocity: float = JUMP_VELOCITY
 @export var slide_speed: float = SLIDE_SPEED
 @export var slide_duration: float = SLIDE_DURATION
+@export var slide_cooldown: float = 0.6
+@export var hide_body_after_death: float = 1.2
 
 var input_enabled: bool = true
 var is_dead: bool = false
@@ -55,30 +76,43 @@ var combo_index: int = 0
 var ai_move_x: float = 0.0
 var ai_jump: bool = false
 var ai_attack: bool = false
+var ai_slide: bool = false
 var ai_active: bool = false
 
 var _facing: int = 1
 var _slide_timer: float = 0.0
+var _slide_cooldown_timer: float = 0.0
 var _combo_timer: float = 0.0
+var _attack_startup_timer: float = 0.0
+var _attack_active_timer: float = 0.0
+var _attack_window_active: bool = false
 var _normal_layer: int = 0
 var _normal_mask: int = 0
+var _sprite_base_modulate: Color = Color.WHITE
+var _death_hide_scheduled: bool = false
 
 @onready var _sprite: Node2D = get_node_or_null(sprite_path)
 @onready var _anim: AnimationPlayer = get_node_or_null(animation_player_path)
 @onready var _character: Character = get_node_or_null(character_path)
 @onready var _physics_check: PhysicsCheck = get_node_or_null(physics_check_path)
 @onready var _attack_root: Node2D = get_node_or_null(attack_root_path)
+@onready var _attack_area := get_node_or_null(attack_area_path)
+@onready var _attack_hitbox := get_node_or_null(attack_hitbox_path)
 @onready var _heal_skill: Node = get_node_or_null(heal_skill_path)
 @onready var _slash_skill: Node = get_node_or_null(slash_skill_path)
 
 
 func _ready() -> void:
 	add_to_group(&"player")
+	add_to_group(&"damageable")
 	_normal_layer = collision_layer
 	_normal_mask = collision_mask
+	if _sprite is CanvasItem:
+		_sprite_base_modulate = (_sprite as CanvasItem).modulate
 	if _character != null:
 		_character.died.connect(_on_died)
 		_character.took_damage.connect(_on_took_damage)
+	_set_attack_hitbox_active(false)
 	GameEvents.new_game_started.connect(prepare_for_new_game_session)
 	DataManager.register(self)
 
@@ -87,11 +121,17 @@ func _exit_tree() -> void:
 	DataManager.unregister(self)
 
 
+func _process(delta: float) -> void:
+	_tick_attack_hitbox(delta)
+	_update_sprite_frame()
+
+
 # ---------------------------------------------------------------------------
 # 主物理循环
 # ---------------------------------------------------------------------------
 
 func _physics_process(delta: float) -> void:
+	_tick_dash_cooldown(delta)
 	if is_dead:
 		velocity.x = 0.0
 		velocity.y += _gravity() * delta
@@ -114,25 +154,28 @@ func _physics_process(delta: float) -> void:
 		velocity.y += _gravity() * delta
 
 	# 蹬墙跳判定
-	var grabbing_wall := not on_floor and (_physics_check != null) \
-			and (_physics_check.touch_left or _physics_check.touch_right)
+	var grabbing_wall := not on_floor and (_physics_check != null) and (_physics_check.touch_left or _physics_check.touch_right)
 	is_on_wall_grab = grabbing_wall
+	if grabbing_wall and velocity.y > WALL_SLIDE_MAX_SPEED:
+		velocity.y = WALL_SLIDE_MAX_SPEED
 
 	# 跳跃
 	if _read_jump_pressed():
 		if on_floor:
 			velocity.y = jump_velocity
+			GameEvents.raise_play_sfx(&"jump", global_position)
 		elif grabbing_wall:
 			velocity.y = WALL_JUMP_Y
 			velocity.x = WALL_JUMP_X * (1 if _physics_check.touch_left else -1)
 			_facing = sign(velocity.x)
+			GameEvents.raise_play_sfx(&"jump", global_position)
 
 	# 攻击
 	if _read_attack_pressed() and not is_hurt and not is_attacking:
 		_begin_attack()
 
 	# 滑铲
-	if Input.is_action_just_pressed(&"slide") and on_floor and not is_attacking and not is_hurt:
+	if _read_slide_pressed() and on_floor and not is_attacking and not is_hurt and can_dash():
 		_begin_slide(move_dir)
 
 	# 治疗
@@ -199,10 +242,22 @@ func _read_attack_pressed() -> bool:
 	return Input.is_action_just_pressed(&"attack")
 
 
+func _read_slide_pressed() -> bool:
+	if not input_enabled:
+		return false
+	if ai_active and ai_slide:
+		ai_slide = false
+		return true
+	return Input.is_action_just_pressed(&"slide")
+
+
 func set_gameplay_input_active(active: bool) -> void:
 	input_enabled = active
 	if not active:
 		velocity = Vector2.ZERO
+		is_attacking = false
+		is_sliding = false
+		_set_attack_hitbox_active(false)
 
 
 # ---------------------------------------------------------------------------
@@ -213,6 +268,15 @@ func _begin_attack() -> void:
 	combo_index = (combo_index % 3) + 1
 	_combo_timer = COMBO_RESET
 	is_attacking = true
+	_attack_startup_timer = float(ATTACK_STARTUP_TIMES[combo_index])
+	_attack_active_timer = float(ATTACK_ACTIVE_TIMES[combo_index])
+	_attack_window_active = false
+	_set_attack_hitbox_active(false)
+	if _attack_area != null:
+		var attack := _attack_area as Attack
+		if attack != null:
+			attack.damage = combo_index
+			attack.reset_hits()
 	if _anim != null:
 		var anim_name := "attack%d" % combo_index
 		if _anim.has_animation(anim_name):
@@ -225,10 +289,65 @@ func _begin_attack() -> void:
 
 func on_attack_animation_finished() -> void:
 	is_attacking = false
+	_attack_startup_timer = 0.0
+	_attack_active_timer = 0.0
+	_attack_window_active = false
+	_set_attack_hitbox_active(false)
 
 
 func on_hurt_animation_finished() -> void:
 	is_hurt = false
+	_reset_sprite_modulate()
+
+
+func take_damage(by: Node, amount: float = 1.0) -> void:
+	if _character == null:
+		return
+	_character.take_damage(by, amount)
+
+
+func _tick_attack_hitbox(delta: float) -> void:
+	if not is_attacking:
+		if _attack_window_active:
+			_attack_window_active = false
+			_set_attack_hitbox_active(false)
+		return
+
+	if _attack_startup_timer > 0.0:
+		_attack_startup_timer = maxf(0.0, _attack_startup_timer - delta)
+		if _attack_startup_timer > 0.0:
+			return
+
+	if not _attack_window_active and _attack_active_timer > 0.0:
+		_attack_window_active = true
+		_set_attack_hitbox_active(true)
+
+	if _attack_active_timer > 0.0:
+		_attack_active_timer = maxf(0.0, _attack_active_timer - delta)
+		if _attack_active_timer <= 0.0:
+			_attack_window_active = false
+			_set_attack_hitbox_active(false)
+
+
+func _set_attack_hitbox_active(active: bool) -> void:
+	if _attack_area != null:
+		var attack := _attack_area as Attack
+		if attack != null:
+			attack.set_active(active)
+	elif _attack_hitbox != null:
+		var hitbox := _attack_hitbox as CollisionShape2D
+		if hitbox != null:
+			hitbox.set_deferred("disabled", not active)
+
+
+func _flash_sprite(color: Color) -> void:
+	if _sprite is CanvasItem:
+		(_sprite as CanvasItem).modulate = color
+
+
+func _reset_sprite_modulate() -> void:
+	if _sprite is CanvasItem:
+		(_sprite as CanvasItem).modulate = _sprite_base_modulate
 
 
 func _on_took_damage(attacker: Node) -> void:
@@ -237,7 +356,13 @@ func _on_took_damage(attacker: Node) -> void:
 	is_hurt = true
 	is_attacking = false
 	is_sliding = false
+	combo_index = 0
+	_attack_startup_timer = 0.0
+	_attack_active_timer = 0.0
+	_attack_window_active = false
+	_set_attack_hitbox_active(false)
 	_restore_normal_collision()
+	_flash_sprite(Color(1.0, 0.55, 0.55, 1.0))
 	if attacker is Node2D:
 		var node2d := attacker as Node2D
 		var dir := signf(global_position.x - node2d.global_position.x)
@@ -253,10 +378,17 @@ func _on_died() -> void:
 	is_attacking = false
 	is_sliding = false
 	is_hurt = false
+	input_enabled = false
+	_set_attack_hitbox_active(false)
+	_restore_normal_collision()
+	_set_body_collision_enabled(false)
+	_disable_interaction_probe(true)
+	_reset_sprite_modulate()
 	velocity = Vector2.ZERO
 	if _anim != null and _anim.has_animation("dead"):
 		_anim.play("dead")
 	GameEvents.raise_game_over()
+	_schedule_death_hide()
 
 
 func revive_at(pos: Vector2) -> void:
@@ -264,6 +396,14 @@ func revive_at(pos: Vector2) -> void:
 	is_hurt = false
 	is_attacking = false
 	is_sliding = false
+	_death_hide_scheduled = false
+	visible = true
+	input_enabled = true
+	_set_attack_hitbox_active(false)
+	_restore_normal_collision()
+	_set_body_collision_enabled(true)
+	_disable_interaction_probe(false)
+	_reset_sprite_modulate()
 	global_position = pos
 	if _character != null:
 		_character.reset_to_full()
@@ -275,6 +415,15 @@ func prepare_for_new_game_session() -> void:
 	is_hurt = false
 	is_attacking = false
 	is_sliding = false
+	_death_hide_scheduled = false
+	visible = true
+	input_enabled = true
+	_slide_cooldown_timer = 0.0
+	_set_attack_hitbox_active(false)
+	_restore_normal_collision()
+	_set_body_collision_enabled(true)
+	_disable_interaction_probe(false)
+	_reset_sprite_modulate()
 	if _character != null:
 		_character.reset_to_full()
 
@@ -286,12 +435,16 @@ func prepare_for_new_game_session() -> void:
 func _begin_slide(move_dir: float) -> void:
 	is_sliding = true
 	_slide_timer = slide_duration
+	_slide_cooldown_timer = slide_cooldown
 	if move_dir != 0.0:
 		_facing = int(sign(move_dir))
 	velocity.x = _facing * slide_speed
-	# 切换到 "Enemy" 物理层等价做法：临时清掉与敌方攻击层的碰撞 mask
-	collision_mask &= ~(1 << 4)        # PlayerAttack 层（仅示意）
-	collision_mask &= ~(1 << 6)        # Hazard 层（按项目自调整）
+	# Temporarily ignore enemy attack / hazard layers during the early slide frames.
+	collision_mask &= ~(1 << 4)
+	collision_mask &= ~(1 << 6)
+	if _character != null:
+		_character.set_invulnerable_for(slide_duration * 0.6)
+	GameEvents.raise_play_sfx(&"jump", global_position)
 	if _anim != null and _anim.has_animation("slide"):
 		_anim.play("slide")
 
@@ -307,9 +460,52 @@ func _tick_slide(delta: float) -> void:
 		_restore_normal_collision()
 
 
+func can_dash() -> bool:
+	return _slide_cooldown_timer <= 0.0
+
+
+func _tick_dash_cooldown(delta: float) -> void:
+	_slide_cooldown_timer = maxf(0.0, _slide_cooldown_timer - delta)
+
+
 func _restore_normal_collision() -> void:
 	collision_layer = _normal_layer
 	collision_mask = _normal_mask
+
+
+func _disable_interaction_probe(disabled: bool) -> void:
+	var sign := get_node_or_null(^"Sign") as Area2D
+	if sign == null:
+		return
+	sign.monitoring = not disabled
+	sign.monitorable = false
+
+
+func _set_body_collision_enabled(enabled: bool) -> void:
+	if enabled:
+		collision_layer = _normal_layer
+		collision_mask = _normal_mask
+	else:
+		collision_layer = 0
+		collision_mask = 0
+	var body_shape := get_node_or_null(^"CollisionShape2D") as CollisionShape2D
+	if body_shape != null:
+		body_shape.set_deferred("disabled", not enabled)
+
+
+func _schedule_death_hide() -> void:
+	if _death_hide_scheduled:
+		return
+	_death_hide_scheduled = true
+	if hide_body_after_death <= 0.0 or get_tree() == null:
+		call_deferred("_hide_dead_body")
+		return
+	get_tree().create_timer(hide_body_after_death).timeout.connect(_hide_dead_body, CONNECT_ONE_SHOT)
+
+
+func _hide_dead_body() -> void:
+	if is_dead:
+		visible = false
 
 
 # ---------------------------------------------------------------------------
@@ -334,6 +530,31 @@ func _play_if_present(anim_name: String) -> void:
 		_anim.play(anim_name)
 
 
+func _update_sprite_frame() -> void:
+	var sprite := _sprite as Sprite2D
+	if sprite == null:
+		return
+
+	var anim_name := "idle"
+	if _anim != null and not String(_anim.current_animation).is_empty():
+		anim_name = String(_anim.current_animation)
+
+	var frames: Array = SPRITE_ANIMATION_FRAMES.get(anim_name, SPRITE_ANIMATION_FRAMES["idle"])
+	if frames.is_empty():
+		return
+
+	var frame_index := 0
+	if _anim != null and _anim.has_animation(anim_name):
+		var anim := _anim.get_animation(anim_name)
+		var anim_length := maxf(anim.length, 0.001)
+		var anim_position := clampf(_anim.current_animation_position, 0.0, anim_length)
+		frame_index = mini(int(floor(anim_position / anim_length * frames.size())), frames.size() - 1)
+		if anim.loop_mode != Animation.LOOP_NONE:
+			frame_index %= frames.size()
+
+	sprite.frame = int(frames[frame_index])
+
+
 func _gravity() -> float:
 	return float(ProjectSettings.get_setting("physics/2d/default_gravity", 2000.0))
 
@@ -347,6 +568,7 @@ func enable_automation(enable: bool) -> void:
 	ai_move_x = 0.0
 	ai_jump = false
 	ai_attack = false
+	ai_slide = false
 
 
 func automation_move(value: float) -> void:
@@ -359,6 +581,10 @@ func automation_jump() -> void:
 
 func automation_attack() -> void:
 	ai_attack = true
+
+
+func automation_slide() -> void:
+	ai_slide = true
 
 
 # ---------------------------------------------------------------------------

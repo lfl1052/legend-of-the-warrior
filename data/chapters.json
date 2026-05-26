@@ -8,7 +8,7 @@
   {
     "id": "chapter_1",
     "display_name_key": "ui.chapter.one",
-    "scene_ids": ["level_demo"],
+    "scene_ids": ["level_demo", "level_2"],
     "unlock_requirement": ""
   }
 ]

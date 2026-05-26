@@ -1,3 +1,4 @@
+class_name PlayerProgression
 extends Node
 ## 玩家进阶（替代 Unity 项目里的 PlayerProgression）
 ##
@@ -11,6 +12,7 @@ extends Node
 
 signal tokens_changed
 signal unlock_changed(slot: StringName)
+signal progression_changed(progression: PlayerProgression)
 
 @export var save_id: String = "player_progression"
 
@@ -24,6 +26,7 @@ var _config: PlayerProgressionResource
 
 
 func _ready() -> void:
+	add_to_group(&"player_progression")
 	_config = PlayerProgressionResource.from_dict(RuntimeData.get_player_progression())
 	GameEvents.reward_notification.connect(_on_reward_notification)
 	GameEvents.new_game_started.connect(_on_new_game)
@@ -32,6 +35,7 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
+	remove_from_group(&"player_progression")
 	DataManager.unregister(self)
 
 
@@ -44,6 +48,7 @@ func try_apply_chest_rewards(chest_id: String, table_id: StringName) -> void:
 	var table := RuntimeData.try_get_loot_table(table_id)
 	for entry in table.get("entries", []):
 		_apply_reward(StringName(entry.get("reward_id", "")), entry)
+	_emit_progression_changed()
 
 
 func has_unlock_slot(slot: StringName) -> bool:
@@ -55,11 +60,41 @@ func unlock_slot(slot: StringName) -> void:
 		return
 	unlocked_slots[slot] = true
 	unlock_changed.emit(slot)
+	_emit_progression_changed()
+
+
+func is_future_unlock_slot_ready(slot_id: String) -> bool:
+	return has_unlock_slot(StringName(slot_id))
+
+
+func get_future_unlock_slot_count() -> int:
+	return _config.future_unlock_slots.size() if _config != null else 0
+
+
+func get_ready_future_unlock_slot_count() -> int:
+	if _config == null:
+		return 0
+	var ready_count := 0
+	for slot in _config.future_unlock_slots:
+		if unlocked_slots.has(slot):
+			ready_count += 1
+	return ready_count
+
+
+func get_next_future_unlock_slot_id() -> String:
+	if _config == null:
+		return ""
+	for slot in _config.future_unlock_slots:
+		if not unlocked_slots.has(slot):
+			return String(slot)
+	return ""
 
 
 # ----- 事件 --------------------------------------------------------------------
 
 func _on_reward_notification(reward_id: StringName, payload: Dictionary) -> void:
+	if bool(payload.get("_progression_applied", false)):
+		return
 	_apply_reward(reward_id, payload)
 
 
@@ -71,6 +106,7 @@ func _on_new_game() -> void:
 	unlocked_slots.clear()
 	_apply_future_unlock_slots()
 	tokens_changed.emit()
+	_emit_progression_changed()
 
 
 # ----- 内部 --------------------------------------------------------------------
@@ -95,6 +131,7 @@ func _apply_reward(reward_id: StringName, payload: Dictionary) -> void:
 				unlock_slot(slot)
 			return
 	tokens_changed.emit()
+	_emit_progression_changed()
 
 
 func _refill_player_resource(kind: String) -> void:
@@ -120,6 +157,10 @@ func _apply_future_unlock_slots() -> void:
 		return
 	for slot in _config.future_unlock_slots:
 		unlocked_slots[slot] = true
+
+
+func _emit_progression_changed() -> void:
+	progression_changed.emit(self)
 
 
 # ----- ISaveable ---------------------------------------------------------------
@@ -152,3 +193,4 @@ func load_save_data(data: Dictionary) -> void:
 		elif key_str.begins_with(save_id + "_slot_"):
 			unlocked_slots[StringName(key_str.substr((save_id + "_slot_").length()))] = true
 	tokens_changed.emit()
+	_emit_progression_changed()

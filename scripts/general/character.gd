@@ -55,6 +55,11 @@ func take_damage(attacker: Node, amount: float = 1.0) -> void:
 
 	took_damage.emit(attacker)
 	GameEvents.raise_character_took_damage(self, attacker)
+	var parent := get_parent()
+	var pos := Vector2.ZERO
+	if parent is Node2D:
+		pos = (parent as Node2D).global_position
+	GameEvents.raise_play_sfx(&"hurt", pos)
 	health_changed.emit()
 	GameEvents.raise_character_health_changed(self)
 
@@ -85,6 +90,11 @@ func reset_to_full() -> void:
 	_invulnerable_timer = 0.0
 	health_changed.emit()
 	GameEvents.raise_character_health_changed(self)
+
+
+func set_invulnerable_for(duration: float) -> void:
+	_invulnerable_timer = maxf(0.0, duration)
+	is_invulnerable = _invulnerable_timer > 0.0
 
 
 func is_dead() -> bool:

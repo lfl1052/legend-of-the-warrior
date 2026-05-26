@@ -1,0 +1,103 @@
+[gd_scene load_steps=13 format=3 uid="uid://c6bossenemy001"]
+
+[ext_resource type="Script" path="res://scripts/enemy/boss_enemy.gd" id="1_boss"]
+[ext_resource type="Script" path="res://scripts/general/character.gd" id="2_character"]
+[ext_resource type="Script" path="res://scripts/general/physics_check.gd" id="3_physics"]
+[ext_resource type="Script" path="res://scripts/general/attack.gd" id="4_attack"]
+[ext_resource type="Texture2D" path="res://art/imported/Generic-Character/png/red/char_red_1.png" id="5_sprite"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_body"]
+radius = 16.0
+height = 52.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_skill"]
+radius = 72.0
+
+[sub_resource type="Animation" id="Animation_idle"]
+resource_name = "idle"
+length = 0.5
+loop_mode = 1
+
+[sub_resource type="Animation" id="Animation_chase"]
+resource_name = "chase"
+length = 0.35
+loop_mode = 1
+
+[sub_resource type="Animation" id="Animation_skill_windup"]
+resource_name = "skill_windup"
+length = 0.45
+
+[sub_resource type="Animation" id="Animation_skill_active"]
+resource_name = "skill_active"
+length = 0.18
+
+[sub_resource type="Animation" id="Animation_skill_recovery"]
+resource_name = "skill_recovery"
+length = 0.5
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_boss"]
+_data = {
+"chase": SubResource("Animation_chase"),
+"idle": SubResource("Animation_idle"),
+"skill_active": SubResource("Animation_skill_active"),
+"skill_recovery": SubResource("Animation_skill_recovery"),
+"skill_windup": SubResource("Animation_skill_windup")
+}
+
+[node name="BossEnemy" type="CharacterBody2D" groups=["enemy"]]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_boss")
+normal_speed = 45.0
+chase_speed = 95.0
+lost_time = 3.0
+check_distance = 260.0
+skill_cooldown = 1.4
+skill_trigger_range = 180.0
+skill_windup_duration = 0.16
+skill_active_duration = 0.1
+skill_recovery_duration = 0.16
+display_name_key = &"enemy.boss.test"
+
+[node name="Visual" type="Node2D" parent="."]
+scale = Vector2(1.35, 1.35)
+
+[node name="Sprite2D" type="Sprite2D" parent="Visual"]
+texture = ExtResource("5_sprite")
+hframes = 8
+vframes = 11
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_boss")
+}
+autoplay = "idle"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_body")
+
+[node name="PhysicsCheck" type="Node2D" parent="."]
+script = ExtResource("3_physics")
+ground_layer = 1
+wall_layer = 1
+check_radius = 8.0
+
+[node name="Character" type="Node" parent="."]
+script = ExtResource("2_character")
+max_health = 24.0
+max_power = 100.0
+invulnerable_duration = 0.25
+
+[node name="SkillAttack" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 2
+monitorable = false
+script = ExtResource("4_attack")
+damage = 2
+attack_rate = 0.8
+active_on_ready = false
+attacker_path = NodePath("..")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SkillAttack"]
+shape = SubResource("CircleShape2D_skill")
+disabled = true

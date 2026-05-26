@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="GameSceneResource" format=3 uid="uid://c6reslevel2001"]
+
+[ext_resource type="Script" path="res://scripts/resources/game_scene_resource.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+scene_path = "res://scenes/levels/level_2.tscn"
+display_name = "level-2"
+scene_type = 0

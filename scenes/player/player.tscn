@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://b1plyrwarrior"]
+[gd_scene load_steps=21 format=3 uid="uid://b1plyrwarrior"]
 
 [ext_resource type="Script" path="res://scripts/player/player_controller.gd" id="1_player"]
 [ext_resource type="Script" path="res://scripts/general/character.gd" id="2_character"]
@@ -7,6 +7,8 @@
 [ext_resource type="Script" path="res://scripts/player/player_heal_skill.gd" id="5_heal"]
 [ext_resource type="Script" path="res://scripts/player/player_skill_slash.gd" id="6_slash"]
 [ext_resource type="Texture2D" uid="uid://c0jdsy6rvu02o" path="res://art/imported/Generic-Character/png/blue/char_blue_1.png" id="7_sprite"]
+[ext_resource type="Script" path="res://scripts/player/sign.gd" id="8_sign"]
+[ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/HUD/GameButtons.png" id="9_buttons"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_body"]
 radius = 12.0
@@ -14,6 +16,9 @@ height = 40.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_attack"]
 size = Vector2(56, 40)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_sign"]
+radius = 42.0
 
 [sub_resource type="Animation" id="Animation_idle"]
 resource_name = "idle"
@@ -45,7 +50,7 @@ length = 0.3
 tracks/0/type = "method"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("..")
+tracks/0/path = NodePath(".")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -63,7 +68,7 @@ length = 0.32
 tracks/0/type = "method"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("..")
+tracks/0/path = NodePath(".")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -81,7 +86,7 @@ length = 0.4
 tracks/0/type = "method"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("..")
+tracks/0/path = NodePath(".")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -99,7 +104,7 @@ length = 0.3
 tracks/0/type = "method"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("..")
+tracks/0/path = NodePath(".")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -146,7 +151,10 @@ collision_mask = 209
 script = ExtResource("1_player")
 
 [node name="Sprite" type="Sprite2D" parent="."]
+position = Vector2(0, -8)
 texture = ExtResource("7_sprite")
+hframes = 8
+vframes = 11
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
@@ -161,6 +169,7 @@ shape = SubResource("CapsuleShape2D_body")
 script = ExtResource("3_physics")
 ground_layer = 129
 wall_layer = 1
+check_radius = 6.0
 
 [node name="Character" type="Node" parent="."]
 script = ExtResource("2_character")
@@ -176,13 +185,35 @@ monitorable = false
 script = ExtResource("4_attack")
 damage = 1
 per_target_one_hit = true
+active_on_ready = false
+attacker_path = NodePath("../..")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackPivot/Attack"]
 position = Vector2(40, 0)
 shape = SubResource("RectangleShape2D_attack")
+disabled = true
 
 [node name="HealSkill" type="Node" parent="."]
 script = ExtResource("5_heal")
 
 [node name="SkillSlash" type="Node" parent="."]
 script = ExtResource("6_slash")
+
+[node name="Sign" type="Area2D" parent="."]
+position = Vector2(0, -12)
+collision_layer = 0
+collision_mask = 32
+script = ExtResource("8_sign")
+player_controller_path = NodePath("..")
+player_visual_path = NodePath("../Sprite")
+sign_sprite_path = NodePath("Prompt")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sign"]
+shape = SubResource("CircleShape2D_sign")
+
+[node name="Prompt" type="Sprite2D" parent="Sign"]
+visible = false
+position = Vector2(0, -48)
+texture = ExtResource("9_buttons")
+region_enabled = true
+region_rect = Rect2(96, 64, 16, 16)
