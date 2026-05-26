@@ -25,6 +25,7 @@
 | `test_character.gd` | Character 血量 / 能量 / 无敌帧 | 既有 |
 | `test_persistence_key_utility.gd` | PersistenceKeyUtility | 既有 |
 | `test_game_events.gd` | GameEvents 信号契约 | 既有 |
+| `test_scene_resource_validator.gd` | GameSceneResource 死链校验 | 4 |
 
 ### 推荐运行方式 — 编辑器内
 
