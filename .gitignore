@@ -49,7 +49,6 @@ reports/
 *.tmp
 tmp/
 gdunit4-temp/
-output/
 production/session-logs/
 smoke_out.txt
 
