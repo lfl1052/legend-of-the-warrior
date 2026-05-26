@@ -221,7 +221,7 @@ GameEvents.raise_scene_load_requested(scene_warrior_menu, Vector3.ZERO, true)
 - [x] 所有跳转入口接受 `Resource` 类型
 - [x] 存档 `scene_to_save` 字段含 path + display_name + scene_type
 - [x] 冒烟测试 `test_menu_new_game_loads_level_demo` + `test_teleport_to_menu_returns_to_main_menu` 通过
-- [ ] 加 dev-only validator 检查 `.tres.scene_path` 实际存在
+- [x] 加 dev-only validator 检查 `.tres.scene_path` 实际存在
 
 ## GDD Requirements Addressed
 

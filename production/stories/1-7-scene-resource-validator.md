@@ -1,7 +1,8 @@
 # Story 1-7 — dev-only validator: 检查 GameSceneResource.scene_path 文件存在
 
-**Status**: Ready
+**Status**: Complete
 **Last Updated**: 2026-05-21
+**Completed**: 2026-05-21
 **Sprint**: 1
 **Priority**: should-have
 **Owner**: gameplay-programmer
@@ -39,16 +40,16 @@ ADR-003《GameSceneResource(.tres) 取代裸字符串场景路径》在 Validati
 
 ## 验收标准
 
-- [ ] **AC-1 核心扫描函数**：`SceneResourceValidator.validate(scan_dir: String) -> Array[Dictionary]` 实现，扫描 `scan_dir` 下所有 `.tres`，对每个加载为 Resource 后探测 `scene_path` 字段（无该字段的 .tres 跳过），返回元素结构 `{ "tres_path": String, "scene_path": String, "scene_exists": bool, "display_name": String, "scene_type": int }`
-- [ ] **AC-2 死链检测正确**：当某条 .tres 的 `scene_path` 指向不存在文件时，对应返回项 `scene_exists == false`；当文件存在时 `scene_exists == true`
-- [ ] **AC-3 编辑器入口**：脚本带 `@tool`，可通过 EditorScript（File → New EditorScript 或 Tools 菜单触发）运行，输出格式 `[scene-validator] OK: N 个 .tres 全部命中` 或 `[scene-validator] FAIL: M / N 个 .tres 死链：\n  - res://data/foo.tres → res://scenes/missing.tscn` 到 Output 面板
-- [ ] **AC-4 单元测试覆盖**（`tests/unit/test_scene_resource_validator.gd`）：
+- [x] **AC-1 核心扫描函数**：`SceneResourceValidator.validate(scan_dir: String) -> Array[Dictionary]` 实现，扫描 `scan_dir` 下所有 `.tres`，对每个加载为 Resource 后探测 `scene_path` 字段（无该字段的 .tres 跳过），返回元素结构 `{ "tres_path": String, "scene_path": String, "scene_exists": bool, "display_name": String, "scene_type": int }`
+- [x] **AC-2 死链检测正确**：当某条 .tres 的 `scene_path` 指向不存在文件时，对应返回项 `scene_exists == false`；当文件存在时 `scene_exists == true`
+- [x] **AC-3 编辑器入口**：脚本带 `@tool`，可通过 EditorScript（File → New EditorScript 或 Tools 菜单触发）运行，输出格式 `[scene-validator] OK: N 个 .tres 全部命中` 或 `[scene-validator] FAIL: M / N 个 .tres 死链：\n  - res://data/foo.tres → res://scenes/missing.tscn` 到 Output 面板
+- [x] **AC-4 单元测试覆盖**（`tests/unit/test_scene_resource_validator.gd`）：
   - `test_scene_resource_validator_returns_entry_per_tres` — 扫描固定 fixture 目录，返回项数 == fixture 中 .tres 数
   - `test_scene_resource_validator_marks_missing_path_as_dead` — 构造一条 `scene_path = "res://__nonexistent__.tscn"` 的 .tres fixture，断言 `scene_exists == false`
   - `test_scene_resource_validator_marks_existing_path_as_alive` — 用 `data/scene_warrior_menu.tres` 真实条目，断言 `scene_exists == true`
   - `test_scene_resource_validator_skips_non_game_scene_tres` — fixture 里放一个不带 `scene_path` 字段的 .tres（如 `LootTableResource`），断言被跳过不报错
-- [ ] **AC-5 不破坏 .tres**：validator 只 `load(...)` 后读字段，不写回任何 .tres / .tscn / 项目文件
-- [ ] **AC-6 命名与风格**：单元测试遵循 `test_[system]_[scenario]_[expected_result]` 与 AAA 三段式；GDScript 静态类型强制（`: Type` / `-> ReturnType`）
+- [x] **AC-5 不破坏 .tres**：validator 只 `load(...)` 后读字段，不写回任何 .tres / .tscn / 项目文件
+- [x] **AC-6 命名与风格**：单元测试遵循 `test_[system]_[scenario]_[expected_result]` 与 AAA 三段式；GDScript 静态类型强制（`: Type` / `-> ReturnType`）
 
 ## 实现笔记
 
@@ -87,7 +88,7 @@ ADR-003《GameSceneResource(.tres) 取代裸字符串场景路径》在 Validati
 
 - **单元测试文件**：`tests/unit/test_scene_resource_validator.gd`
 - **fixture 目录**：`tests/unit/fixtures/scene_validator/`（包含 1 死链 .tres + 1 非 GameSceneResource .tres）
-- **CLI 验证**：`set GODOT_BIN=E:\Godot\Godot.exe && addons\gdUnit4\runtest.cmd --add tests/unit/test_scene_resource_validator.gd` 退出码 0，4 个用例 PASS
+- **CLI 验证**：`set GODOT_BIN=D:\lfl-work\Godot_v4.6.3-stable_win64.exe && addons\gdUnit4\runtest.cmd --add tests/unit/test_scene_resource_validator.gd` 退出码 0，4 个用例 PASS
 - **编辑器手动验证**：在编辑器里 File → Run → 选 `scripts/tools/scene_resource_validator.gd`，Output 面板看到 `[scene-validator] OK: 2 个 .tres 全部命中`
 
 ## 关联文件
@@ -98,7 +99,7 @@ ADR-003《GameSceneResource(.tres) 取代裸字符串场景路径》在 Validati
   - `tests/unit/fixtures/scene_validator/dead_link.tres`（fixture，故意死链）
   - `tests/unit/fixtures/scene_validator/non_game_scene.tres`（fixture，无 scene_path 字段）
 - **修改**：
-  - ADR-0003 Validation Criteria 末项 `[ ]` → `[x]`（story-done 阶段）
+  - ADR-0003 Validation Criteria 末项 `[ ]` → `[x]`
 - **引用代码**：
   - `scripts/resources/game_scene_resource.gd`
   - `data/scene_warrior_menu.tres` / `data/scene_level_demo.tres`
@@ -107,3 +108,10 @@ ADR-003《GameSceneResource(.tres) 取代裸字符串场景路径》在 Validati
 
 - 未来 CI / pre-commit 钩子可调用 `validate()` 返回值，非空死链列表 → 退出码非 0
 - 反向校验（孤儿 .tscn）可作为后续 nice-to-have story
+
+## Completion Notes
+
+**Completed**: 2026-05-21
+**Criteria**: 6/6 passing（无 deferred）
+**Deviations**: 无 BLOCKING；同时修复 `level_demo` 冒烟暴露的 Godot 4.6.3 编译 / runtime 兼容问题，属于进入本 story 前的验证前置。
+**Test Evidence**: `runtest.cmd --add tests/unit` Exit 0；40 用例全 PASS。`tests/e2e/smoke_test.tscn` 已通过菜单 → demo 关卡 → 存档 → 回菜单链路。
