@@ -7,7 +7,36 @@
 
 ---
 
-#### 勇者传说 #7
+## Godot 4.7 校订
+
+原教程使用的 API 在 Godot 4.7 中仍有效，但蹬墙跳逻辑应修正两个细节：
+
+- 枚举成员使用 `IDLE`，不要继续沿用 `IDEL`。
+- 起跳瞬间先保存 `get_wall_normal()`，再离开墙面；离墙后读取墙法线可能得到零向量或上一帧数据。
+- 输入锁定应发生在蹬墙跳后的最初约 `0.08`～`0.12` 秒。这段时间保持初始水平速度，只应用重力；锁定结束后再恢复空中转向。原代码在前 `0.1` 秒调用普通移动，方向正好相反。
+- 使用 `is_on_wall_only()` 和上下两条射线共同判断可滑墙，避免墙角或单个像素接触误触发。
+
+```gdscript
+const WALL_JUMP_SPEED := 380.0
+const WALL_JUMP_VELOCITY_Y := -280.0
+const WALL_JUMP_INPUT_LOCK := 0.1
+
+func begin_wall_jump() -> void:
+	var wall_normal := get_wall_normal()
+	velocity = Vector2(wall_normal.x * WALL_JUMP_SPEED, WALL_JUMP_VELOCITY_Y)
+	jump_request_timer.stop()
+
+func tick_wall_jump(delta: float) -> void:
+	if state_machine.state_time < WALL_JUMP_INPUT_LOCK:
+		velocity.y += default_gravity * delta
+		move_and_slide()
+	else:
+		move(default_gravity, delta)
+```
+
+官方参考：[CharacterBody2D.get_wall_normal](https://docs.godotengine.org/en/4.7/classes/class_characterbody2d.html#class-characterbody2d-method-get-wall-normal)、[CharacterBody2D.move_and_slide](https://docs.godotengine.org/en/4.7/classes/class_characterbody2d.html#class-characterbody2d-method-move-and-slide)。
+
+## 原教程正文（历史界面与代码）
 
 人物素材： https://brullov.itch.io/generic-char-asset
 

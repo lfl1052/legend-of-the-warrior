@@ -12,6 +12,10 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	var bus_idx := AudioServer.get_bus_index(&"Master")
+	if bus_idx >= 0:
+		AudioServer.set_bus_mute(bus_idx, false)
+		AudioServer.set_bus_volume_db(bus_idx, 0.0)
 	_manager = null
 
 
@@ -24,6 +28,22 @@ func test_audio_manager_provides_at_least_five_placeholder_sfx() -> void:
 	assert_bool(ids.has(&"chest_open")).is_true()
 	assert_bool(ids.has(&"breakable_break")).is_true()
 	assert_int(ids.size()).is_greater_equal(5)
+
+
+func test_audio_manager_starts_with_master_volume_muted() -> void:
+	var bus_idx := AudioServer.get_bus_index(&"Master")
+
+	assert_int(bus_idx).is_greater_equal(0)
+	assert_bool(AudioServer.is_bus_mute(bus_idx)).is_true()
+
+
+func test_audio_manager_positive_master_volume_unmutes_bus() -> void:
+	var bus_idx := AudioServer.get_bus_index(&"Master")
+
+	GameEvents.raise_volume_changed(0.35)
+
+	assert_bool(AudioServer.is_bus_mute(bus_idx)).is_false()
+	assert_float(db_to_linear(AudioServer.get_bus_volume_db(bus_idx))).is_equal_approx(0.35, 0.01)
 
 
 func test_audio_manager_play_sfx_id_uses_fx_volume() -> void:

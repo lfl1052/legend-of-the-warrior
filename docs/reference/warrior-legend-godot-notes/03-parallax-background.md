@@ -7,7 +7,39 @@
 
 ---
 
-勇者传说 #3
+## Godot 4.7 校订
+
+Godot 4.7 已弃用 `ParallaxBackground` 和 `ParallaxLayer`，官方推荐使用 `Parallax2D`。原教程的每个独立滚动层都应变成一个 `Parallax2D`：
+
+| 旧节点/属性 | Godot 4.7 |
+| --- | --- |
+| `ParallaxBackground` + `ParallaxLayer` | 每个滚动层一个 `Parallax2D` |
+| `ParallaxLayer.motion_scale` | `Parallax2D.scroll_scale` |
+| `ParallaxLayer.motion_mirroring` | `Parallax2D.repeat_size` |
+| `ParallaxBackground.layer` | 使用 `CanvasLayer` 或 `CanvasItem.z_index` 组织前后景 |
+
+推荐场景树：
+
+```text
+Decorations (Node2D)
+├── Sky       (Parallax2D, scroll_scale = 0.1)
+│   └── Sprite2D
+├── Hills     (Parallax2D, scroll_scale = 0.3)
+│   └── Sprite2D
+├── Trees     (Parallax2D, scroll_scale = 0.6)
+│   └── Sprite2D
+└── Foreground (Parallax2D, scroll_scale = 1.1, z_index > 0)
+    └── Sprite2D
+```
+
+- `scroll_scale = Vector2.ONE` 表示与相机同速；小于 `1` 看起来更远，大于 `1` 看起来更近。
+- 无缝循环使用 `repeat_size`。子纹理应从局部坐标 `(0, 0)` 开始覆盖重复区域，重复宽度至少覆盖视口；缩放不会自动计入 `repeat_size`。
+- 不要把接缝一概归因于引擎 Bug。常见原因包括 Region 边界采样、纹理过滤、透明边缘、重复尺寸错误，以及相机平滑与像素吸附组合。
+- 像素风优先使用 `Nearest`、整数缩放和已裁好的独立纹理。必须使用 Region 时，确保纹理重复模式和边缘留白正确。
+
+官方参考：[2D 视差教程](https://docs.godotengine.org/en/4.7/tutorials/2d/2d_parallax.html)、[Parallax2D](https://docs.godotengine.org/en/4.7/classes/class_parallax2d.html)。
+
+## 原教程正文（历史界面）
 
 ## 知识点：
 

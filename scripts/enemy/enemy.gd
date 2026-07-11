@@ -16,6 +16,8 @@ signal state_changed(new_state: int)
 @export var lost_time: float = 1.5
 @export var check_distance: float = 4.5
 @export var attack_layer_mask: int = 1 << 1            # Player 层
+@export var uses_gravity: bool = true
+@export var chase_acceleration: float = 720.0
 
 @export_node_path("PhysicsCheck") var physics_check_path: NodePath = ^"PhysicsCheck"
 
@@ -60,6 +62,8 @@ func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
 	if is_dead or is_hurt:
 		return
+	if uses_gravity and not is_on_floor():
+		velocity.y += _gravity() * delta
 	if _active_state != null:
 		_active_state.physics_update(delta)
 	move_and_slide()

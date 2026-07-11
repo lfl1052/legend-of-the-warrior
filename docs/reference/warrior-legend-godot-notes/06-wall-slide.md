@@ -7,7 +7,26 @@
 
 ---
 
-#### 勇者传说 #6
+## Godot 4.7 校订
+
+- `RayCast2D`、`get_wall_normal()` 和 `is_on_wall()` 仍可使用；平台角色更适合用 `is_on_wall_only()` 排除同时接触地面的墙角状态。
+- `get_wall_normal()` 反映最近一次 `move_and_slide()` 的碰撞结果，只应在当前物理帧移动后或确认仍贴墙时读取。
+- 通过缩放 `Graphics.scale.x` 翻转角色时，其下的射线也会一起翻转；身体 `CollisionShape2D` 应留在根节点下，避免碰撞体被镜像缩放。
+- Animation Resetter 插件不是 Godot 4.7 的必需依赖。可以直接维护 `AnimationPlayer` 的 `RESET` 动画；如安装插件，应从 4.7 的 Asset Store 检查兼容版本，不要默认使用旧教程链接的 `master` 压缩包。
+- Godot 4.7 为 `CollisionShape2D` 增加任意方向的 `one_way_collision_direction`，适合斜向单向平台；普通墙面不要启用单向碰撞。
+
+```gdscript
+func can_wall_slide() -> bool:
+	return (
+		is_on_wall_only()
+		and hand_checker.is_colliding()
+		and foot_checker.is_colliding()
+	)
+```
+
+官方参考：[CharacterBody2D.is_on_wall_only](https://docs.godotengine.org/en/4.7/classes/class_characterbody2d.html#class-characterbody2d-method-is-on-wall-only)、[CollisionShape2D](https://docs.godotengine.org/en/4.7/classes/class_collisionshape2d.html)、[Godot 4.7 发布说明](https://godotengine.org/releases/4.7/)。
+
+## 原教程正文（历史界面与代码）
 
 人物素材： https://brullov.itch.io/generic-char-asset
 

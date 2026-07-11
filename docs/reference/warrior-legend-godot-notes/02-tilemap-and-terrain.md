@@ -7,7 +7,37 @@
 
 ---
 
-## 勇者传说 #2
+## Godot 4.7 校订
+
+Godot 4.7 已弃用 `TileMap`，官方建议按用途拆成多个 `TileMapLayer`。原教程中 `TileMap.Layers` 的操作应映射为场景树中的独立节点：
+
+```text
+MapVisuals
+├── Background (TileMapLayer)
+├── Geometry   (TileMapLayer)
+└── Foreground (TileMapLayer)
+```
+
+- 三个节点可以共享同一个 `TileSet`，但各自拥有独立的可见性、`z_index`、Y Sort、碰撞和导航设置。
+- 地形集仍在 `TileSet` 中配置；地形绘制仍依赖完整的边/角组合。某个组合缺失时，自动地形无法稳定选择正确图块。
+- `Match Corners`、概率、替代图块和散布绘制仍可用。概率适合视觉变体，不应承载必需碰撞或玩法逻辑。
+- `TileMapLayer` 更新会在帧末批处理。只有代码必须在同一帧立即读取新碰撞或场景图块时，才调用 `update_internals()`。
+- Godot 4.7 的 2D Scene Paint Mode（默认快捷键 `B`）适合散布装饰、敌人和收集物；连续地面及其碰撞仍应由 `TileMapLayer` 负责。
+
+运行时连接地形的基本写法：
+
+```gdscript
+@onready var ground: TileMapLayer = $Geometry
+
+func paint_ground(cells: Array[Vector2i]) -> void:
+	const TERRAIN_SET := 0
+	const GROUND_TERRAIN := 0
+	ground.set_cells_terrain_connect(cells, TERRAIN_SET, GROUND_TERRAIN)
+```
+
+本项目的森林图块资源是 [forest_tileset.tres](../../../data/forest_tileset.tres)，关卡绘制脚本是 [level_2_forest_tile_painter.gd](../../../scripts/tools/level_2_forest_tile_painter.gd)。官方参考：[使用 TileMap](https://docs.godotengine.org/en/4.7/tutorials/2d/using_tilemaps.html)、[TileMapLayer](https://docs.godotengine.org/en/4.7/classes/class_tilemaplayer.html)。
+
+## 原教程正文（历史界面）
 
 ## 场景：
 

@@ -296,6 +296,7 @@ script = ExtResource("1_bee")
 normal_speed = 110.0
 chase_speed = 180.0
 check_distance = 160.0
+uses_gravity = false
 patrol_radius = 1.4
 patrol_half_extents = Vector2(120, 60)
 

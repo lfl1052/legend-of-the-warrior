@@ -40,6 +40,22 @@ func test_dash_cooldown_blocks_immediate_reuse() -> void:
 	assert_bool(_player.can_dash()).is_true()
 
 
+func test_player_movement_assist_windows_use_forgiving_defaults() -> void:
+	assert_float(_player.coyote_time).is_equal_approx(0.12, 0.001)
+	assert_float(_player.jump_buffer_time).is_equal_approx(0.12, 0.001)
+	assert_float(_player.wall_jump_input_lock).is_equal_approx(0.10, 0.001)
+
+
+func test_player_jump_release_reduces_upward_velocity() -> void:
+	_player.jump_velocity = -600.0
+	_player.jump_release_ratio = 0.5
+	_player.velocity.y = -520.0
+
+	_player._apply_jump_release()
+
+	assert_float(_player.velocity.y).is_equal(-300.0)
+
+
 func test_player_death_disables_body_and_interaction_then_hides() -> void:
 	var sign := Area2D.new()
 	sign.name = "Sign"

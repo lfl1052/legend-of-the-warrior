@@ -62,6 +62,13 @@ const SPRITE_ANIMATION_FRAMES := {
 @export var slide_duration: float = SLIDE_DURATION
 @export var slide_cooldown: float = 0.6
 @export var hide_body_after_death: float = 1.2
+@export var ground_acceleration: float = 2600.0
+@export var ground_deceleration: float = 3200.0
+@export var air_acceleration: float = 1800.0
+@export var coyote_time: float = 0.12
+@export var jump_buffer_time: float = 0.12
+@export var wall_jump_input_lock: float = 0.10
+@export_range(0.1, 0.9, 0.05) var jump_release_ratio: float = 0.5
 
 var input_enabled: bool = true
 var is_dead: bool = false
@@ -86,6 +93,9 @@ var _combo_timer: float = 0.0
 var _attack_startup_timer: float = 0.0
 var _attack_active_timer: float = 0.0
 var _attack_window_active: bool = false
+var _coyote_timer: float = 0.0
+var _jump_buffer_timer: float = 0.0
+var _wall_jump_lock_timer: float = 0.0
 var _normal_layer: int = 0
 var _normal_mask: int = 0
 var _sprite_base_modulate: Color = Color.WHITE
@@ -132,6 +142,7 @@ func _process(delta: float) -> void:
 
 func _physics_process(delta: float) -> void:
 	_tick_dash_cooldown(delta)
+	_tick_movement_windows(delta)
 	if is_dead:
 		velocity.x = 0.0
 		velocity.y += _gravity() * delta
@@ -148,6 +159,10 @@ func _physics_process(delta: float) -> void:
 
 	var move_dir := _read_move_input()
 	var on_floor := is_on_floor()
+	if on_floor:
+		_coyote_timer = coyote_time
+	if _read_jump_pressed():
+		_jump_buffer_timer = jump_buffer_time
 
 	# 重力
 	if not on_floor:
@@ -159,16 +174,24 @@ func _physics_process(delta: float) -> void:
 	if grabbing_wall and velocity.y > WALL_SLIDE_MAX_SPEED:
 		velocity.y = WALL_SLIDE_MAX_SPEED
 
-	# 跳跃
-	if _read_jump_pressed():
-		if on_floor:
+	# 跳跃缓冲：落地前的输入会保留到下一次可跳时刻。
+	if _jump_buffer_timer > 0.0:
+		if on_floor or _coyote_timer > 0.0:
 			velocity.y = jump_velocity
+			_coyote_timer = 0.0
+			_jump_buffer_timer = 0.0
 			GameEvents.raise_play_sfx(&"jump", global_position)
 		elif grabbing_wall:
 			velocity.y = WALL_JUMP_Y
 			velocity.x = WALL_JUMP_X * (1 if _physics_check.touch_left else -1)
 			_facing = sign(velocity.x)
+			_wall_jump_lock_timer = wall_jump_input_lock
+			_jump_buffer_timer = 0.0
 			GameEvents.raise_play_sfx(&"jump", global_position)
+
+	# 松开跳跃时截断上升速度，形成短按轻跳 / 长按高跳。
+	if _read_jump_released():
+		_apply_jump_release()
 
 	# 攻击
 	if _read_attack_pressed() and not is_hurt and not is_attacking:
@@ -192,9 +215,16 @@ func _physics_process(delta: float) -> void:
 		velocity.x = 0.0
 	elif is_hurt:
 		velocity.x = move_toward(velocity.x, 0.0, 800.0 * delta)
+	elif _wall_jump_lock_timer > 0.0:
+		# 保留离墙初速度，防止玩家尚未来得及松开方向键就被拉回墙面。
+		pass
 	else:
 		var speed := walk_speed if is_walking else run_speed
-		velocity.x = move_dir * speed
+		var target_speed := move_dir * speed
+		var acceleration := air_acceleration
+		if on_floor:
+			acceleration = ground_acceleration if not is_zero_approx(move_dir) else ground_deceleration
+		velocity.x = move_toward(velocity.x, target_speed, acceleration * delta)
 		if move_dir != 0.0:
 			_facing = int(sign(move_dir))
 
@@ -233,6 +263,12 @@ func _read_jump_pressed() -> bool:
 	return Input.is_action_just_pressed(&"jump")
 
 
+func _read_jump_released() -> bool:
+	if not input_enabled or ai_active:
+		return false
+	return Input.is_action_just_released(&"jump")
+
+
 func _read_attack_pressed() -> bool:
 	if not input_enabled:
 		return false
@@ -257,6 +293,9 @@ func set_gameplay_input_active(active: bool) -> void:
 		velocity = Vector2.ZERO
 		is_attacking = false
 		is_sliding = false
+		_coyote_timer = 0.0
+		_jump_buffer_timer = 0.0
+		_wall_jump_lock_timer = 0.0
 		_set_attack_hitbox_active(false)
 
 
@@ -399,6 +438,9 @@ func revive_at(pos: Vector2) -> void:
 	_death_hide_scheduled = false
 	visible = true
 	input_enabled = true
+	_coyote_timer = 0.0
+	_jump_buffer_timer = 0.0
+	_wall_jump_lock_timer = 0.0
 	_set_attack_hitbox_active(false)
 	_restore_normal_collision()
 	_set_body_collision_enabled(true)
@@ -419,6 +461,9 @@ func prepare_for_new_game_session() -> void:
 	visible = true
 	input_enabled = true
 	_slide_cooldown_timer = 0.0
+	_coyote_timer = 0.0
+	_jump_buffer_timer = 0.0
+	_wall_jump_lock_timer = 0.0
 	_set_attack_hitbox_active(false)
 	_restore_normal_collision()
 	_set_body_collision_enabled(true)
@@ -466,6 +511,17 @@ func can_dash() -> bool:
 
 func _tick_dash_cooldown(delta: float) -> void:
 	_slide_cooldown_timer = maxf(0.0, _slide_cooldown_timer - delta)
+
+
+func _tick_movement_windows(delta: float) -> void:
+	_coyote_timer = maxf(0.0, _coyote_timer - delta)
+	_jump_buffer_timer = maxf(0.0, _jump_buffer_timer - delta)
+	_wall_jump_lock_timer = maxf(0.0, _wall_jump_lock_timer - delta)
+
+
+func _apply_jump_release() -> void:
+	if velocity.y < jump_velocity * jump_release_ratio:
+		velocity.y = jump_velocity * jump_release_ratio
 
 
 func _restore_normal_collision() -> void:

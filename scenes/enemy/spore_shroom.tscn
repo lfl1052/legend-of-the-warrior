@@ -1,6 +1,6 @@
 [gd_scene load_steps=11 format=3]
 
-[ext_resource type="Script" path="res://scripts/enemy/boar.gd" id="1_enemy"]
+[ext_resource type="Script" path="res://scripts/enemy/spore_shroom.gd" id="1_enemy"]
 [ext_resource type="Script" path="res://scripts/general/character.gd" id="2_character"]
 [ext_resource type="Script" path="res://scripts/general/physics_check.gd" id="3_physics"]
 [ext_resource type="Script" path="res://scripts/general/attack.gd" id="4_attack"]
@@ -93,10 +93,11 @@ _data = {
 collision_layer = 4
 collision_mask = 1
 script = ExtResource("1_enemy")
-normal_speed = 26.0
-chase_speed = 54.0
+normal_speed = 20.0
+chase_speed = 46.0
 lost_time = 1.4
 check_distance = 104.0
+chase_acceleration = 320.0
 
 [node name="Visual" type="Node2D" parent="."]
 scale = Vector2(0.78, 0.78)
@@ -136,7 +137,9 @@ script = ExtResource("4_attack")
 damage = 1
 attack_rate = 1.35
 feedback_strength = 0.8
+active_on_ready = false
 attacker_path = NodePath("..")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackBox"]
 shape = SubResource("RectangleShape2D_attack")
+disabled = true

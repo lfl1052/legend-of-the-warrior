@@ -1,0 +1,34 @@
+[
+  {
+    "id": "level_demo",
+    "decoration_seed": 7,
+    "ground": {
+      "left": -80,
+      "right": 80,
+      "top_row": 32,
+      "depth": 10
+    },
+    "platforms": [
+      { "left": -48, "width": 10, "top_row": 29, "depth": 3 },
+      { "left": 24, "width": 11, "top_row": 29, "depth": 3 }
+    ]
+  },
+  {
+    "id": "level_2",
+    "decoration_seed": 23,
+    "ground": {
+      "left": -160,
+      "right": 160,
+      "top_row": 32,
+      "depth": 10
+    },
+    "platforms": [
+      { "left": -126, "width": 14, "top_row": 29, "depth": 3 },
+      { "left": -83, "width": 12, "top_row": 28, "depth": 4 },
+      { "left": -34, "width": 14, "top_row": 29, "depth": 3 },
+      { "left": 17, "width": 16, "top_row": 28, "depth": 4 },
+      { "left": 62, "width": 16, "top_row": 27, "depth": 5 },
+      { "left": 130, "width": 12, "top_row": 29, "depth": 3 }
+    ]
+  }
+]

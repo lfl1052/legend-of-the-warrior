@@ -2,6 +2,7 @@ extends Node
 
 const FX_POOL_SIZE := 8
 const MASTER_BUS := &"Master"
+const DEFAULT_MASTER_VOLUME := 0.0
 const DEFAULT_SFX_IDS := [
 	&"attack",
 	&"hurt",
@@ -51,6 +52,7 @@ func _ready() -> void:
 	GameEvents.volume_changed.connect(_on_volume_changed)
 	GameEvents.pause_toggled.connect(_on_pause_toggled)
 	GameEvents.after_scene_loaded.connect(_on_after_scene_loaded)
+	_set_master_volume(DEFAULT_MASTER_VOLUME)
 
 
 func _exit_tree() -> void:
@@ -104,12 +106,17 @@ func _on_play_sfx(sfx_id: StringName, world_pos: Vector2) -> void:
 
 
 func _on_volume_changed(amount: float) -> void:
+	_set_master_volume(amount)
+
+
+func _set_master_volume(amount: float) -> void:
 	var bus_idx := AudioServer.get_bus_index(MASTER_BUS)
 	if bus_idx < 0:
 		return
-	var clamped := clampf(amount, 0.0001, 1.0)
-	AudioServer.set_bus_volume_db(bus_idx, linear_to_db(clamped))
-	GameEvents.raise_volume_synced(amount)
+	var normalized := clampf(amount, 0.0, 1.0)
+	AudioServer.set_bus_mute(bus_idx, is_zero_approx(normalized))
+	AudioServer.set_bus_volume_db(bus_idx, linear_to_db(maxf(normalized, 0.0001)))
+	GameEvents.raise_volume_synced(normalized)
 
 
 func _on_pause_toggled() -> void:

@@ -7,7 +7,48 @@
 
 ---
 
-勇者传说 #8
+## Godot 4.7 校订
+
+- `CharacterBody2D` 场景继承、`RayCast2D` 感知和碰撞层/掩码方案仍然有效。本项目的环境层命名为 `World`，不是原教程中的 `Environment`。
+- 身体碰撞体应贴合野猪躯干和腿部主要受击区域，不要仅因素材近似圆形就固定使用圆形。攻击判定应另建 `Area2D`，与身体碰撞分离。
+- 朝向 setter 不应 `await ready`。setter 可能在资源反序列化阶段执行；先保存值，在 `_ready()` 中统一应用朝向更稳定。
+- 不要用 `direction *= -1` 修改枚举并压制类型警告，改用明确的 `turn_around()`。
+- Godot 4.7 的 2D Scene Paint Mode（默认 `B`）可快速摆放敌人场景，适合关卡初步布置；摆放后仍要逐个检查出生点、巡逻边界和碰撞体。
+
+```gdscript
+enum Direction {
+	LEFT = -1,
+	RIGHT = 1,
+}
+
+@export var direction: Direction = Direction.LEFT:
+	set(value):
+		direction = value
+		if is_node_ready():
+			_apply_direction()
+
+func _ready() -> void:
+	_apply_direction()
+
+func _apply_direction() -> void:
+	graphics.scale.x = -float(direction)
+
+func turn_around() -> void:
+	direction = Direction.RIGHT if direction == Direction.LEFT else Direction.LEFT
+```
+
+建议的碰撞职责：
+
+| 节点 | Collision Layer | Collision Mask | 用途 |
+| --- | --- | --- | --- |
+| 野猪 `CharacterBody2D` | `Enemy` | `World` | 地形移动与阻挡 |
+| `PlayerChecker` | 无 | `Player` | 发现玩家 |
+| `WallChecker` / `FloorChecker` | 无 | `World` | 墙面和悬崖检测 |
+| 敌人 `AttackBox` | `EnemyAttack` | `Player` | 独立攻击命中盒 |
+
+本项目现有敌人基类和状态逻辑位于 [enemy.gd](../../../scripts/enemy/enemy.gd) 与 [enemy_combatant.gd](../../../scripts/enemy/enemy_combatant.gd)。官方参考：[RayCast2D](https://docs.godotengine.org/en/4.7/classes/class_raycast2d.html)、[碰撞层与掩码](https://docs.godotengine.org/en/4.7/tutorials/physics/physics_introduction.html#collision-layers-and-masks)、[Godot 4.7 发布说明](https://godotengine.org/releases/4.7/)。
+
+## 原教程正文（历史界面与代码）
 
 人物素材： https://brullov.itch.io/generic-char-asset
 

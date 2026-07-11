@@ -6,7 +6,7 @@ Accepted
 
 ## Date
 
-2026-05-20
+2026-07-11
 
 ## Last Verified
 
@@ -24,10 +24,10 @@ Accepted
 
 | Field | Value |
 |-------|-------|
-| **Engine** | Godot 4.6 |
+| **Engine** | Godot 4.7 |
 | **Domain** | Core / Scripting |
 | **Knowledge Risk** | LOW — Godot 信号 + autoload 是稳定 API |
-| **References Consulted** | `scripts/autoload/game_events.gd`、Godot 4.x signal/Autoload docs |
+| **References Consulted** | `scripts/autoload/game_events.gd`、Godot 4.7 signal/Autoload docs、4.6 → 4.7 migration guide |
 | **Post-Cutoff APIs Used** | None |
 | **Verification Required** | None — 已在 5 个系统（save/scene/audio/UI/encounter）落地验证 |
 

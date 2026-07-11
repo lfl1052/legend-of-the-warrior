@@ -5,7 +5,7 @@
 
 ## Engine & Language
 
-- **Engine**: Godot 4.6
+- **Engine**: Godot 4.7 stable
 - **Language**: GDScript (静态类型强制 — `: Type` 标注 + `-> ReturnType`)
 - **Rendering**: Forward+
 - **Physics**: Godot 内置 2D 物理 (CharacterBody2D / StaticBody2D / Area2D)
@@ -65,7 +65,7 @@
 
 ## Testing
 
-- **Framework**: GdUnit4 v6.1.3（`addons/gdUnit4`），CLI 已在 Godot 4.6.1 下验证通过（`addons\gdUnit4\runtest.cmd --add tests/unit` 退出码 0，详见 `tests/README.md`）
+- **Framework**: GdUnit4 v6.1.3（`addons/gdUnit4`），CLI 已在 Godot 4.7 stable 下验证通过（2026-07-11，21 个套件、89/89 用例通过；详见 `tests/README.md`）
 - **Minimum Coverage**: 关键系统（存档 / 战斗 / 状态机）目标 70%；UI 与表现层不强制
 - **Required Tests**:
   - 存档：has_saved_game / load_data / save_data 往返
@@ -84,8 +84,9 @@
 
 ## Allowed Libraries / Addons
 
-- `addons/mcp_bridge`（开发期 MCP 集成，发布前需关闭）
-- 未来可加：`gut` 或 `gdunit4`（测试），`dialogic`（如做对话）
+- `addons/gdUnit4`（测试）
+- `addons/godot_ai`（开发期 MCP 集成，发布前需复核）
+- 未来可加：`dialogic`（如做对话）
 
 ## Architecture Decisions Log
 

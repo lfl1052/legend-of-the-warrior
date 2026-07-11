@@ -12,5 +12,19 @@
     "to_scene": "warrior_menu",
     "spawn_point": { "x": 0.0, "y": 0.0, "z": 0.0 },
     "requires_unlock": ""
+  },
+  {
+    "id": "demo_to_level_2",
+    "from_scene": "level_demo",
+    "to_scene": "level_2",
+    "spawn_point": { "x": -2240.0, "y": 492.0, "z": 0.0 },
+    "requires_unlock": ""
+  },
+  {
+    "id": "level_2_to_demo",
+    "from_scene": "level_2",
+    "to_scene": "level_demo",
+    "spawn_point": { "x": 880.0, "y": 492.0, "z": 0.0 },
+    "requires_unlock": ""
   }
 ]

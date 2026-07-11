@@ -5,7 +5,7 @@
 
 ## Technology Stack
 
-- **Engine**: Godot 4.6 (Forward+ rendering)
+- **Engine**: Godot 4.7 stable (Forward+ rendering)
 - **Language**: GDScript（全项目强制静态类型标注 `: Type` + `-> ReturnType`）
 - **Physics**: Godot 内置 2D 物理 (CharacterBody2D / StaticBody2D / Area2D)
 - **Testing**: GdUnit4 v6.1.3
@@ -35,14 +35,15 @@ scenes/            # .tscn 场景文件
 data/              # 运行时 JSON + .tres Resource 文件
   chapters.json, loot.json, progression.json, scene_links.json, ui_strings.json
 tests/
-  unit/            # GdUnit4 单元测试 (7 个文件, 43+ 用例)
+  unit/            # GdUnit4 单元测试 (21 个套件, 89 个用例)
   e2e/             # 冒烟测试 (smoke_test.tscn)
-  integration/     # 集成测试场景
+  integration/     # 关卡装载与自动通路测试
+  visual/          # 代表性可读性截图工具
 design/gdd/        # 游戏设计文档 (11 份)
 docs/architecture/ # ADR 架构决策记录
 production/        # Sprint 管理
 art/               # 美术资源
-addons/            # Godot 插件 (gdUnit4, mcp_bridge)
+addons/            # Godot 插件 (gdUnit4, godot_ai)
 ```
 
 ## Architecture Patterns
@@ -64,8 +65,9 @@ addons/            # Godot 插件 (gdUnit4, mcp_bridge)
 状态：PATROL ↔ CHASE ↔ SKILL
 Boss 技能有 3 阶段子状态机：WINDUP → ACTIVE → RECOVERY
 
-### Autoload Singletons (8 个)
-GameEvents, RuntimeData, DataManager, SceneLoader, AudioManager, LanguageManager, UIManager, McpBridgeGame
+### Autoload Singletons
+业务单例：GameEvents, RuntimeData, DataManager, SceneLoader, AudioManager, LanguageManager, UIManager。
+开发辅助：`_mcp_game_helper`（来自 `addons/godot_ai`）。
 
 ## Coordination Rules
 
@@ -91,8 +93,8 @@ Every task follows: Question -> Options -> Decision -> Draft -> Approval
 ## MCP Integration
 
 本项目已配置 Godot MCP Server，提供编辑器实时控制能力：
-- `mcp__godot-mcp__*` 工具集：场景树操作、节点创建/修改、脚本管理、截图、运行控制
-- `McpBridgeGame` autoload：开发期 TCP bridge (127.0.0.1:9501)
+- `addons/godot_ai` 编辑器插件：场景树操作、脚本管理、截图和运行控制
+- `_mcp_game_helper` autoload：开发期游戏内辅助；发布构建前应复核是否需要保留
 
 ## Sprint Status
 

@@ -7,7 +7,39 @@
 
 ---
 
-## 勇者传说 #4
+## Godot 4.7 校订
+
+本篇的 `CharacterBody2D`、`move_toward()`、`Timer`、郊狼时间和跳跃缓冲思路在 Godot 4.7 中仍然有效。实现时补充以下约束：
+
+- 输入动作名使用 `StringName`（例如 `&"jump"`），减少重复字符串转换并提高拼写检查的可读性。
+- 只在角色离地时累加重力，避免长时间站立后积累无意义的向下速度。
+- 调用 `move_and_slide()` 前记录 `was_on_floor`，调用后再检查 `is_on_floor()`，才能正确识别“刚走出平台”。
+- 主动跳跃时立即停止郊狼计时器，避免把主动离地误判为走出平台。
+- 跳跃缓冲计时器和郊狼计时器都应启用 `one_shot`，并在进入地面状态时清理过期状态。
+- 可变跳高只应在角色仍向上运动时截断 `velocity.y`。
+
+```gdscript
+const JUMP: StringName = &"jump"
+const JUMP_VELOCITY := -320.0
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed(JUMP):
+		jump_request_timer.start()
+	elif event.is_action_released(JUMP) and velocity.y < JUMP_VELOCITY * 0.5:
+		velocity.y = JUMP_VELOCITY * 0.5
+
+func move_player(delta: float) -> void:
+	var was_on_floor := is_on_floor()
+	# 在这里计算水平速度和离地重力。
+	move_and_slide()
+
+	if was_on_floor and not is_on_floor() and velocity.y >= 0.0:
+		coyote_timer.start()
+```
+
+本项目现有实现位于 [player_controller.gd](../../../scripts/player/player_controller.gd)。官方参考：[CharacterBody2D](https://docs.godotengine.org/en/4.7/classes/class_characterbody2d.html)、[Timer](https://docs.godotengine.org/en/4.7/classes/class_timer.html)。
+
+## 原教程正文（历史界面）
 
 ## 知识点：
 

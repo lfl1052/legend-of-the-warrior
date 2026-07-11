@@ -1,5 +1,7 @@
 # Project Stage Analysis — Legend of the Warrior
 
+> 历史快照：本报告记录 2026-05-20 当时的 Godot 4.6 项目状态。当前引擎基线已经升级到 Godot 4.7 stable；最新目录与入口以 `docs/project-map.md` 为准。
+
 **Date**: 2026/05/20
 **Stage**: **Production**（已固定写入 `production/stage.txt`）
 **Stage Confidence**: **CONCERNS** — 代码已达 Production 量级，但 Game Studios 工作流文档（design / docs / production）几乎为零，存在「代码先于文档」错位

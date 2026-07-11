@@ -2,6 +2,8 @@
 
 这份文件用于快速定位当前项目文件。它按“实际开发时会找什么”组织，而不是按 Godot 的全部目录展开。
 
+当前引擎与文档校订基线为 **Godot 4.7 stable**。
+
 ## 入口
 
 - Godot 配置: `project.godot`
@@ -36,6 +38,8 @@
   - `enemy.gd`: Patrol / Chase / Skill 状态机
   - `base_state.gd`: 状态基类
   - `bee.gd`, `snail.gd`, `boar.gd`, `boss_enemy.gd`: 敌人差异
+  - `thorn_sprout.gd`, `thorn_guard_state.gd`: 荆棘守卫预警攻击
+  - `spore_shroom.gd`: 孢子脉冲攻击
   - `*_patrol_state.gd`, `*_chase_state.gd`, `*_skill_state.gd`: 状态实现
 - 通用战斗/交互: `scripts/general/`
   - `character.gd`: 血量、能量、无敌帧
@@ -51,6 +55,8 @@
 - 资源类: `scripts/resources/`
 - 场景切换组件: `scripts/transition/`
 - 工具脚本: `scripts/tools/`
+  - `level_2_forest_tile_painter.gd`: 按 `layout_id` 生成三层森林 TileMapLayer
+  - `build_forest_tileset.gd`: 重建森林 TileSet 的 World 碰撞
 
 ## 场景
 
@@ -75,6 +81,7 @@
 - 场景关系: `data/scene_links.json`
 - UI 文本: `data/ui_strings.json`
 - 森林 TileSet: `data/forest_tileset.tres`
+- 森林关卡布局: `data/level_layouts.json`
 - 大型美术处理清单: `data/asset_manifest.json`
 
 ## 测试
@@ -82,7 +89,10 @@
 - 单元测试: `tests/unit/`
 - 集成测试:
   - `tests/integration/level_2_load_test.tscn`
+  - `tests/integration/level_2_traversal_test.tscn`
   - `tests/integration/boss_skill_state_test.tscn`
+- 视觉回归:
+  - `tests/visual/level_2_playtest_capture.tscn`
 - 冒烟测试:
   - `tests/e2e/smoke_test.tscn`
   - `tests/e2e/smoke_test.gd`
@@ -96,7 +106,8 @@
 ## 文档和生产资料
 
 - 系统 GDD: `design/gdd/`
+  - `forest-chapter-redesign.md`: Godot 4.7 森林关卡、角色和敌人重设计蓝图
 - 架构决策: `docs/architecture/`
+- Godot 4.7 教程校订: `docs/reference/warrior-legend-godot-notes/`
 - 生产/故事/QA: `production/`
 - 项目说明: `CLAUDE.md`
-

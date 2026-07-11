@@ -36,11 +36,14 @@ func logic_update(delta: float) -> void:
 	if pc != null and not pc.is_ground:
 		current_enemy.velocity.x = 0.0
 		return
-	if pc != null and ((_direction < 0 and pc.touch_left) or (_direction > 0 and pc.touch_right)):
+	if pc != null and pc.should_turn_for_patrol(_direction):
 		current_enemy.velocity.x = 0.0
 		return
 
-	current_enemy.velocity.x = _direction * current_enemy.chase_speed
+	current_enemy.velocity.x = move_toward(
+		current_enemy.velocity.x,
+		_direction * current_enemy.chase_speed,
+		current_enemy.chase_acceleration * delta)
 
 
 func physics_update(_delta: float) -> void:

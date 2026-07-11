@@ -1,12 +1,13 @@
 extends Node
 ## 运行时数据加载器（替代 Unity 的 LegendOfWarriorRuntimeData 静态类）
 ##
-## 启动时从 res://data 读取以下 5 份 JSON：
+## 启动时从 res://data 读取以下 6 份 JSON：
 ##   loot.json           战利品表
 ##   progression.json    玩家进阶里程碑
 ##   chapters.json       章节定义
 ##   scene_links.json    场景跳转关系
 ##   ui_strings.json     UI 文本
+##   level_layouts.json  TileMapLayer 关卡布局
 ##
 ## 文件可缺失，对应字典就保持空。
 
@@ -17,6 +18,7 @@ var player_progression: Dictionary = {}             # 单一进阶配置
 var chapters: Dictionary = {}                       # id -> Dictionary
 var scene_links: Dictionary = {}                    # id -> Dictionary
 var ui_strings: Dictionary = {}                     # key -> Dictionary{ language -> text }
+var level_layouts: Dictionary = {}                  # id -> Dictionary
 
 
 func _ready() -> void:
@@ -29,6 +31,7 @@ func _reload_all() -> void:
 	chapters = _load_dictionary("chapters.json", "id")
 	scene_links = _load_dictionary("scene_links.json", "id")
 	ui_strings = _load_dictionary("ui_strings.json", "key")
+	level_layouts = _load_dictionary("level_layouts.json", "id")
 
 
 # ----- 公共查询 -----------------------------------------------------------------
@@ -60,6 +63,10 @@ func try_get_ui_string(key: StringName, language: String = "zh") -> String:
 	if entry.has("en"):
 		return String(entry["en"])
 	return String(key)
+
+
+func try_get_level_layout(id: StringName) -> Dictionary:
+	return level_layouts.get(id, {})
 
 
 # ----- 内部 ----------------------------------------------------------------------

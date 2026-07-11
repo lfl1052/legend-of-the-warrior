@@ -6,7 +6,7 @@ Accepted
 
 ## Date
 
-2026-05-20
+2026-07-11
 
 ## Last Verified
 
@@ -24,10 +24,10 @@ Accepted
 
 | Field | Value |
 |-------|-------|
-| **Engine** | Godot 4.6 |
+| **Engine** | Godot 4.7 |
 | **Domain** | Core / Scripting |
 | **Knowledge Risk** | LOW — `FileAccess` / `JSON` / `DirAccess` 是稳定 API |
-| **References Consulted** | `scripts/autoload/data_manager.gd`、`scripts/utilities/i_saveable.gd`、Godot user:// 文件系统 docs |
+| **References Consulted** | `scripts/autoload/data_manager.gd`、`scripts/utilities/i_saveable.gd`、Godot 4.7 user:// 文件系统 docs、4.6 → 4.7 migration guide |
 | **Post-Cutoff APIs Used** | None |
 | **Verification Required** | 跨平台 user:// 路径在 Linux / Web 行为差异（Web 用 IndexedDB） |
 

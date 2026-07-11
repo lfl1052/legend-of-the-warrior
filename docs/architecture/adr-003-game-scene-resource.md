@@ -6,7 +6,7 @@ Accepted
 
 ## Date
 
-2026-05-20
+2026-07-11
 
 ## Last Verified
 
@@ -24,10 +24,10 @@ Accepted
 
 | Field | Value |
 |-------|-------|
-| **Engine** | Godot 4.6 |
+| **Engine** | Godot 4.7 |
 | **Domain** | Scripting / Core / UI |
 | **Knowledge Risk** | LOW — Godot Resource + ResourceLoader.load_threaded_request 是稳定 API |
-| **References Consulted** | `scripts/resources/game_scene_resource.gd`、`scripts/autoload/scene_loader.gd`、Godot `@export_file` / Resource docs |
+| **References Consulted** | `scripts/resources/game_scene_resource.gd`、`scripts/autoload/scene_loader.gd`、Godot 4.7 `@export_file` / Resource docs、4.6 → 4.7 migration guide |
 | **Post-Cutoff APIs Used** | None |
 | **Verification Required** | None |
 

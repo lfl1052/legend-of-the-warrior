@@ -20,14 +20,14 @@
 [ext_resource type="PackedScene" path="res://scenes/enemy/spore_shroom.tscn" id="18_spore"]
 [ext_resource type="PackedScene" path="res://scenes/enemy/root_stalker.tscn" id="19_root"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_ground"]
-size = Vector2(2880, 160)
-
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
 size = Vector2(80, 800)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_teleport"]
 size = Vector2(80, 120)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_camera_bounds"]
+size = Vector2(5120, 800)
 
 [node name="Level2" type="Node2D" unique_id=961542545]
 
@@ -40,92 +40,108 @@ offset_bottom = 1080.0
 mouse_filter = 2
 color = Color(0.24, 0.32, 0.42, 1)
 
-[node name="MapVisuals" type="Node2D" parent="." unique_id=262642238]
-z_index = -5
-
-[node name="GroundTileMap" type="TileMapLayer" parent="MapVisuals" unique_id=1475835486]
-z_index = -5
-script = ExtResource("12_tile_painter")
-
-[node name="BackgroundTree1" type="Sprite2D" parent="MapVisuals" unique_id=483115670]
-modulate = Color(0.46, 0.58, 0.48, 0.62)
+[node name="DistantForest" type="Parallax2D" parent="."]
 z_index = -8
-position = Vector2(-820, 361.2)
+scroll_scale = Vector2(0.55, 0.8)
+repeat_size = Vector2(1600, 0)
+repeat_times = 3
+
+[node name="BackgroundTree1" type="Sprite2D" parent="DistantForest" unique_id=483115670]
+modulate = Color(0.46, 0.58, 0.48, 0.62)
+position = Vector2(240, 361.2)
 scale = Vector2(1.45, 1.45)
 texture = ExtResource("13_tree_atlas")
 region_enabled = true
 region_rect = Rect2(4, 720, 88, 208)
 
-[node name="BackgroundTree2" type="Sprite2D" parent="MapVisuals" unique_id=758069066]
+[node name="BackgroundTree2" type="Sprite2D" parent="DistantForest" unique_id=758069066]
 modulate = Color(0.44, 0.54, 0.46, 0.55)
-z_index = -8
-position = Vector2(900, 392.525)
+position = Vector2(1120, 392.525)
 scale = Vector2(1.35, 1.35)
 texture = ExtResource("13_tree_atlas")
 flip_h = true
 region_enabled = true
 region_rect = Rect2(100, 720, 88, 177)
 
+[node name="MapVisuals" type="Node2D" parent="." unique_id=262642238]
+z_index = -5
+script = ExtResource("12_tile_painter")
+layout_id = &"level_2"
+
+[node name="BackgroundTiles" type="TileMapLayer" parent="MapVisuals"]
+z_index = -6
+collision_enabled = false
+
+[node name="GeometryTiles" type="TileMapLayer" parent="MapVisuals" unique_id=1475835486]
+z_index = -5
+
+[node name="ForegroundTiles" type="TileMapLayer" parent="MapVisuals"]
+z_index = 2
+collision_enabled = false
+
 [node name="World" type="Node2D" parent="." unique_id=674485758]
 
-[node name="Ground" type="StaticBody2D" parent="World" unique_id=904982300]
-position = Vector2(0, 592)
-collision_mask = 0
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="World/Ground" unique_id=973586715]
-shape = SubResource("RectangleShape2D_ground")
-
 [node name="LeftWall" type="StaticBody2D" parent="World" unique_id=728227970]
-position = Vector2(-1440, 200)
+position = Vector2(-2560, 200)
 collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="World/LeftWall" unique_id=1095788827]
 shape = SubResource("RectangleShape2D_wall")
 
 [node name="RightWall" type="StaticBody2D" parent="World" unique_id=2105439812]
-position = Vector2(1440, 200)
+position = Vector2(2560, 200)
 collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="World/RightWall" unique_id=1970877104]
 shape = SubResource("RectangleShape2D_wall")
 
+[node name="CameraBounds" type="Area2D" parent="World" groups=["camera_bounds"]]
+position = Vector2(0, 200)
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/CameraBounds"]
+shape = SubResource("RectangleShape2D_camera_bounds")
+
 [node name="Player" parent="." unique_id=1522850326 instance=ExtResource("1_player")]
-position = Vector2(-520, 492)
+position = Vector2(-2240, 492)
 
 [node name="SnailA" parent="." unique_id=208420800 instance=ExtResource("2_snail")]
-position = Vector2(-120, 500)
+position = Vector2(-1220, 435)
 
 [node name="BeeA" parent="." unique_id=449388943 instance=ExtResource("3_bee")]
-position = Vector2(240, 420)
+position = Vector2(-360, 390)
 
 [node name="ThornSproutA" parent="." instance=ExtResource("17_thorn")]
-position = Vector2(-760, 499)
+position = Vector2(-1640, 499)
 
 [node name="SporeShroomA" parent="." instance=ExtResource("18_spore")]
-position = Vector2(360, 500)
+position = Vector2(40, 500)
 
 [node name="RootStalkerA" parent="." instance=ExtResource("19_root")]
-position = Vector2(1120, 490)
+position = Vector2(800, 490)
 
 [node name="BossEnemy" parent="." unique_id=242791067 instance=ExtResource("4_boss")]
-position = Vector2(720, 486)
+position = Vector2(1850, 486)
 
 [node name="ChestA" parent="." instance=ExtResource("14_chest")]
-position = Vector2(1020, 512)
+position = Vector2(2300, 512)
 loot_table_id = &"level_demo_chest_map"
 
 [node name="DataDefinition" parent="ChestA"]
 id = "level_2_chest_a"
 
 [node name="BreakableRockA" parent="." instance=ExtResource("15_rock")]
-position = Vector2(500, 512)
+position = Vector2(-720, 512)
 loot_table_id = &""
 
 [node name="DataDefinition" parent="BreakableRockA"]
 id = "level_2_breakable_rock_a"
 
 [node name="CollectibleMapTokenA" parent="." instance=ExtResource("16_collectible")]
-position = Vector2(760, 488)
+position = Vector2(2400, 488)
 reward_id = &"map-token"
 notification_key = "ui.reward.map_token"
 notification_chinese = "获得地图代币"
@@ -135,7 +151,7 @@ notification_english = "Map token gained"
 id = "level_2_collectible_map_token_a"
 
 [node name="SavePoint" type="Node2D" parent="." unique_id=2095607063]
-position = Vector2(-360, 500)
+position = Vector2(560, 500)
 script = ExtResource("10_save_point")
 save_id_prefix = "level_2_save_point"
 
@@ -143,12 +159,12 @@ save_id_prefix = "level_2_save_point"
 modulate = Color(0.95, 0.83, 0.32, 1)
 
 [node name="TeleportToDemo" type="Area2D" parent="." unique_id=397142373 groups=["interactable"]]
-position = Vector2(-1260, 500)
+position = Vector2(2490, 500)
 collision_layer = 32
 collision_mask = 0
 script = ExtResource("9_teleport")
 scene_to_go = ExtResource("11_demo_res")
-position_to_go = Vector2(0, 492)
+position_to_go = Vector2(880, 492)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="TeleportToDemo" unique_id=1639084167]
 shape = SubResource("RectangleShape2D_teleport")

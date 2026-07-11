@@ -7,7 +7,40 @@
 
 ---
 
-## 勇者传说 #1
+## Godot 4.7 校订
+
+- 原教程的 `Camera2D` 拖拽边距、位置平滑和限制属性在 4.7 中仍然有效。
+- 地图类型改为 `TileMapLayer`。`get_used_rect()` 返回图块坐标范围，不是像素范围；地图节点有偏移时，应通过 `map_to_local()` 和 `to_global()` 转换后再写入相机限制。
+- `reset_smoothing()` 仍可在设置限制后把相机立即对齐到当前平滑目标。
+- 如果关卡有独立的相机边界碰撞体或设计区域，应优先读取明确配置的边界；装饰图块可能扩大 `get_used_rect()`，不适合作为玩法边界。
+
+```gdscript
+extends Node2D
+
+@onready var ground: TileMapLayer = $Ground
+@onready var camera: Camera2D = $Player/Camera2D
+
+func _ready() -> void:
+	var used := ground.get_used_rect()
+	if used.size == Vector2i.ZERO:
+		return
+
+	var half_tile := Vector2(ground.tile_set.tile_size) * 0.5
+	var first_cell := ground.map_to_local(used.position) - half_tile
+	var last_cell := ground.map_to_local(used.end - Vector2i.ONE) + half_tile
+	var world_begin := ground.to_global(first_cell)
+	var world_end := ground.to_global(last_cell)
+
+	camera.limit_left = int(floor(world_begin.x))
+	camera.limit_top = int(floor(world_begin.y))
+	camera.limit_right = int(ceil(world_end.x))
+	camera.limit_bottom = int(ceil(world_end.y))
+	camera.reset_smoothing()
+```
+
+本项目已有更稳妥的相机边界组件：[camera_control.gd](../../../scripts/utilities/camera_control.gd)。官方参考：[Camera2D](https://docs.godotengine.org/en/4.7/classes/class_camera2d.html)、[TileMapLayer.get_used_rect](https://docs.godotengine.org/en/4.7/classes/class_tilemaplayer.html#class-tilemaplayer-method-get-used-rect)。
+
+## 原教程正文（历史界面与代码）
 
 ## 设置编辑器：
 

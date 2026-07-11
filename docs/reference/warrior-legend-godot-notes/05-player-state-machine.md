@@ -7,7 +7,49 @@
 
 ---
 
-## 勇者传说 #5
+## Godot 4.7 校订
+
+节点式有限状态机在 Godot 4.7 中仍然成立，但原代码是教学最小实现，建议作以下调整：
+
+- 枚举成员 `IDEL` 是拼写错误，新代码统一使用 `IDLE`。保留旧拼写会让日志、动画名和状态类名长期不一致。
+- 状态切换、物理更新和动画播放使用显式参数/返回类型；输入动作使用 `StringName`。
+- `AnimationPlayer` 仍适用。会切换纹理、位置或缩放的动画应维护 `RESET` 轨道，避免从上一动画继承残留属性。
+- `await owner.ready` 在子节点等待父节点完成 `_ready()` 仍可用，但状态机应确认 `owner` 确实实现 `transition_state()`、`get_next_state()` 和 `tick_physics()`。
+- 单个物理帧允许连续转换多个“瞬时状态”，但要设置上限，避免错误状态图形成无限循环。
+
+```gdscript
+class_name StateMachine
+extends Node
+
+const MAX_TRANSITIONS_PER_TICK := 8
+
+var current_state: int = -1:
+	set(value):
+		owner.transition_state(current_state, value)
+		current_state = value
+		state_time = 0.0
+
+var state_time := 0.0
+
+func _ready() -> void:
+	await owner.ready
+	current_state = 0
+
+func _physics_process(delta: float) -> void:
+	for transition_count in MAX_TRANSITIONS_PER_TICK:
+		var next_state := owner.get_next_state(current_state) as int
+		if next_state == current_state:
+			owner.tick_physics(current_state, delta)
+			state_time += delta
+			return
+		current_state = next_state
+
+	push_error("State machine exceeded the per-frame transition limit")
+```
+
+对于本项目当前规模，玩家逻辑已集中在 [player_controller.gd](../../../scripts/player/player_controller.gd)，敌人则采用状态节点；不要直接用教程状态机覆盖现有架构。官方参考：[GDScript 静态类型](https://docs.godotengine.org/en/4.7/tutorials/scripting/gdscript/static_typing.html)、[AnimationPlayer](https://docs.godotengine.org/en/4.7/classes/class_animationplayer.html)。
+
+## 原教程正文（历史界面与代码）
 
 ## fix：
 

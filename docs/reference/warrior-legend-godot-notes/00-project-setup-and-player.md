@@ -7,7 +7,57 @@
 
 ---
 
-## 《勇者传说 #0》教程笔记
+## Godot 4.7 校订
+
+> 下方原图来自较早版本的 Godot 4，仍保留作步骤对照。Godot 4.7 项目应按本节调整节点和设置。
+
+- 地图节点使用 `TileMapLayer`，不要再新建已弃用的 `TileMap`。背景、地面、前景分别使用独立的 `TileMapLayer`，需要时共享同一个 `TileSet`。
+- Godot 4.7 新项目默认采用 `Display > Window > Stretch > Mode = canvas_items` 和 `Aspect = expand`。本项目已显式保存这两个设置，像素风项目仍需测试不同宽高比下的可视范围。
+- 像素素材继续使用默认纹理过滤 `Nearest`；本项目已通过 `textures/canvas_textures/default_texture_filter` 显式保存该设置。
+- `Sprite2D + AnimationPlayer` 仍受支持；仅做逐帧动画时也可选 `AnimatedSprite2D + SpriteFrames`，不要为了“新版”强制迁移已有动画。
+- `CharacterBody2D.velocity` 仍由节点维护，`move_and_slide()` 在 Godot 4.7 中仍然不接收速度参数。
+
+Godot 4.7 推荐的最小玩家脚本如下。输入动作使用 `StringName`，并只在离地时累计重力：
+
+```gdscript
+extends CharacterBody2D
+
+const MOVE_LEFT: StringName = &"move_left"
+const MOVE_RIGHT: StringName = &"move_right"
+const JUMP: StringName = &"jump"
+const RUN_SPEED := 200.0
+const JUMP_VELOCITY := -300.0
+
+@onready var animation_player: AnimationPlayer = $AnimationPlayer
+@onready var sprite_2d: Sprite2D = $Sprite2D
+
+var gravity := float(ProjectSettings.get_setting("physics/2d/default_gravity", 980.0))
+
+func _physics_process(delta: float) -> void:
+	var direction := Input.get_axis(MOVE_LEFT, MOVE_RIGHT)
+	velocity.x = direction * RUN_SPEED
+
+	if not is_on_floor():
+		velocity.y += gravity * delta
+	if is_on_floor() and Input.is_action_just_pressed(JUMP):
+		velocity.y = JUMP_VELOCITY
+
+	if not is_on_floor():
+		animation_player.play(&"jump")
+	elif is_zero_approx(direction):
+		animation_player.play(&"idle")
+	else:
+		animation_player.play(&"running")
+
+	if not is_zero_approx(direction):
+		sprite_2d.flip_h = direction < 0.0
+
+	move_and_slide()
+```
+
+官方参考：[TileMapLayer](https://docs.godotengine.org/en/4.7/classes/class_tilemaplayer.html)、[CharacterBody2D](https://docs.godotengine.org/en/4.7/classes/class_characterbody2d.html)、[4.7 拉伸默认值变更](https://docs.godotengine.org/en/4.7/tutorials/migrating/upgrading_to_godot_4.7.html#changed-defaults)。
+
+## 原教程正文（历史界面与代码）
 
 ## 设置窗口：
 

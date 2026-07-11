@@ -52,11 +52,11 @@ normal_speed = 45.0
 chase_speed = 95.0
 lost_time = 3.0
 check_distance = 260.0
-skill_cooldown = 1.4
-skill_trigger_range = 180.0
-skill_windup_duration = 0.16
-skill_active_duration = 0.1
-skill_recovery_duration = 0.16
+skill_cooldown = 2.8
+skill_trigger_range = 110.0
+skill_windup_duration = 0.45
+skill_active_duration = 0.18
+skill_recovery_duration = 0.55
 display_name_key = &"enemy.boss.test"
 
 [node name="Visual" type="Node2D" parent="."]

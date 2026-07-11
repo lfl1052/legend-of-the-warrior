@@ -6,7 +6,8 @@ extends Node
 ##   2. test_level_demo_world_nodes_present
 ##   3. test_player_automation_attack_damages_enemy
 ##   4. test_save_point_writes_save_file_to_disk
-##   5. test_teleport_to_menu_returns_to_main_menu
+##   5. test_demo_and_level_2_round_trip
+##   6. test_teleport_to_menu_returns_to_main_menu
 ##
 ## 每一步遵循 Arrange / Act / Assert 写法（在注释里标注）。
 ## 用例之间彼此隔离：开始前 _purge_save_dir() 清掉 user://SAVE_DATA/，
@@ -60,6 +61,8 @@ func _run() -> void:
 		_finish(false, "玩家自动化输入未触发预期行为"); return
 	if not await test_save_point_writes_save_file_to_disk():
 		_finish(false, "存档点未能写出存档"); return
+	if not await test_demo_and_level_2_round_trip():
+		_finish(false, "Demo 与 level_2 往返失败"); return
 	if not await test_teleport_to_menu_returns_to_main_menu():
 		_finish(false, "回菜单 Teleport 失败"); return
 	_finish(true, "全部步骤通过")
@@ -70,7 +73,7 @@ func _run() -> void:
 # ---------------------------------------------------------------------------
 
 func test_menu_new_game_loads_level_demo() -> bool:
-	_log("[1/5] menu_new_game_loads_level_demo")
+	_log("[1/6] menu_new_game_loads_level_demo")
 	# Arrange ----------------------------------------------------------------
 	var menu := await _await_node_in_scene("WarriorMenu")
 	if menu == null:
@@ -88,7 +91,7 @@ func test_menu_new_game_loads_level_demo() -> bool:
 
 
 func test_level_demo_world_nodes_present() -> bool:
-	_log("[2/5] level_demo_world_nodes_present")
+	_log("[2/6] level_demo_world_nodes_present")
 	# Arrange ----------------------------------------------------------------
 	await get_tree().process_frame
 	var root := get_tree().current_scene
@@ -116,7 +119,7 @@ func test_level_demo_world_nodes_present() -> bool:
 
 
 func test_player_automation_attack_damages_enemy() -> bool:
-	_log("[3/5] player_automation_attack_damages_enemy")
+	_log("[3/6] player_automation_attack_damages_enemy")
 	# Arrange ----------------------------------------------------------------
 	var root := get_tree().current_scene
 	var player := root.get_node_or_null("Player") as PlayerController
@@ -150,7 +153,7 @@ func test_player_automation_attack_damages_enemy() -> bool:
 
 
 func test_save_point_writes_save_file_to_disk() -> bool:
-	_log("[4/5] save_point_writes_save_file_to_disk")
+	_log("[4/6] save_point_writes_save_file_to_disk")
 	# Arrange ----------------------------------------------------------------
 	var root := get_tree().current_scene
 	var save_point := root.get_node_or_null("SavePoint")
@@ -169,7 +172,7 @@ func test_save_point_writes_save_file_to_disk() -> bool:
 
 
 func test_teleport_to_menu_returns_to_main_menu() -> bool:
-	_log("[5/5] teleport_to_menu_returns_to_main_menu")
+	_log("[6/6] teleport_to_menu_returns_to_main_menu")
 	# Arrange ----------------------------------------------------------------
 	var root := get_tree().current_scene
 	var teleport := root.get_node_or_null("TeleportToMenu")
@@ -183,6 +186,37 @@ func test_teleport_to_menu_returns_to_main_menu() -> bool:
 		_log("  ERR  没能切回主菜单")
 		return false
 	_log("  OK  回到 WarriorMenu")
+	return true
+
+
+func test_demo_and_level_2_round_trip() -> bool:
+	_log("[5/6] demo_and_level_2_round_trip")
+	var demo := get_tree().current_scene
+	var to_level_2 := demo.get_node_or_null("TeleportToLevel2")
+	if to_level_2 == null or not to_level_2.has_method("trigger_action"):
+		_log("  ERR  TeleportToLevel2 不可用")
+		return false
+	to_level_2.call("trigger_action")
+	if not await _await_scene_root_named("Level2"):
+		_log("  ERR  未进入 Level2")
+		return false
+
+	var level_2 := get_tree().current_scene
+	if level_2.get_node_or_null("MapVisuals/GeometryTiles") == null:
+		_log("  ERR  Level2 缺少 GeometryTiles")
+		return false
+	# 场景根节点先于 SceneLoader 的淡出收尾出现，等待加载锁释放后再触发返程。
+	await get_tree().create_timer(0.5).timeout
+	var to_demo := level_2.get_node_or_null("TeleportToDemo")
+	if to_demo == null or not to_demo.has_method("trigger_action"):
+		_log("  ERR  TeleportToDemo 不可用")
+		return false
+	to_demo.call("trigger_action")
+	if not await _await_scene_root_named("LevelDemo"):
+		_log("  ERR  未返回 LevelDemo")
+		return false
+	await get_tree().create_timer(0.5).timeout
+	_log("  OK  Demo ↔ Level2 往返成功")
 	return true
 
 

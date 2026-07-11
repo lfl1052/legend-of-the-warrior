@@ -14,13 +14,13 @@ extends EnemyMinion
 @export_node_path("Area2D") var attack_box_path: NodePath = ^"AttackBox"
 @export_node_path("CollisionShape2D") var attack_hitbox_path: NodePath = ^"AttackBox/CollisionShape2D"
 
-@export var attack_startup_delay: float = 0.26
-@export var attack_active_duration: float = 0.05
+@export var attack_startup_delay: float = 0.35
+@export var attack_active_duration: float = 0.12
 @export var chase_hover_height: float = 24.0
 @export var attack_hover_height: float = 38.0
 @export var attack_damage: int = 1
 @export var attack_range: float = 12.0
-@export var attack_interval: float = 2.6
+@export var attack_interval: float = 2.4
 @export var attack_horizontal_tolerance: float = 12.0
 @export var attack_vertical_tolerance: float = 8.0
 @export var post_attack_retreat_duration: float = 0.55

@@ -7,6 +7,11 @@ const LEVEL_CHECKS := {
 		"required_nodes": [
 			"Player",
 			"Player/Sign",
+			"DistantForest",
+			"MapVisuals/BackgroundTiles",
+			"MapVisuals/GeometryTiles",
+			"MapVisuals/ForegroundTiles",
+			"World/CameraBounds",
 			"SnailA",
 			"BeeA",
 			"BossEnemy",
@@ -26,12 +31,17 @@ const LEVEL_CHECKS := {
 		"required_nodes": [
 			"Player",
 			"Player/Sign",
+			"DistantForest",
+			"MapVisuals/BackgroundTiles",
+			"MapVisuals/GeometryTiles",
+			"MapVisuals/ForegroundTiles",
 			"Snail",
 			"Bee",
 			"ChestA",
 			"BreakableRockA",
 			"SavePoint",
 			"TeleportToMenu",
+			"TeleportToLevel2",
 			"Camera2D",
 			"UI/HUD/PlayerStatBar",
 			"UI/HUD/RewardNotification",
@@ -62,6 +72,8 @@ func _check_level(level_path: String, check: Dictionary) -> void:
 	var scene := packed.instantiate()
 	add_child(scene)
 	await get_tree().process_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
 	for node_path in check["required_nodes"]:
 		_assert(scene.get_node_or_null(node_path) != null, "%s has %s" % [level_name, node_path])
 	var chest := scene.get_node_or_null("ChestA")
@@ -72,8 +84,14 @@ func _check_level(level_path: String, check: Dictionary) -> void:
 	_assert(_is_on_surface(scene, "ChestA", surface_y), "%s chest sits on generated ground" % level_name)
 	_assert(_is_on_surface(scene, "BreakableRockA", surface_y), "%s breakable sits on generated ground" % level_name)
 	_assert(_background_trees_clear_surface(scene, surface_y), "%s background trees do not sink below ground" % level_name)
+	_assert(_tilemap_layers_are_valid(scene), "%s uses separated TileMapLayer roles and TileSet collision" % level_name)
+	_assert(scene.get_node_or_null("World/Ground") == null, "%s has no duplicate rectangle ground collider" % level_name)
+	var player := scene.get_node_or_null("Player") as CharacterBody2D
+	_assert(player != null and player.is_on_floor(), "%s player stands on TileMap collision" % level_name)
 	_assert(_count_nodes_in_group(scene, &"player") >= 1, "%s registers a player" % level_name)
 	_assert(_count_nodes_in_group(scene, &"enemy") >= int(check["min_enemy_count"]), "%s registers enemies" % level_name)
+	if level_name == "level_2":
+		_assert(_level_2_encounter_order_is_valid(scene), "level_2 encounter ladder progresses left to right")
 	scene.queue_free()
 	await get_tree().process_frame
 
@@ -93,15 +111,56 @@ func _is_on_surface(scene: Node, node_path: String, surface_y: float) -> bool:
 
 
 func _background_trees_clear_surface(scene: Node, surface_y: float) -> bool:
-	var visuals := scene.get_node_or_null("MapVisuals")
+	var visuals := scene.get_node_or_null("DistantForest")
 	if visuals == null:
 		return true
 	for child in visuals.get_children():
 		var sprite := child as Sprite2D
-		if sprite == null or not child.name.begins_with("BackgroundTree"):
+		if sprite == null:
 			continue
 		if _sprite_bottom_y(sprite) > surface_y + 0.5:
 			return false
+	return true
+
+
+func _tilemap_layers_are_valid(scene: Node) -> bool:
+	var background := scene.get_node_or_null("MapVisuals/BackgroundTiles") as TileMapLayer
+	var geometry := scene.get_node_or_null("MapVisuals/GeometryTiles") as TileMapLayer
+	var foreground := scene.get_node_or_null("MapVisuals/ForegroundTiles") as TileMapLayer
+	if background == null or geometry == null or foreground == null:
+		return false
+	if background.collision_enabled or not geometry.collision_enabled or foreground.collision_enabled:
+		return false
+	if geometry.get_used_rect().size.x <= 0 or geometry.tile_set == null:
+		return false
+	if geometry.tile_set.get_physics_layers_count() != 1:
+		return false
+	var atlas := geometry.tile_set.get_source(0) as TileSetAtlasSource
+	if atlas == null:
+		return false
+	var top_tile := atlas.get_tile_data(Vector2i(1, 1), 0)
+	return top_tile != null and top_tile.get_collision_polygons_count(0) == 1
+
+
+func _level_2_encounter_order_is_valid(scene: Node) -> bool:
+	var ordered_paths := [
+		"Player",
+		"ThornSproutA",
+		"SnailA",
+		"BeeA",
+		"SporeShroomA",
+		"SavePoint",
+		"RootStalkerA",
+		"BossEnemy",
+		"ChestA",
+		"TeleportToDemo",
+	]
+	var previous_x := -INF
+	for path: String in ordered_paths:
+		var node := scene.get_node_or_null(path) as Node2D
+		if node == null or node.global_position.x <= previous_x:
+			return false
+		previous_x = node.global_position.x
 	return true
 
 

@@ -9,6 +9,7 @@ const GENERATED_ENEMIES := {
 		"attack_size": Vector2(70, 36),
 		"attack_position": Vector2(0, -12),
 		"damage": 1,
+		"active_on_ready": false,
 	},
 	"SporeShroom": {
 		"scene": "res://scenes/enemy/spore_shroom.tscn",
@@ -18,6 +19,7 @@ const GENERATED_ENEMIES := {
 		"attack_size": Vector2(88, 42),
 		"attack_position": Vector2(0, -12),
 		"damage": 1,
+		"active_on_ready": false,
 	},
 	"RootStalker": {
 		"scene": "res://scenes/enemy/root_stalker.tscn",
@@ -27,6 +29,7 @@ const GENERATED_ENEMIES := {
 		"attack_size": Vector2(132, 56),
 		"attack_position": Vector2(0, -22),
 		"damage": 2,
+		"active_on_ready": true,
 	},
 }
 
@@ -109,7 +112,7 @@ func test_generated_enemy_collision_shapes_match_sprite_scale() -> void:
 		assert_bool(body_shape.size.y <= visual_size.y).is_true()
 
 
-func test_generated_enemy_attack_boxes_are_contact_damage_zones() -> void:
+func test_generated_enemy_attack_boxes_match_authored_damage_roles() -> void:
 	for enemy_name in GENERATED_ENEMIES.keys():
 		var spec: Dictionary = GENERATED_ENEMIES[enemy_name]
 		var enemy: Node = await _instantiate_enemy(spec)
@@ -120,7 +123,7 @@ func test_generated_enemy_attack_boxes_are_contact_damage_zones() -> void:
 		assert_int(attack.damage).is_equal(spec["damage"])
 		assert_int(attack.collision_layer).is_equal(16)
 		assert_int(attack.collision_mask).is_equal(2)
-		assert_bool(attack.active_on_ready).is_true()
+		assert_bool(attack.active_on_ready == bool(spec["active_on_ready"])).is_true()
 
 		var attack_shape_node := enemy.get_node_or_null("AttackBox/CollisionShape2D") as CollisionShape2D
 		assert_object(attack_shape_node).is_not_null()
@@ -128,6 +131,39 @@ func test_generated_enemy_attack_boxes_are_contact_damage_zones() -> void:
 		assert_object(attack_shape).is_not_null()
 		assert_vector(attack_shape.size).is_equal(spec["attack_size"])
 		assert_bool(attack_shape.size.x >= spec["body_size"].x).is_true()
+
+
+func test_thorn_sprout_uses_telegraphed_guard_attack_window() -> void:
+	var spec: Dictionary = GENERATED_ENEMIES["ThornSprout"]
+	var thorn: Node = await _instantiate_enemy(spec)
+	assert_object(thorn).is_not_null()
+	assert_bool(thorn.has_method("tick_guard_attack")).is_true()
+	var hitbox := thorn.get_node("AttackBox/CollisionShape2D") as CollisionShape2D
+	assert_bool(hitbox.disabled).is_true()
+
+	thorn.set("_windup_timer", 0.01)
+	thorn.call("tick_guard_attack", 0.02)
+	thorn.call("tick_guard_attack", 0.01)
+	await get_tree().process_frame
+
+	assert_bool(bool(thorn.call("is_guard_attack_active"))).is_true()
+	assert_bool(hitbox.disabled).is_false()
+
+
+func test_spore_shroom_uses_telegraphed_pulse_window() -> void:
+	var spec: Dictionary = GENERATED_ENEMIES["SporeShroom"]
+	var spore: Node = await _instantiate_enemy(spec)
+	assert_bool(spore.has_method("is_spore_pulse_active")).is_true()
+	var hitbox := spore.get_node("AttackBox/CollisionShape2D") as CollisionShape2D
+	assert_bool(hitbox.disabled).is_true()
+
+	spore.set("_pulse_windup_timer", 0.01)
+	spore.call("_tick_spore_pulse", 0.02)
+	spore.call("_tick_spore_pulse", 0.01)
+	await get_tree().process_frame
+
+	assert_bool(bool(spore.call("is_spore_pulse_active"))).is_true()
+	assert_bool(hitbox.disabled).is_false()
 
 
 func _instantiate_enemy(spec: Dictionary) -> Node:
