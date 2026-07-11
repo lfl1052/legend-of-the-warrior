@@ -1,10 +1,7 @@
 extends TileMapLayer
 
 const FOREST_TILESET := preload("res://data/forest_tileset.tres")
-const FOREST_ATLAS_TEXTURE := preload("res://art/imported/Legacy-Fantasy-High Forest/Map Assets/Forest-1.png")
 const SOURCE_ID := 0
-const TILE_SIZE := 16
-const SURFACE_GRASS_PREFIX := "SurfaceGrass_"
 const GRASS_LEFT := Vector2i(0, 0)
 const GRASS_MIDS := [Vector2i(1, 0), Vector2i(2, 0), Vector2i(3, 0)]
 const GRASS_RIGHT := Vector2i(4, 0)
@@ -38,9 +35,8 @@ func _paint() -> void:
 	tile_set = FOREST_TILESET
 	scale = Vector2(pixel_scale, pixel_scale)
 	clear()
-	_clear_surface_grass()
-	_paint_ground()
 	_paint_surface_grass()
+	_paint_ground()
 	_paint_surface_decor()
 
 
@@ -85,18 +81,4 @@ func _paint_surface_grass() -> void:
 		elif x == ground_right_cell:
 			atlas_coords = GRASS_RIGHT
 
-		var sprite := Sprite2D.new()
-		sprite.name = "%s%s" % [SURFACE_GRASS_PREFIX, x]
-		sprite.centered = false
-		sprite.texture = FOREST_ATLAS_TEXTURE
-		sprite.region_enabled = true
-		sprite.region_rect = Rect2(atlas_coords * TILE_SIZE, Vector2i(TILE_SIZE, TILE_SIZE))
-		sprite.position = Vector2(x * TILE_SIZE, (ground_top_row - 1) * TILE_SIZE)
-		sprite.z_index = 1
-		add_child(sprite)
-
-
-func _clear_surface_grass() -> void:
-	for child in get_children():
-		if child.name.begins_with(SURFACE_GRASS_PREFIX):
-			child.queue_free()
+		set_cell(Vector2i(x, ground_top_row - 1), SOURCE_ID, atlas_coords)
