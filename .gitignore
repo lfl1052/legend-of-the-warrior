@@ -52,6 +52,10 @@ gdunit4-temp/
 production/session-logs/
 smoke_out.txt
 
+# 本地代码索引 / AI 生成中间产物
+.serena/
+output/imagegen/
+
 # ---------- 备份文件 ----------
 *.bak
 *.orig

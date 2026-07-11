@@ -1,0 +1,102 @@
+# Project Map
+
+这份文件用于快速定位当前项目文件。它按“实际开发时会找什么”组织，而不是按 Godot 的全部目录展开。
+
+## 入口
+
+- Godot 配置: `project.godot`
+- 主场景: `scenes/levels/warrior_menu.tscn`
+- 当前可玩关卡:
+  - `scenes/levels/level_demo.tscn`
+  - `scenes/levels/level_2.tscn`
+- 场景资源索引:
+  - `data/scene_warrior_menu.tres`
+  - `data/scene_level_demo.tres`
+  - `data/scene_level_2.tres`
+
+## 核心代码
+
+- 全局服务: `scripts/autoload/`
+  - `game_events.gd`: 全局信号总线
+  - `runtime_data.gd`: 读取 `data/*.json`
+  - `data_manager.gd`: 存档
+  - `scene_loader.gd`: 场景切换
+  - `audio_manager.gd`: 占位音效和 BGM
+  - `language_manager.gd`: 中英文切换
+  - `ui_manager.gd`: UI 注册和暂停状态
+- 玩家: `scripts/player/`
+  - `player_controller.gd`: 移动、跳跃、攻击、滑铲、死亡、自动化输入
+  - `player_heal_skill.gd`: 治疗
+  - `player_skill_slash.gd`: 技能斩
+  - `player_progression.gd`: 代币、解锁、奖励进度
+  - `sign.gd`: 交互探测
+  - `save_point.gd`: 存档点
+- 敌人: `scripts/enemy/`
+  - `enemy_combatant.gd`: 受击、死亡、敌人存档
+  - `enemy.gd`: Patrol / Chase / Skill 状态机
+  - `base_state.gd`: 状态基类
+  - `bee.gd`, `snail.gd`, `boar.gd`, `boss_enemy.gd`: 敌人差异
+  - `*_patrol_state.gd`, `*_chase_state.gd`, `*_skill_state.gd`: 状态实现
+- 通用战斗/交互: `scripts/general/`
+  - `character.gd`: 血量、能量、无敌帧
+  - `attack.gd`: 命中盒、伤害、hit feedback
+  - `physics_check.gd`: 地面、墙、前方地面检测
+  - `chest.gd`, `breakable.gd`, `collectible_reward.gd`: 可交互/奖励物
+- UI: `scripts/ui/`
+  - `main_menu.gd`, `menu_flow.gd`
+  - `fade_canvas.gd`
+  - `player_stat_bar.gd`
+  - `reward_notification_ui.gd`
+  - `localized_text.gd`, `language_toggle_button.gd`
+- 资源类: `scripts/resources/`
+- 场景切换组件: `scripts/transition/`
+- 工具脚本: `scripts/tools/`
+
+## 场景
+
+- 玩家 prefab: `scenes/player/player.tscn`
+- 敌人 prefab:
+  - `scenes/enemy/bee.tscn`
+  - `scenes/enemy/snail.tscn`
+  - `scenes/enemy/boss_enemy.tscn`
+  - `scenes/enemy/thorn_sprout.tscn`
+  - `scenes/enemy/spore_shroom.tscn`
+  - `scenes/enemy/root_stalker.tscn`
+- 道具 prefab:
+  - `scenes/props/chest.tscn`
+  - `scenes/props/breakable_rock.tscn`
+  - `scenes/props/collectible_reward.tscn`
+
+## 数据
+
+- 奖励表: `data/loot.json`
+- 玩家成长: `data/progression.json`
+- 章节: `data/chapters.json`
+- 场景关系: `data/scene_links.json`
+- UI 文本: `data/ui_strings.json`
+- 森林 TileSet: `data/forest_tileset.tres`
+- 大型美术处理清单: `data/asset_manifest.json`
+
+## 测试
+
+- 单元测试: `tests/unit/`
+- 集成测试:
+  - `tests/integration/level_2_load_test.tscn`
+  - `tests/integration/boss_skill_state_test.tscn`
+- 冒烟测试:
+  - `tests/e2e/smoke_test.tscn`
+  - `tests/e2e/smoke_test.gd`
+
+## 美术目录约定
+
+- `art/imported/`: 原始导入素材包。很多文件是素材库，不一定被当前场景直接引用。
+- `art/processed/`: 处理后的切片/运行候选素材。当前大量文件尚未被场景直接使用。
+- `output/imagegen/`: 生成图和中间图。当前不作为运行时直接资源使用，处理后的运行资源在 `art/processed/enemies/generated/`。
+
+## 文档和生产资料
+
+- 系统 GDD: `design/gdd/`
+- 架构决策: `docs/architecture/`
+- 生产/故事/QA: `production/`
+- 项目说明: `CLAUDE.md`
+
