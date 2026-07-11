@@ -1,0 +1,141 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemy/boar.gd" id="1_enemy"]
+[ext_resource type="Script" path="res://scripts/general/character.gd" id="2_character"]
+[ext_resource type="Script" path="res://scripts/general/physics_check.gd" id="3_physics"]
+[ext_resource type="Script" path="res://scripts/general/attack.gd" id="4_attack"]
+[ext_resource type="Texture2D" path="res://art/processed/enemies/generated/thorn_sprout/thorn_sprout_sheet.png" id="5_sheet"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+size = Vector2(42, 48)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_attack"]
+size = Vector2(70, 36)
+
+[sub_resource type="Animation" id="Animation_idle"]
+resource_name = "idle"
+length = 0.4
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Visual/Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+
+[sub_resource type="Animation" id="Animation_walk"]
+resource_name = "walk"
+length = 0.7
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Visual/Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.14, 0.28, 0.42, 0.56),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 4]
+}
+
+[sub_resource type="Animation" id="Animation_hurt"]
+resource_name = "hurt"
+length = 0.3
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Visual/Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [12, 13, 14]
+}
+
+[sub_resource type="Animation" id="Animation_dead"]
+resource_name = "dead"
+length = 0.6
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Visual/Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.15, 0.3, 0.45),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [30, 31, 32, 33]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_enemy"]
+_data = {
+"dead": SubResource("Animation_dead"),
+"hurt": SubResource("Animation_hurt"),
+"idle": SubResource("Animation_idle"),
+"run": SubResource("Animation_walk"),
+"walk": SubResource("Animation_walk")
+}
+
+[node name="ThornSprout" type="CharacterBody2D" groups=["enemy"]]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_enemy")
+normal_speed = 48.0
+chase_speed = 110.0
+lost_time = 1.2
+check_distance = 132.0
+
+[node name="Visual" type="Node2D" parent="."]
+scale = Vector2(0.72, 0.72)
+
+[node name="Sprite2D" type="Sprite2D" parent="Visual"]
+texture = ExtResource("5_sheet")
+hframes = 6
+vframes = 6
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_enemy")
+}
+autoplay = "walk"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -14)
+shape = SubResource("RectangleShape2D_body")
+
+[node name="PhysicsCheck" type="Node2D" parent="."]
+script = ExtResource("3_physics")
+ground_layer = 1
+wall_layer = 1
+check_radius = 6.0
+
+[node name="Character" type="Node" parent="."]
+script = ExtResource("2_character")
+max_health = 2.0
+max_power = 10.0
+
+[node name="AttackBox" type="Area2D" parent="."]
+position = Vector2(0, -12)
+collision_layer = 16
+collision_mask = 2
+monitorable = false
+script = ExtResource("4_attack")
+damage = 1
+attack_rate = 1.0
+attacker_path = NodePath("..")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackBox"]
+shape = SubResource("RectangleShape2D_attack")

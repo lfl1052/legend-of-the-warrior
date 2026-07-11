@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://c6level20001"]
+[gd_scene load_steps=23 format=3 uid="uid://c6level20001"]
 
 [ext_resource type="PackedScene" uid="uid://b1plyrwarrior" path="res://scenes/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" uid="uid://x4c2oomdeyvs" path="res://scenes/enemy/snail.tscn" id="2_snail"]
@@ -16,6 +16,9 @@
 [ext_resource type="PackedScene" path="res://scenes/props/chest.tscn" id="14_chest"]
 [ext_resource type="PackedScene" path="res://scenes/props/breakable_rock.tscn" id="15_rock"]
 [ext_resource type="PackedScene" path="res://scenes/props/collectible_reward.tscn" id="16_collectible"]
+[ext_resource type="PackedScene" path="res://scenes/enemy/thorn_sprout.tscn" id="17_thorn"]
+[ext_resource type="PackedScene" path="res://scenes/enemy/spore_shroom.tscn" id="18_spore"]
+[ext_resource type="PackedScene" path="res://scenes/enemy/root_stalker.tscn" id="19_root"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ground"]
 size = Vector2(2880, 160)
@@ -94,6 +97,15 @@ position = Vector2(-120, 500)
 
 [node name="BeeA" parent="." unique_id=449388943 instance=ExtResource("3_bee")]
 position = Vector2(240, 420)
+
+[node name="ThornSproutA" parent="." instance=ExtResource("17_thorn")]
+position = Vector2(-760, 499)
+
+[node name="SporeShroomA" parent="." instance=ExtResource("18_spore")]
+position = Vector2(360, 500)
+
+[node name="RootStalkerA" parent="." instance=ExtResource("19_root")]
+position = Vector2(1120, 490)
 
 [node name="BossEnemy" parent="." unique_id=242791067 instance=ExtResource("4_boss")]
 position = Vector2(720, 486)
