@@ -235,4 +235,15 @@ func _finish(ok: bool, summary: String) -> void:
 	_purge_save_dir()                              # 用例后再清一次
 	if is_instance_valid(AudioManager) and AudioManager.has_method("shutdown_for_tests"):
 		AudioManager.shutdown_for_tests()
-	get_tree().quit(0 if ok else 1)
+	call_deferred("_quit_after_cleanup", ok)
+
+
+func _quit_after_cleanup(ok: bool) -> void:
+	var tree := get_tree()
+	if tree == null:
+		return
+	if tree.current_scene != null:
+		tree.current_scene.queue_free()
+	queue_free()
+	await tree.process_frame
+	tree.quit(0 if ok else 1)
