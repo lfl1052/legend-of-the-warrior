@@ -20,7 +20,7 @@
 
 | 文件 | 系统 | 用例数 |
 |------|------|--------|
-| `test_actor_visual_contracts.gd` | 角色比例 / 脚底基线 / 动画职责 | 5 |
+| `test_actor_visual_contracts.gd` | 角色比例 / 脚底基线 / 动画图集职责 | 6 |
 | `test_attack.gd` | Attack 冷却 / one-shot | 3 |
 | `test_audio_manager.gd` | 音效 / BGM / 音量 / 停止 | 9 |
 | `test_boss_skill_state.gd` | Boss 技能状态循环 | 1 |
@@ -35,17 +35,17 @@
 | `test_enemy_combatant.gd` | 敌人受击 / 死亡 | 2 |
 | `test_enemy_perception.gd` | 敌人范围感知 / 世界遮挡 | 2 |
 | `test_fade_canvas.gd` | 淡入淡出 | 1 |
-| `test_forest_tileset.gd` | Terrain 规则 / 碰撞 / 安全装饰 | 4 |
+| `test_forest_tileset.gd` | Terrain 规则 / 碰撞 / 安全装饰 / 背景树裁切 | 5 |
 | `test_game_events.gd` | 全局信号契约 | 10 |
 | `test_persistence_key_utility.gd` | 持久化键 | 4 |
 | `test_physics_check.gd` | 巡逻墙面 / 悬崖检测 | 3 |
-| `test_player_dash.gd` | 冲刺 / 跳跃窗口 / 死亡 / 复活 | 6 |
+| `test_player_dash.gd` | 移动参数 / 冲刺 / 连击缓存 / 跳跃窗口 / 死亡 / 复活 | 7 |
 | `test_player_progression.gd` | 奖励 / 解锁幂等 | 3 |
 | `test_scene_loader.gd` | 淡出与线程加载 | 2 |
 | `test_scene_resource_validator.gd` | 场景资源死链校验 | 5 |
 | `test_snail_behavior.gd` | 蜗牛感知 / 缩壳 | 3 |
 
-Godot 4.7 stable 验证基线（2026-07-13）：**24 个测试套件，95/95 用例通过**。
+Godot 4.7 stable 验证基线（2026-07-13）：**24 个测试套件，98/98 用例通过**。
 
 ### 推荐运行方式 — 编辑器内
 

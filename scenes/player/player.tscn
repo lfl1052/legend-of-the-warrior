@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://b1plyrwarrior"]
+[gd_scene load_steps=22 format=3 uid="uid://b1plyrwarrior"]
 
 [ext_resource type="Script" path="res://scripts/player/player_controller.gd" id="1_player"]
 [ext_resource type="Script" path="res://scripts/general/character.gd" id="2_character"]
@@ -9,6 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://c0jdsy6rvu02o" path="res://art/imported/Generic-Character/png/blue/char_blue_1.png" id="7_sprite"]
 [ext_resource type="Script" path="res://scripts/player/sign.gd" id="8_sign"]
 [ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/HUD/GameButtons.png" id="9_buttons"]
+[ext_resource type="Texture2D" uid="uid://c7p8h43qdksin" path="res://art/imported/Generic-Character/png/blue/char_blue_2.png" id="10_sprite_actions"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_body"]
 radius = 12.0
@@ -46,7 +47,7 @@ loop_mode = 1
 
 [sub_resource type="Animation" id="Animation_attack1"]
 resource_name = "attack1"
-length = 0.3
+length = 0.36
 tracks/0/type = "method"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -54,7 +55,7 @@ tracks/0/path = NodePath(".")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0.28),
+"times": PackedFloat32Array(0.34),
 "transitions": PackedFloat32Array(1),
 "values": [{
 "args": [],
@@ -64,7 +65,7 @@ tracks/0/keys = {
 
 [sub_resource type="Animation" id="Animation_attack2"]
 resource_name = "attack2"
-length = 0.32
+length = 0.22
 tracks/0/type = "method"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -72,7 +73,7 @@ tracks/0/path = NodePath(".")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0.3),
+"times": PackedFloat32Array(0.2),
 "transitions": PackedFloat32Array(1),
 "values": [{
 "args": [],
@@ -82,7 +83,7 @@ tracks/0/keys = {
 
 [sub_resource type="Animation" id="Animation_attack3"]
 resource_name = "attack3"
-length = 0.4
+length = 0.48
 tracks/0/type = "method"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -90,7 +91,7 @@ tracks/0/path = NodePath(".")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0.38),
+"times": PackedFloat32Array(0.46),
 "transitions": PackedFloat32Array(1),
 "values": [{
 "args": [],
@@ -122,7 +123,7 @@ length = 0.6
 
 [sub_resource type="Animation" id="Animation_slide"]
 resource_name = "slide"
-length = 0.42
+length = 0.44
 
 [sub_resource type="Animation" id="Animation_wall"]
 resource_name = "wall"
@@ -149,6 +150,7 @@ _data = {
 collision_layer = 2
 collision_mask = 209
 script = ExtResource("1_player")
+secondary_sprite_texture = ExtResource("10_sprite_actions")
 
 [node name="Sprite" type="Sprite2D" parent="."]
 position = Vector2(0, -8)

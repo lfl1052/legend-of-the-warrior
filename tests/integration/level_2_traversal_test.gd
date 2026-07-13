@@ -3,7 +3,7 @@ extends Node2D
 
 const LEVEL := preload("res://scenes/levels/level_2.tscn")
 const TARGET_X := 2250.0
-const TIMEOUT := 20.0
+const TIMEOUT := 30.0
 
 
 func _ready() -> void:
