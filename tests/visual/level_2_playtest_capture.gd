@@ -3,9 +3,9 @@ extends Node
 
 const LEVEL := preload("res://scenes/levels/level_2.tscn")
 const CAPTURES := {
-	"arrival": {"camera": Vector2(-1900.0, 460.0), "player": Vector2(-2240.0, 492.0)},
-	"combine": {"camera": Vector2(-100.0, 460.0), "player": Vector2(-650.0, 492.0)},
-	"boss": {"camera": Vector2(1850.0, 460.0), "player": Vector2(1500.0, 492.0)},
+	"arrival": {"camera": Vector2(-2100.0, 460.0), "player": Vector2(-2240.0, 492.0)},
+	"combine": {"camera": Vector2(-500.0, 460.0), "player": Vector2(-650.0, 492.0)},
+	"boss": {"camera": Vector2(1700.0, 460.0), "player": Vector2(1500.0, 492.0)},
 }
 
 
@@ -41,8 +41,12 @@ func _capture() -> void:
 		camera.global_position = capture["camera"]
 		await get_tree().process_frame
 		await get_tree().process_frame
-		await RenderingServer.frame_post_draw
+		RenderingServer.force_draw(false)
 		var image := get_viewport().get_texture().get_image()
+		if image == null:
+			push_error("playtest capture: 当前显示驱动不支持截图，请使用 windows + opengl3")
+			get_tree().quit(1)
+			return
 		var path := output_dir.path_join("level_2_%s.png" % capture_name)
 		var error := image.save_png(path)
 		if error != OK:

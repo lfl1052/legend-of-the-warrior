@@ -36,6 +36,8 @@ Decorations (Node2D)
 - 无缝循环使用 `repeat_size`。子纹理应从局部坐标 `(0, 0)` 开始覆盖重复区域，重复宽度至少覆盖视口；缩放不会自动计入 `repeat_size`。
 - 不要把接缝一概归因于引擎 Bug。常见原因包括 Region 边界采样、纹理过滤、透明边缘、重复尺寸错误，以及相机平滑与像素吸附组合。
 - 像素风优先使用 `Nearest`、整数缩放和已裁好的独立纹理。必须使用 Region 时，确保纹理重复模式和边缘留白正确。
+- 本项目森林关卡使用 `DistantForest / MidForest / NearForest` 三个 `Parallax2D`，重复周期统一为逻辑视口宽度 640 像素。每一层只放置一个周期内的素材实例，由 `repeat_size` 负责扩展，禁止按整关长度复制树节点。
+- 三层树木都必须位于实体地形的有效 `z_index` 之后。注意子 `CanvasItem` 默认启用相对 Z，父子负值会相加；测试应比较有效 Z，而不能只看场景文件中的单个数字。树木可以延伸到地面基线，但基线以下必须由不透明地形遮蔽。
 
 官方参考：[2D 视差教程](https://docs.godotengine.org/en/4.7/tutorials/2d/2d_parallax.html)、[Parallax2D](https://docs.godotengine.org/en/4.7/classes/class_parallax2d.html)。
 

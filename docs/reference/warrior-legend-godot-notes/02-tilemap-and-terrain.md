@@ -23,6 +23,9 @@ MapVisuals
 - `Match Corners`、概率、替代图块和散布绘制仍可用。概率适合视觉变体，不应承载必需碰撞或玩法逻辑。
 - `TileMapLayer` 更新会在帧末批处理。只有代码必须在同一帧立即读取新碰撞或场景图块时，才调用 `update_internals()`。
 - Godot 4.7 的 2D Scene Paint Mode（默认快捷键 `B`）适合散布装饰、敌人和收集物；连续地面及其碰撞仍应由 `TileMapLayer` 负责。
+- 教程的前提是图集包含目标拓扑所需的角、边和中心组合，再由 Terrain 自动选图。本项目重新审计 `Forest-1.png` 全部 33×21 单元后确认：`(5,4)/(6,4)` 是贴地高台凹角的下半格，`(7,3)` 可提供上半格草冠。项目将它们按左右岩壁轮廓裁成两个 1×2 派生凹角，避免单格缺草或整格草冠深入土墙。当前仍缺洞穴下侧凹角和 45° 泥土斜坡。
+- 草冠与下方泥土属于同一个扩展顶面图块：TileSet 中合并为 `1×2` atlas 区域并设置 `texture_origin.y = 8`，只绘制到 `GeometryTiles`。不得把草冠单独画进 `BackgroundTiles`，否则会出现重复草带、层级重叠和接缝。
+- 运行时先把布局转换为占用单元，再通过 Terrain Set 按“扩展顶面 / 左右侧墙 / 内部填充 / 底部封口 / 左右凹角”自动选图。`merge_with_ground` 高台可与主地面合并；洞穴顶板和 45° 斜坡仍不在当前规则范围。实体 Terrain 图块携带碰撞，装饰层不携带碰撞。
 
 运行时连接地形的基本写法：
 
@@ -36,6 +39,8 @@ func paint_ground(cells: Array[Vector2i]) -> void:
 ```
 
 本项目的森林图块资源是 [forest_tileset.tres](../../../data/forest_tileset.tres)，关卡绘制脚本是 [level_2_forest_tile_painter.gd](../../../scripts/tools/level_2_forest_tile_painter.gd)。官方参考：[使用 TileMap](https://docs.godotengine.org/en/4.7/tutorials/2d/using_tilemaps.html)、[TileMapLayer](https://docs.godotengine.org/en/4.7/classes/class_tilemaplayer.html)。
+
+两段补充视频的整理与本项目执行规范见：[动态瓦片与场景叠层工作流](../tilemap-rule-and-layering-workflow.md)。
 
 ## 原教程正文（历史界面）
 

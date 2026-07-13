@@ -20,7 +20,7 @@
 - **Primary Input**: Keyboard (WASD + Space/J/K)
 - **Gamepad Support**: None（计划：Partial）
 - **Touch Support**: None
-- **Platform Notes**: 1920x1080 viewport，stretch=expand，aspect=expand；菜单和 HUD 使用 Anchor + CanvasLayer 适配缩放
+- **Platform Notes**: 640x360 逻辑视口，1280x720 默认窗口，整数缩放，stretch=expand；菜单和 HUD 使用 Anchor + CanvasLayer 适配缩放
 
 ### Input Map (project.godot)
 
@@ -57,7 +57,7 @@
 
 ## Performance Budgets
 
-- **Target Framerate**: 60 FPS @ 1920×1080
+- **Target Framerate**: 60 FPS @ 1280×720（640×360 逻辑视口整数放大）
 - **Frame Budget**: 16.6 ms（CPU+GPU 总），其中 gameplay <8 ms
 - **Draw Calls**: <300 / frame
 - **Memory Ceiling**: <512 MB RAM (PC), <128 MB VRAM
@@ -65,7 +65,7 @@
 
 ## Testing
 
-- **Framework**: GdUnit4 v6.1.3（`addons/gdUnit4`），CLI 已在 Godot 4.7 stable 下验证通过（2026-07-11，21 个套件、89/89 用例通过；详见 `tests/README.md`）
+- **Framework**: GdUnit4 v6.1.3（`addons/gdUnit4`），CLI 已在 Godot 4.7 stable 下验证通过（2026-07-13，24 个套件、95/95 用例通过；详见 `tests/README.md`）
 - **Minimum Coverage**: 关键系统（存档 / 战斗 / 状态机）目标 70%；UI 与表现层不强制
 - **Required Tests**:
   - 存档：has_saved_game / load_data / save_data 往返

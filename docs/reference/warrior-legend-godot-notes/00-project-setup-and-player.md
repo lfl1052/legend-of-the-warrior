@@ -14,6 +14,8 @@
 - 地图节点使用 `TileMapLayer`，不要再新建已弃用的 `TileMap`。背景、地面、前景分别使用独立的 `TileMapLayer`，需要时共享同一个 `TileSet`。
 - Godot 4.7 新项目默认采用 `Display > Window > Stretch > Mode = canvas_items` 和 `Aspect = expand`。本项目已显式保存这两个设置，像素风项目仍需测试不同宽高比下的可视范围。
 - 像素素材继续使用默认纹理过滤 `Nearest`；本项目已通过 `textures/canvas_textures/default_texture_filter` 显式保存该设置。
+- 本项目使用 `640×360` 逻辑视口和 `1280×720` 默认窗口，并启用整数缩放。16 像素地砖在逻辑视口中横向显示 40 格，玩家主体约 32 像素高；不要用 1920×1080 作为像素素材的逻辑分辨率，否则角色只占屏幕高度约 3%。
+- 窗口分辨率只负责显示大小，角色、地砖、相机和 HUD 的比例必须以逻辑视口为基准。调大 `Camera2D.zoom` 只能用于临时调试，不能替代统一的像素密度规范。
 - `Sprite2D + AnimationPlayer` 仍受支持；仅做逐帧动画时也可选 `AnimatedSprite2D + SpriteFrames`，不要为了“新版”强制迁移已有动画。
 - `CharacterBody2D.velocity` 仍由节点维护，`move_and_slide()` 在 Godot 4.7 中仍然不接收速度参数。
 

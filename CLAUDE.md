@@ -9,7 +9,7 @@
 - **Language**: GDScript（全项目强制静态类型标注 `: Type` + `-> ReturnType`）
 - **Physics**: Godot 内置 2D 物理 (CharacterBody2D / StaticBody2D / Area2D)
 - **Testing**: GdUnit4 v6.1.3
-- **Platform**: PC (Windows / Linux), 1920×1080, stretch=expand
+- **Platform**: PC (Windows / Linux), 640×360 logical viewport, 1280×720 default window, integer stretch
 - **VCS**: Git with conventional commits
 
 ## Technical Preferences
