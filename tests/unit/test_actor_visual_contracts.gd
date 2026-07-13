@@ -82,6 +82,32 @@ func test_player_animation_timelines_have_valid_frame_mappings() -> void:
 			assert_int(frame).is_between(0, frame_count - 1)
 
 
+func test_player_slide_and_combo_finisher_use_action_sheet() -> void:
+	var player := await _instantiate_actor(ACTORS["player"]) as PlayerController
+	var animation_player := player.get_node("AnimationPlayer") as AnimationPlayer
+	var sprite := player.get_node("Sprite") as Sprite2D
+	var primary_texture := sprite.texture
+
+	animation_player.play(&"slide")
+	animation_player.seek(0.0, true)
+	player._update_sprite_frame()
+	assert_object(sprite.texture).is_equal(player.secondary_sprite_texture)
+	assert_int(sprite.vframes).is_equal(7)
+	assert_int(sprite.frame).is_equal(16)
+
+	animation_player.play(&"attack3")
+	animation_player.seek(0.0, true)
+	player._update_sprite_frame()
+	assert_object(sprite.texture).is_equal(player.secondary_sprite_texture)
+	assert_int(sprite.frame).is_equal(32)
+
+	animation_player.play(&"idle")
+	animation_player.seek(0.0, true)
+	player._update_sprite_frame()
+	assert_object(sprite.texture).is_equal(primary_texture)
+	assert_int(sprite.vframes).is_equal(11)
+
+
 func test_boss_animation_player_owns_frame_tracks() -> void:
 	var boss := await _instantiate_actor(ACTORS["boss"])
 	var animation_player := boss.get_node("AnimationPlayer") as AnimationPlayer

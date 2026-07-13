@@ -56,12 +56,12 @@ region_rect = Rect2(4, 720, 88, 208)
 
 [node name="BackgroundTree2" type="Sprite2D" parent="DistantForest" unique_id=758069066]
 modulate = Color(0.28, 0.39, 0.36, 0.52)
-position = Vector2(392, 437)
+position = Vector2(392, 424)
 scale = Vector2(0.85, 0.85)
 texture = ExtResource("13_tree_atlas")
 flip_h = true
 region_enabled = true
-region_rect = Rect2(100, 720, 88, 177)
+region_rect = Rect2(4, 720, 88, 208)
 
 [node name="MidForest" type="Parallax2D" parent="."]
 z_index = -8
@@ -79,12 +79,12 @@ region_rect = Rect2(4, 720, 88, 208)
 
 [node name="TreeCenter" type="Sprite2D" parent="MidForest"]
 modulate = Color(0.28, 0.44, 0.32, 0.68)
-position = Vector2(352, 415)
+position = Vector2(352, 398)
 scale = Vector2(1.1, 1.1)
 texture = ExtResource("13_tree_atlas")
 flip_h = true
 region_enabled = true
-region_rect = Rect2(100, 720, 88, 177)
+region_rect = Rect2(4, 720, 88, 208)
 
 [node name="NearForest" type="Parallax2D" parent="."]
 z_index = -7

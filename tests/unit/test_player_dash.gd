@@ -44,6 +44,27 @@ func test_player_movement_assist_windows_use_forgiving_defaults() -> void:
 	assert_float(_player.coyote_time).is_equal_approx(0.12, 0.001)
 	assert_float(_player.jump_buffer_time).is_equal_approx(0.12, 0.001)
 	assert_float(_player.wall_jump_input_lock).is_equal_approx(0.10, 0.001)
+	assert_float(_player.run_speed).is_equal(220.0)
+	assert_float(_player.walk_speed).is_equal(110.0)
+	assert_float(_player.ground_deceleration).is_greater(_player.ground_acceleration)
+
+
+func test_attack_buffer_chains_all_three_combo_steps() -> void:
+	_player._begin_attack()
+	assert_int(_player.combo_index).is_equal(1)
+
+	_player._queue_attack()
+	_player.on_attack_animation_finished()
+	assert_bool(_player.is_attacking).is_true()
+	assert_int(_player.combo_index).is_equal(2)
+
+	_player._queue_attack()
+	_player.on_attack_animation_finished()
+	assert_bool(_player.is_attacking).is_true()
+	assert_int(_player.combo_index).is_equal(3)
+
+	_player.on_attack_animation_finished()
+	assert_bool(_player.is_attacking).is_false()
 
 
 func test_player_jump_release_reduces_upward_velocity() -> void:

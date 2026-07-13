@@ -92,3 +92,35 @@ func test_decor_tiles_are_complete_non_colliding_cells() -> void:
 		assert_int(tile_data.get_collision_polygons_count(0)).is_equal(0)
 	for coords in UNSAFE_LEGACY_DECOR:
 		assert_bool(atlas.has_tile(coords)).is_false()
+
+
+func test_parallax_tree_regions_keep_their_trunks() -> void:
+	var scene_specs := {
+		"res://scenes/levels/level_demo.tscn": [
+			"DistantForest/BackgroundTreeRight",
+			"MidForest/TreeCenter",
+		],
+		"res://scenes/levels/level_2.tscn": [
+			"DistantForest/BackgroundTree2",
+			"MidForest/TreeCenter",
+		],
+	}
+	for scene_path: String in scene_specs:
+		var packed := load(scene_path) as PackedScene
+		assert_object(packed).is_not_null()
+		var level: Node = auto_free(packed.instantiate())
+		for node_path: String in scene_specs[scene_path]:
+			var tree := level.get_node(node_path) as Sprite2D
+			assert_float(tree.region_rect.position.x).is_equal(4.0)
+			assert_float(tree.region_rect.size.y).is_equal(208.0)
+			var image := tree.texture.get_image().get_region(Rect2i(tree.region_rect))
+			var used_rect := image.get_used_rect()
+			assert_int(used_rect.end.y).is_equal(208)
+			var center_gap_count := 0
+			var center_started := false
+			for y in range(used_rect.position.y, used_rect.end.y):
+				if image.get_pixel(44, y).a > 0.0:
+					center_started = true
+				elif center_started:
+					center_gap_count += 1
+			assert_int(center_gap_count).is_equal(0)

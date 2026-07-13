@@ -18,14 +18,15 @@ extends CharacterBody2D
 ##   $Character              Character（血量/能量）
 ##   $AttackPivot/Attack     Attack（连击命中区，可多个）
 
-const SPEED_NORMAL := 380.0
-const SPEED_WALK := 160.0
+const SPEED_NORMAL := 220.0
+const SPEED_WALK := 110.0
 const JUMP_VELOCITY := -600.0
 const WALL_JUMP_X := 380.0
 const WALL_JUMP_Y := -560.0
-const SLIDE_SPEED := 540.0
-const SLIDE_DURATION := 0.42
-const COMBO_RESET := 0.55
+const SLIDE_SPEED := 320.0
+const SLIDE_DURATION := 0.44
+const COMBO_RESET := 0.70
+const ATTACK_BUFFER_TIME := 0.50
 const HURT_KNOCKBACK := 220.0
 const WALL_SLIDE_MAX_SPEED := 140.0
 const ATTACK_STARTUP_TIMES := [0.0, 0.06, 0.05, 0.08]
@@ -33,8 +34,8 @@ const ATTACK_ACTIVE_TIMES := [0.0, 0.16, 0.14, 0.20]
 const SPRITE_ANIMATION_FRAMES := {
 	"idle": [0, 1, 2, 3, 4, 5],
 	"attack1": [8, 9, 10, 11, 12, 13],
-	"attack2": [8, 9, 10, 14, 15],
-	"attack3": [8, 9, 10, 11, 12, 13, 14, 15],
+	"attack2": [13, 14, 15],
+	"attack3": [32, 33, 34, 35, 36, 37, 38, 39],
 	"run": [16, 17, 18, 19, 20, 21, 22, 23],
 	"walk": [16, 17, 18, 19, 20, 21, 22, 23],
 	"jump": [24, 25, 26, 27],
@@ -42,7 +43,11 @@ const SPRITE_ANIMATION_FRAMES := {
 	"wall": [27],
 	"hurt": [40, 41, 42, 43],
 	"dead": [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59],
-	"slide": [72, 73, 74],
+	"slide": [16, 17, 18, 19, 20, 21, 22, 23],
+}
+const SECONDARY_SPRITE_ANIMATIONS := {
+	"attack3": true,
+	"slide": true,
 }
 
 @export var sprite_path: NodePath = ^"Sprite"
@@ -54,6 +59,7 @@ const SPRITE_ANIMATION_FRAMES := {
 @export var attack_hitbox_path: NodePath = ^"AttackPivot/Attack/CollisionShape2D"
 @export var heal_skill_path: NodePath = ^"HealSkill"
 @export var slash_skill_path: NodePath = ^"SkillSlash"
+@export var secondary_sprite_texture: Texture2D
 
 @export var walk_speed: float = SPEED_WALK
 @export var run_speed: float = SPEED_NORMAL
@@ -62,9 +68,11 @@ const SPRITE_ANIMATION_FRAMES := {
 @export var slide_duration: float = SLIDE_DURATION
 @export var slide_cooldown: float = 0.6
 @export var hide_body_after_death: float = 1.2
-@export var ground_acceleration: float = 2600.0
-@export var ground_deceleration: float = 3200.0
-@export var air_acceleration: float = 1800.0
+@export var ground_acceleration: float = 1400.0
+@export var ground_turn_acceleration: float = 3000.0
+@export var ground_deceleration: float = 3000.0
+@export var air_acceleration: float = 1000.0
+@export var attack_buffer_time: float = ATTACK_BUFFER_TIME
 @export var coyote_time: float = 0.12
 @export var jump_buffer_time: float = 0.12
 @export var wall_jump_input_lock: float = 0.10
@@ -90,6 +98,7 @@ var _facing: int = 1
 var _slide_timer: float = 0.0
 var _slide_cooldown_timer: float = 0.0
 var _combo_timer: float = 0.0
+var _attack_buffer_timer: float = 0.0
 var _attack_startup_timer: float = 0.0
 var _attack_active_timer: float = 0.0
 var _attack_window_active: bool = false
@@ -99,6 +108,7 @@ var _wall_jump_lock_timer: float = 0.0
 var _normal_layer: int = 0
 var _normal_mask: int = 0
 var _sprite_base_modulate: Color = Color.WHITE
+var _primary_sprite_texture: Texture2D
 var _death_hide_scheduled: bool = false
 
 @onready var _sprite: Node2D = get_node_or_null(sprite_path)
@@ -119,6 +129,8 @@ func _ready() -> void:
 	_normal_mask = collision_mask
 	if _sprite is CanvasItem:
 		_sprite_base_modulate = (_sprite as CanvasItem).modulate
+	if _sprite is Sprite2D:
+		_primary_sprite_texture = (_sprite as Sprite2D).texture
 	if _character != null:
 		_character.died.connect(_on_died)
 		_character.took_damage.connect(_on_took_damage)
@@ -149,9 +161,10 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 
-	_combo_timer = maxf(0.0, _combo_timer - delta)
-	if _combo_timer == 0.0:
-		combo_index = 0
+	if not is_attacking:
+		_combo_timer = maxf(0.0, _combo_timer - delta)
+		if _combo_timer == 0.0:
+			combo_index = 0
 
 	if is_sliding:
 		_tick_slide(delta)
@@ -193,9 +206,12 @@ func _physics_process(delta: float) -> void:
 	if _read_jump_released():
 		_apply_jump_release()
 
-	# 攻击
-	if _read_attack_pressed() and not is_hurt and not is_attacking:
-		_begin_attack()
+	# 攻击输入在当前动作中会缓存一段时间，动画结束后直接衔接下一段。
+	if _read_attack_pressed() and not is_hurt:
+		if is_attacking:
+			_queue_attack()
+		else:
+			_begin_attack()
 
 	# 滑铲
 	if _read_slide_pressed() and on_floor and not is_attacking and not is_hurt and can_dash():
@@ -223,7 +239,12 @@ func _physics_process(delta: float) -> void:
 		var target_speed := move_dir * speed
 		var acceleration := air_acceleration
 		if on_floor:
-			acceleration = ground_acceleration if not is_zero_approx(move_dir) else ground_deceleration
+			if is_zero_approx(move_dir):
+				acceleration = ground_deceleration
+			elif not is_zero_approx(velocity.x) and signf(velocity.x) != signf(move_dir):
+				acceleration = ground_turn_acceleration
+			else:
+				acceleration = ground_acceleration
 		velocity.x = move_toward(velocity.x, target_speed, acceleration * delta)
 		if move_dir != 0.0:
 			_facing = int(sign(move_dir))
@@ -293,6 +314,7 @@ func set_gameplay_input_active(active: bool) -> void:
 		velocity = Vector2.ZERO
 		is_attacking = false
 		is_sliding = false
+		_attack_buffer_timer = 0.0
 		_coyote_timer = 0.0
 		_jump_buffer_timer = 0.0
 		_wall_jump_lock_timer = 0.0
@@ -304,6 +326,7 @@ func set_gameplay_input_active(active: bool) -> void:
 # ---------------------------------------------------------------------------
 
 func _begin_attack() -> void:
+	_attack_buffer_timer = 0.0
 	combo_index = (combo_index % 3) + 1
 	_combo_timer = COMBO_RESET
 	is_attacking = true
@@ -327,11 +350,20 @@ func _begin_attack() -> void:
 
 
 func on_attack_animation_finished() -> void:
-	is_attacking = false
 	_attack_startup_timer = 0.0
 	_attack_active_timer = 0.0
 	_attack_window_active = false
 	_set_attack_hitbox_active(false)
+	if _attack_buffer_timer > 0.0 and combo_index < 3 and not is_hurt and not is_dead:
+		is_attacking = false
+		_begin_attack()
+		return
+	_attack_buffer_timer = 0.0
+	is_attacking = false
+
+
+func _queue_attack() -> void:
+	_attack_buffer_timer = attack_buffer_time
 
 
 func on_hurt_animation_finished() -> void:
@@ -396,6 +428,7 @@ func _on_took_damage(attacker: Node) -> void:
 	is_attacking = false
 	is_sliding = false
 	combo_index = 0
+	_attack_buffer_timer = 0.0
 	_attack_startup_timer = 0.0
 	_attack_active_timer = 0.0
 	_attack_window_active = false
@@ -417,6 +450,7 @@ func _on_died() -> void:
 	is_attacking = false
 	is_sliding = false
 	is_hurt = false
+	_attack_buffer_timer = 0.0
 	input_enabled = false
 	_set_attack_hitbox_active(false)
 	_restore_normal_collision()
@@ -436,6 +470,7 @@ func revive_at(pos: Vector2) -> void:
 	is_attacking = false
 	is_sliding = false
 	_death_hide_scheduled = false
+	_attack_buffer_timer = 0.0
 	visible = true
 	input_enabled = true
 	_coyote_timer = 0.0
@@ -458,6 +493,7 @@ func prepare_for_new_game_session() -> void:
 	is_attacking = false
 	is_sliding = false
 	_death_hide_scheduled = false
+	_attack_buffer_timer = 0.0
 	visible = true
 	input_enabled = true
 	_slide_cooldown_timer = 0.0
@@ -502,6 +538,7 @@ func _tick_slide(delta: float) -> void:
 	move_and_slide()
 	if _slide_timer <= 0.0:
 		is_sliding = false
+		velocity.x = 0.0
 		_restore_normal_collision()
 
 
@@ -517,6 +554,7 @@ func _tick_movement_windows(delta: float) -> void:
 	_coyote_timer = maxf(0.0, _coyote_timer - delta)
 	_jump_buffer_timer = maxf(0.0, _jump_buffer_timer - delta)
 	_wall_jump_lock_timer = maxf(0.0, _wall_jump_lock_timer - delta)
+	_attack_buffer_timer = maxf(0.0, _attack_buffer_timer - delta)
 
 
 func _apply_jump_release() -> void:
@@ -598,6 +636,13 @@ func _update_sprite_frame() -> void:
 	var frames: Array = get_sprite_animation_frames(anim_name)
 	if frames.is_empty():
 		return
+
+	var uses_secondary := SECONDARY_SPRITE_ANIMATIONS.has(anim_name)
+	var target_texture := secondary_sprite_texture if uses_secondary else _primary_sprite_texture
+	if target_texture != null and sprite.texture != target_texture:
+		sprite.texture = target_texture
+		sprite.hframes = 8
+		sprite.vframes = 7 if uses_secondary else 11
 
 	var frame_index := 0
 	if _anim != null and _anim.has_animation(anim_name):
