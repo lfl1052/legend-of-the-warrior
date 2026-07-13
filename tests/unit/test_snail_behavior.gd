@@ -14,10 +14,17 @@ func before_test() -> void:
 	_snail.check_distance = 40.0
 	_snail.despawn_after_death = 0.0
 	add_child(_snail)
-	_player = auto_free(Node2D.new())
+	var player_body := CharacterBody2D.new()
+	player_body.collision_layer = 2
+	var player_collider := CollisionShape2D.new()
+	var player_shape := RectangleShape2D.new()
+	player_shape.size = Vector2(20.0, 32.0)
+	player_collider.shape = player_shape
+	player_body.add_child(player_collider)
+	_player = auto_free(player_body)
 	_player.add_to_group(&"player")
 	add_child(_player)
-	await get_tree().process_frame
+	await get_tree().physics_frame
 
 
 func after_test() -> void:
@@ -29,6 +36,7 @@ func after_test() -> void:
 func test_snail_detects_player_in_front() -> void:
 	_snail.face_direction(1.0)
 	_player.global_position = _snail.global_position + Vector2(60.0, 0.0)
+	await get_tree().physics_frame
 
 	assert_bool(_snail.found_player()).is_true()
 	assert_object(_snail.attacker).is_equal(_player)
@@ -37,6 +45,7 @@ func test_snail_detects_player_in_front() -> void:
 func test_snail_ignores_player_behind_for_backstab_window() -> void:
 	_snail.face_direction(1.0)
 	_player.global_position = _snail.global_position + Vector2(-60.0, 0.0)
+	await get_tree().physics_frame
 
 	assert_bool(_snail.found_player()).is_false()
 	assert_object(_snail.attacker).is_null()

@@ -351,6 +351,7 @@ chase_speed = 50.0
 check_distance = 90.0
 
 [node name="Visual" type="Node2D" parent="."]
+position = Vector2(0, -3)
 
 [node name="Sprite2D" type="Sprite2D" parent="Visual"]
 texture = ExtResource("5_walk_sheet")

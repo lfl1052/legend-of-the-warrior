@@ -36,6 +36,8 @@ func found_player() -> bool:
 			attacker = null
 			lost_time_counter = 0.0
 		return false
+	if not can_see_target(player):
+		return false
 	attacker = player
 	lost_time_counter = lost_time
 	return true

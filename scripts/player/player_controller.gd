@@ -595,7 +595,7 @@ func _update_sprite_frame() -> void:
 	if _anim != null and not String(_anim.current_animation).is_empty():
 		anim_name = String(_anim.current_animation)
 
-	var frames: Array = SPRITE_ANIMATION_FRAMES.get(anim_name, SPRITE_ANIMATION_FRAMES["idle"])
+	var frames: Array = get_sprite_animation_frames(anim_name)
 	if frames.is_empty():
 		return
 
@@ -609,6 +609,10 @@ func _update_sprite_frame() -> void:
 			frame_index %= frames.size()
 
 	sprite.frame = int(frames[frame_index])
+
+
+func get_sprite_animation_frames(anim_name: StringName) -> Array:
+	return SPRITE_ANIMATION_FRAMES.get(String(anim_name), SPRITE_ANIMATION_FRAMES["idle"])
 
 
 func _gravity() -> float:

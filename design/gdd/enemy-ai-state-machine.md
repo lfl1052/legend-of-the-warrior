@@ -113,11 +113,13 @@ CharacterBody2D
 | `lost_time` | 1.5s | 丢失目标后放弃追击的超时 |
 | `check_distance` | 4.5 | 玩家检测半径 |
 | `attack_layer_mask` | 1 << 1 | 检测碰撞层（Player 层） |
+| `requires_line_of_sight` | true | 范围检测后是否验证世界遮挡 |
+| `line_of_sight_mask` | World + Player | 视线射线可命中的层 |
 
 **状态机方法**:
 - `_setup_states()`: 子类覆写，装配 `patrol_state` / `chase_state` / `skill_state`
 - `switch_state(new_state: int)`: 调用当前状态的 `on_exit()` → 新状态的 `on_enter(self)`
-- `found_player() -> bool`: 默认使用 `CircleShape2D` 重叠检测（`PhysicsShapeQueryParameters2D`），命中 "player" group 节点 → 设 `attacker` + 重置 `lost_time_counter`
+- `found_player() -> bool`: 先使用 `CircleShape2D` 重叠检测产生候选玩家，再用 `can_see_target()` 射线确认 World 碰撞未遮挡；通过后设置 `attacker` 并重置 `lost_time_counter`
 
 **生命周期**:
 - `_ready()`: `super._ready()` → 记 `spawn_point` → `_setup_states()` → `switch_state(PATROL)`

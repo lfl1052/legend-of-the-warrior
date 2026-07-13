@@ -16,6 +16,10 @@ signal state_changed(new_state: int)
 @export var lost_time: float = 1.5
 @export var check_distance: float = 4.5
 @export var attack_layer_mask: int = 1 << 1            # Player 层
+@export var requires_line_of_sight: bool = true
+@export var line_of_sight_mask: int = (1 << 0) | (1 << 1)
+@export var sight_origin_offset: Vector2 = Vector2(0.0, -12.0)
+@export var sight_target_offset: Vector2 = Vector2(0.0, -12.0)
 @export var uses_gravity: bool = true
 @export var chase_acceleration: float = 720.0
 
@@ -106,11 +110,30 @@ func found_player() -> bool:
 	query.collide_with_bodies = true
 	for hit in space.intersect_shape(query, 4):
 		var node: Node = hit.get("collider")
-		if node != null and node.is_in_group(&"player"):
+		if node != null and node.is_in_group(&"player") and can_see_target(node as Node2D):
 			attacker = node
 			lost_time_counter = lost_time
 			return true
 	return false
+
+
+func can_see_target(target: Node2D) -> bool:
+	if target == null:
+		return false
+	if not requires_line_of_sight:
+		return true
+	var space := get_world_2d().direct_space_state
+	if space == null:
+		return false
+	var query := PhysicsRayQueryParameters2D.create(
+		global_position + sight_origin_offset,
+		target.global_position + sight_target_offset,
+		line_of_sight_mask)
+	query.collide_with_areas = false
+	query.collide_with_bodies = true
+	query.exclude = [get_rid()]
+	var hit := space.intersect_ray(query)
+	return not hit.is_empty() and hit.get("collider") == target
 
 
 # ----- 巡逻点接口（子类覆写） --------------------------------------------------

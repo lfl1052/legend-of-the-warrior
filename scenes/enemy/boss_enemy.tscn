@@ -7,8 +7,8 @@
 [ext_resource type="Texture2D" path="res://art/imported/Generic-Character/png/red/char_red_1.png" id="5_sprite"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_body"]
-radius = 16.0
-height = 52.0
+radius = 14.0
+height = 44.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_skill"]
 radius = 72.0
@@ -17,23 +17,70 @@ radius = 72.0
 resource_name = "idle"
 length = 0.5
 loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual/Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.083, 0.166, 0.249, 0.332, 0.415),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 4, 5]
+}
 
 [sub_resource type="Animation" id="Animation_chase"]
 resource_name = "chase"
 length = 0.35
 loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual/Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.0875, 0.175, 0.2625),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [16, 18, 20, 22]
+}
 
 [sub_resource type="Animation" id="Animation_skill_windup"]
 resource_name = "skill_windup"
 length = 0.45
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual/Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.15, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [8, 9, 10]
+}
 
 [sub_resource type="Animation" id="Animation_skill_active"]
 resource_name = "skill_active"
 length = 0.18
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual/Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.09),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [11, 12]
+}
 
 [sub_resource type="Animation" id="Animation_skill_recovery"]
 resource_name = "skill_recovery"
 length = 0.5
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual/Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.16, 0.32),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [13, 14, 15]
+}
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_boss"]
 _data = {
@@ -60,6 +107,7 @@ skill_recovery_duration = 0.55
 display_name_key = &"enemy.boss.test"
 
 [node name="Visual" type="Node2D" parent="."]
+position = Vector2(0, -16)
 scale = Vector2(1.35, 1.35)
 
 [node name="Sprite2D" type="Sprite2D" parent="Visual"]
