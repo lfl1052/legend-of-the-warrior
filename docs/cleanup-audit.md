@@ -17,9 +17,6 @@
 - `art/imported/Legacy-Fantasy-High Forest/HUD/GameButtons.png`
 - `art/imported/Legacy-Fantasy-High Forest/Map Assets/Forest-1.png`
 - `art/imported/Legacy-Fantasy-High Forest/Map Assets/Trees/Green-Tree.png`
-- `art/processed/enemies/generated/root_stalker/root_stalker_sheet.png`
-- `art/processed/enemies/generated/spore_shroom/spore_shroom_sheet.png`
-- `art/processed/enemies/generated/thorn_sprout/thorn_sprout_sheet.png`
 - `art/processed/map/props/chest/chest2_01.png`
 - `art/processed/map/props/chest/chest2_02.png`
 - `art/processed/map/terrain/rocks/props_rocks_01.png`
@@ -30,7 +27,6 @@
 
 - `output/imagegen/`
   - 目前包含生成图中间产物和参考图。
-  - 三只生成敌人的运行时贴图已经在 `art/processed/enemies/generated/`。
   - 若不需要保留生成源，可归档；若之后还要重新处理或调整敌人图，先保留。
 - `reports/report_*`
   - GdUnit 每次运行生成的报告。
@@ -40,6 +36,11 @@
   - 通常不应作为游戏资源提交；若团队不共享 Serena 记忆，可忽略。
 
 ## 已执行的安全清理
+
+### 2026-07-13 移除生成敌人
+
+- 删除 `Spore Shroom`、`Root Stalker` 与 `Thorn Sprout` 的场景、专属脚本和生成图集。
+- 同步清除关卡、测试和文档引用，避免 Godot 导入残留失效路径。
 
 ### 2026-07-11 资产库去重
 

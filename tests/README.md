@@ -20,10 +20,12 @@
 
 | 文件 | 系统 | 用例数 |
 |------|------|--------|
+| `test_actor_visual_contracts.gd` | 角色比例 / 脚底基线 / 动画职责 | 5 |
 | `test_attack.gd` | Attack 冷却 / one-shot | 3 |
 | `test_audio_manager.gd` | 音效 / BGM / 音量 / 停止 | 9 |
 | `test_boss_skill_state.gd` | Boss 技能状态循环 | 1 |
 | `test_breakable.gd` | 可破坏物 / 奖励 / 存档 | 2 |
+| `test_camera_control.gd` | 逻辑视口 / 相机死区 / 构图偏移 | 3 |
 | `test_chapter_data.gd` | 章节与关卡布局数据 | 2 |
 | `test_character.gd` | 血量 / 能量 / 无敌帧 | 15 |
 | `test_chest.gd` | 宝箱 / 奖励 / 存档 | 3 |
@@ -31,9 +33,10 @@
 | `test_combat_feedback.gd` | 战斗反馈事件 | 1 |
 | `test_data_manager.gd` | 存档读写 / 损坏隔离 | 3 |
 | `test_enemy_combatant.gd` | 敌人受击 / 死亡 | 2 |
+| `test_enemy_perception.gd` | 敌人范围感知 / 世界遮挡 | 2 |
 | `test_fade_canvas.gd` | 淡入淡出 | 1 |
+| `test_forest_tileset.gd` | Terrain 规则 / 碰撞 / 安全装饰 | 4 |
 | `test_game_events.gd` | 全局信号契约 | 10 |
-| `test_generated_enemy_assets.gd` | 生成敌人资源 / 碰撞 / 攻击窗口 | 8 |
 | `test_persistence_key_utility.gd` | 持久化键 | 4 |
 | `test_physics_check.gd` | 巡逻墙面 / 悬崖检测 | 3 |
 | `test_player_dash.gd` | 冲刺 / 跳跃窗口 / 死亡 / 复活 | 6 |
@@ -42,7 +45,7 @@
 | `test_scene_resource_validator.gd` | 场景资源死链校验 | 5 |
 | `test_snail_behavior.gd` | 蜗牛感知 / 缩壳 | 3 |
 
-Godot 4.7 stable 验证基线（2026-07-11）：**21 个测试套件，89/89 用例通过**。
+Godot 4.7 stable 验证基线（2026-07-13）：**24 个测试套件，95/95 用例通过**。
 
 ### 推荐运行方式 — 编辑器内
 
@@ -101,6 +104,7 @@ E:\Godot\Godot.exe --path . res://tests/e2e/smoke_test.tscn
 - `tests/integration/level_2_load_test.tscn`：验证三层 `TileMapLayer`、TileSet 碰撞、关卡节点和角色落地。
 - `tests/integration/level_2_traversal_test.tscn`：自动玩家穿越完整 `level_2` 路线，防止平台布局形成死路。
 - `tests/visual/level_2_playtest_capture.tscn`：生成 arrival / combine / boss 三个代表状态截图到 `reports/playtest/`。
+- `tests/visual/menu_playtest_capture.tscn`：生成 640×360 逻辑视口下的菜单截图到 `reports/playtest/`。
 
 ### 隔离保证
 

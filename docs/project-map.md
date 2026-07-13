@@ -38,8 +38,6 @@
   - `enemy.gd`: Patrol / Chase / Skill 状态机
   - `base_state.gd`: 状态基类
   - `bee.gd`, `snail.gd`, `boar.gd`, `boss_enemy.gd`: 敌人差异
-  - `thorn_sprout.gd`, `thorn_guard_state.gd`: 荆棘守卫预警攻击
-  - `spore_shroom.gd`: 孢子脉冲攻击
   - `*_patrol_state.gd`, `*_chase_state.gd`, `*_skill_state.gd`: 状态实现
 - 通用战斗/交互: `scripts/general/`
   - `character.gd`: 血量、能量、无敌帧
@@ -65,9 +63,6 @@
   - `scenes/enemy/bee.tscn`
   - `scenes/enemy/snail.tscn`
   - `scenes/enemy/boss_enemy.tscn`
-  - `scenes/enemy/thorn_sprout.tscn`
-  - `scenes/enemy/spore_shroom.tscn`
-  - `scenes/enemy/root_stalker.tscn`
 - 道具 prefab:
   - `scenes/props/chest.tscn`
   - `scenes/props/breakable_rock.tscn`
@@ -93,6 +88,7 @@
   - `tests/integration/boss_skill_state_test.tscn`
 - 视觉回归:
   - `tests/visual/level_2_playtest_capture.tscn`
+  - `tests/visual/menu_playtest_capture.tscn`
 - 冒烟测试:
   - `tests/e2e/smoke_test.tscn`
   - `tests/e2e/smoke_test.gd`
@@ -101,7 +97,7 @@
 
 - `art/imported/`: 原始导入素材包。很多文件是素材库，不一定被当前场景直接引用。
 - `art/processed/`: 处理后的切片/运行候选素材。当前大量文件尚未被场景直接使用。
-- `output/imagegen/`: 生成图和中间图。当前不作为运行时直接资源使用，处理后的运行资源在 `art/processed/enemies/generated/`。
+- `output/imagegen/`: 生成图和中间图，当前不作为运行时直接资源使用；现有生成敌人及其运行资源已移除。
 
 ## 文档和生产资料
 
@@ -109,5 +105,6 @@
   - `forest-chapter-redesign.md`: Godot 4.7 森林关卡、角色和敌人重设计蓝图
 - 架构决策: `docs/architecture/`
 - Godot 4.7 教程校订: `docs/reference/warrior-legend-godot-notes/`
+- 像素密度、角色比例和碰撞基线: `design/gdd/pixel-art-and-collision-standard.md`
 - 生产/故事/QA: `production/`
 - 项目说明: `CLAUDE.md`

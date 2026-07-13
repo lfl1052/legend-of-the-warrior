@@ -46,20 +46,22 @@
 | 区段 | 大致 X 范围 | 教学作用 | 敌人/内容 |
 | --- | ---: | --- | --- |
 | Arrival | -2400～-1900 | 安全定向与检查点 | 出生点、返回入口、低平台 |
-| Introduce | -1900～-1200 | 读取慢速地面威胁 | Thorn Sprout |
+| Introduce | -1900～-1200 | 熟悉平台节奏 | 无敌人低压移动区 |
 | Confirm | -1200～-500 | 确认攻击恢复与缩壳反应 | Snail、可破坏物 |
-| Combine | -500～300 | 地空注意力切换 | Bee + Spore Shroom、高低双路线 |
+| Combine | -500～300 | 处理空中突袭 | Bee、高低双路线 |
 | Recover | 300～650 | 降压与保存 | 检查点、收集物 |
-| Stress | 650～1450 | 处理高压近战阻挡 | Root Stalker、较高平台 |
+| Stress | 650～1450 | 连续平台移动测试 | 较高平台、路线切换 |
 | Test | 1450～2100 | 独立 Boss 读招测试 | Boss Enemy |
 | Payoff | 2100～2400 | 奖励与离场 | 宝箱、地图代币、出口 |
 
 ### 地形规则
 
 - 连续主体地面使用 `GeometryTiles: TileMapLayer`，碰撞来自 `TileSet`，不再叠加大矩形地板。
-- 草边和小型植物使用 `ForegroundTiles: TileMapLayer`，不得承担玩法碰撞。
+- 草冠是 Geometry 扩展顶面的一部分；小型植物使用 `ForegroundTiles: TileMapLayer`，不得承担玩法碰撞。
 - 背景树和远景使用 `BackgroundTiles` 或独立装饰节点，不进入相机/玩法边界计算。
 - 高台按“顶面行 + 宽度 + 填充深度”配置；平台边缘必须完整封边。
+- 森林图集通过派生的左右 1×2 草岩凹角支持贴地主高台；洞穴下侧凹角和 45° 泥土斜坡仍需补充素材。
+- 所有 Geometry Terrain 图块提供 World 碰撞，Background 与 Foreground 装饰层保持无碰撞。
 - 暂不加入无底坑，先保证高速移动和敌人追击的碰撞公平性。
 
 ## UI Blueprint
@@ -80,11 +82,8 @@
 
 | 敌人 | 战斗角色 | 玩家主要判断 |
 | --- | --- | --- |
-| Thorn Sprout | 入门型近战巡逻者 | 读移动方向和接触范围 |
 | Snail | 防御型阻挡者 | 受击缩壳后停止贪刀 |
 | Bee | 空中突袭者 | 观察启动、攻击窗口和撤退 |
-| Spore Shroom | 慢速空间占用者 | 选择越过或快速处理 |
-| Root Stalker | 高耐久冲锋者 | 保持距离并利用高台换位 |
 | Boss Enemy | 综合测试 | 读蓄力—生效—恢复三段技能 |
 
 ## Implementation Handoff
