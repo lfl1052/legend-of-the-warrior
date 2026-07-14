@@ -2,8 +2,9 @@ extends Node
 ## 场景加载（替代 Unity 项目里的 SceneLoader / Addressables 加载流程）
 ##
 ## Unity 端通过 SceneReference 异步增量加载，并控制相机模式与玩家可用性。
-## Godot 端使用 ResourceLoader.load_threaded_request 实现后台加载，加载完成后
-## 通过 get_tree().change_scene_to_packed() 切换。
+## Godot 4.7 的 load_threaded_request 存在 LoadToken 泄漏回归（godot#120661），
+## 因此当前版本由 SceneLoader 持有工作线程执行普通 ResourceLoader.load，
+## 并在主线程分帧执行场景切换与收尾。
 ##
 ## 与 Unity 一致的事件流：
 ##   GameEvents.scene_load_requested   -> 开始加载
@@ -20,7 +21,8 @@ var _pending_position: Vector3 = Vector3.ZERO
 var _pending_fade: bool = true
 var _pending_scene_resource: Resource = null
 var _queued_scene_path: String = ""
-var _pending_scene_path: String = ""
+var _load_thread: Thread = null
+var _scene_change_needs_finish: bool = false
 
 
 func _ready() -> void:
@@ -30,23 +32,20 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	if _pending_scene_path.is_empty():
+	if _scene_change_needs_finish:
+		_scene_change_needs_finish = false
+		_finish_scene_change()
+	if _load_thread == null or _load_thread.is_alive():
 		return
-	var status := ResourceLoader.load_threaded_get_status(_pending_scene_path)
-	match status:
-		ResourceLoader.THREAD_LOAD_LOADED:
-			var packed := ResourceLoader.load_threaded_get(_pending_scene_path) as PackedScene
-			_pending_scene_path = ""
-			_apply_packed_scene(packed)
-		ResourceLoader.THREAD_LOAD_FAILED, ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
-			var scene_path := _pending_scene_path
-			_pending_scene_path = ""
-			var packed := ResourceLoader.load(scene_path) as PackedScene
-			if packed != null:
-				_apply_packed_scene(packed)
-			else:
-				push_error("SceneLoader: 加载失败 %s" % scene_path)
-				_is_loading = false
+	var packed := _load_thread.wait_to_finish() as PackedScene
+	_load_thread = null
+	_apply_packed_scene(packed)
+
+
+func _exit_tree() -> void:
+	if _load_thread != null and _load_thread.is_started():
+		_load_thread.wait_to_finish()
+	_load_thread = null
 
 
 # ----- 事件处理 ---------------------------------------------------------------
@@ -75,15 +74,15 @@ func _on_scene_load_requested(scene_resource: Resource, position_to_go: Vector3,
 		DataManager.try_capture_runtime_state_for_scene_transition(true)
 		GameEvents.raise_scene_unloaded(current_scene_resource, _pending_position, _pending_fade)
 
-	var err := ResourceLoader.load_threaded_request(_queued_scene_path)
+	var load_path := _queued_scene_path
+	_queued_scene_path = ""
+	_load_thread = Thread.new()
+	var err := _load_thread.start(_load_scene_on_worker.bind(load_path))
 	if err != OK:
-		push_error("SceneLoader: load_threaded_request 失败: %s" % _queued_scene_path)
-		_queued_scene_path = ""
-		_pending_scene_path = ""
+		push_error("SceneLoader: 工作线程启动失败 %d: %s" % [err, load_path])
+		_load_thread = null
 		_is_loading = false
 		return
-	_pending_scene_path = _queued_scene_path
-	_queued_scene_path = ""
 
 
 func _on_new_game_started() -> void:
@@ -96,6 +95,13 @@ func _on_back_to_menu_requested() -> void:
 
 
 # ----- 内部 -------------------------------------------------------------------
+
+func _load_scene_on_worker(scene_path: String) -> PackedScene:
+	return ResourceLoader.load(
+		scene_path,
+		"PackedScene",
+		ResourceLoader.CACHE_MODE_REUSE) as PackedScene
+
 
 func _apply_packed_scene(packed: PackedScene) -> void:
 	if packed == null:
@@ -111,9 +117,11 @@ func _apply_packed_scene(packed: PackedScene) -> void:
 		_is_loading = false
 		return
 	current_scene_resource = _pending_scene_resource
+	_scene_change_needs_finish = true
 
-	# 等待新场景挂上，再做位置同步与淡出
-	await tree.process_frame
+
+func _finish_scene_change() -> void:
+	# change_scene_to_packed 在当前帧结束时替换场景；下一帧由 _process 同步收尾。
 	_apply_player_position()
 
 	if _pending_fade:

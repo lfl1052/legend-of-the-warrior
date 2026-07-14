@@ -16,10 +16,10 @@
 - `art/imported/Legacy-Fantasy-High Forest/Enemies/Snail/walk-Sheet.png`
 - `art/imported/Legacy-Fantasy-High Forest/HUD/GameButtons.png`
 - `art/imported/Legacy-Fantasy-High Forest/Map Assets/Forest-1.png`
+- `art/imported/Legacy-Fantasy-High Forest/Map Assets/Chest2.png`
+- `art/imported/Legacy-Fantasy-High Forest/Map Assets/Props-Rocks.png`
 - `art/imported/Legacy-Fantasy-High Forest/Map Assets/Trees/Green-Tree.png`
-- `art/processed/map/props/chest/chest2_01.png`
-- `art/processed/map/props/chest/chest2_02.png`
-- `art/processed/map/terrain/rocks/props_rocks_01.png`
+- `art/runtime/derived/terrain/forest_ground_inner_corners.png`
 
 ## 可以优先归档的候选
 
@@ -36,6 +36,14 @@
   - 通常不应作为游戏资源提交；若团队不共享 Serena 记忆，可忽略。
 
 ## 已执行的安全清理
+
+### 2026-07-14 改为原图集优先素材管线
+
+- 删除 `art/processed/` 下机械生成的单格图块、逐帧动画和组件裁剪 PNG。
+- 玩家、敌人、TileSet、宝箱和岩石改为直接引用原始 sheet/atlas 区域。
+- 将真正需要人工合成的森林凹角迁移到 `art/runtime/derived/terrain/`。
+- 新增 `data/editor_asset_catalog.json`、分类 TileSet、Scene Paint 场景和动画预览。
+- `process_art_assets.py` 现在只扫描并记录 atlas 区域，不再写出裁剪图片。
 
 ### 2026-07-13 移除生成敌人
 
@@ -72,18 +80,11 @@
 
 ## 需要人工确认后再动的候选
 
-- `art/processed/characters/`
-  - 当前玩家直接引用的是 `art/imported/Generic-Character/png/blue/char_blue_1.png`，不是这里的大量切片。
-  - 这些可能是后续动画替换素材，不建议现在直接删。
-- `art/processed/enemies/boar/`, `art/processed/enemies/bee/`, `art/processed/enemies/snail/`
-  - 当前 bee/snail 场景仍直接用 `art/imported/...` 下的 sheet。
-  - 处理后切片目前没有被场景直接引用，可能是预处理输出或未来替换素材。
-- `art/processed/map/tiles/`, `art/processed/map/foliage/`, `art/processed/map/structures/`, `art/processed/map/props/`
-  - 当前关卡主要用 `Forest-1.png` atlas 和少数 chest/rock 图。
-  - 大量切片未挂场景，但可能是地图搭建素材库。
 - `art/imported/`
   - 原始素材包。它很大，但里面有当前运行时直接引用的资源。
-  - 更安全的整理方式是保留 `art/imported/used/` 或维护清单，而不是整目录删除。
+  - 现在也是 TileSet、Scene Paint 和动画预览的图集来源，不应按“场景没有裸路径引用”删除。
+- `art/runtime/derived/`
+  - 只包含原图无法直接表达的修复素材；删除前必须确认对应 Terrain/场景已迁移。
 
 ## 不建议按“未引用”删除的脚本
 
@@ -113,11 +114,8 @@
 
 1. 保留运行时核心目录：`scenes/`, `scripts/`, `data/`, 当前直接引用的 `art/` 文件。
 2. 把 `output/imagegen/` 和 `reports/report_*` 作为第一批清理对象。
-3. 决定 `art/processed/` 是“运行素材库”还是“可再生构建产物”。
-4. 若要瘦身仓库，先把原始素材和处理后素材拆为：
-   - `art/source/` 原始包
-   - `art/runtime/` 当前场景直接引用
-   - `art/library/` 暂未使用但保留的素材库
+3. 通过 `data/editor_asset_catalog.json` 检查原图集的编辑器角色和使用状态。
+4. 新的人工合成/修复资产只放入 `art/runtime/derived/`，不要恢复逐格裁剪目录。
 5. 每次移动/删除资源后运行：
    - Godot headless import
    - GdUnit unit tests

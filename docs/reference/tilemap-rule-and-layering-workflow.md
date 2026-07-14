@@ -64,6 +64,7 @@ Parallax far / middle / near      z = -9 / -8 / -7
 BackgroundTiles                   z = -2  无碰撞
 GeometryTiles                     z = -1  有 World 碰撞
 Actors                            z =  0  或 Y Sort
+WaterTiles                        z =  0  无碰撞（视觉动画）
 ForegroundTiles                   z =  2  无碰撞
 FX / HUD                          z > 2 / CanvasLayer
 ```
@@ -71,7 +72,8 @@ FX / HUD                          z > 2 / CanvasLayer
 - `BackgroundTiles`：地面后方的小叶丛、远处藤蔓或不会遮挡角色的装饰。
 - `GeometryTiles`：唯一的连续实体地形来源；图块视觉和碰撞必须使用同一逻辑单元。
 - `ForegroundTiles`：草、花、前景枝叶等稀疏遮挡，不得带 World 碰撞。
-- 水面或瀑布以后使用独立 `WaterTiles`，不要混进 Geometry。
+- 水面使用独立 `WaterTiles`，不要混进 Geometry。当前资源直接在 `Forest-1.png` 上配置
+  4 帧水面和 3 帧水体 atlas 动画；瀑布以后沿用同一层与动画规则。
 - 视差树必须位于 Geometry 后方；树根可延伸到地面以下，但必须被实体泥土遮住，不能穿透显示在地板内部。
 
 ## 4. Forest-1 图集审计
@@ -131,9 +133,15 @@ atlas `(0..4,0)` 不是独立碰撞草坪，而是与 `(0..4,1)` 合成的 1×2 
 
 当前关卡只有水平草面、竖墙和凹角高台，**没有真正的物理斜坡**。`Forest-1.png` 的 `(5..8,0..2)` 是大型叶丛/树冠轮廓，不是带泥土截面的 45° 可行走斜坡，直接加斜坡碰撞会造成“视觉踩空”。后续若增加斜坡，应新增同调色板的左右坡面图块，并为每个坡向配置三角形碰撞；在素材补齐前使用分层高台，不用不可见斜坡或叶丛冒充地面。
 
-## 6. 动画瓦片后续规范
+## 6. 动画瓦片规范
 
 视频中的瀑布方法可直接映射到 Godot atlas 动画：连续帧必须尺寸一致、锚点一致，并由一个 atlas tile 管理帧数和速度。水体层单独设置 z 和碰撞；只有玩法明确要求时才给水体增加 Area2D 或专用物理逻辑，不用装饰动画承担地面碰撞。
+
+当前 `forest_water_tileset.tres` 已实现：
+
+- `(6,14)` 起始的 4 帧水面，3 FPS；
+- `(3,13)`、`(3,14)`、`(3,15)` 起始的三组 3 帧水体，2 FPS；
+- 全部直接引用 `Forest-1.png`，不生成独立水体帧 PNG。
 
 ## 7. 验收标准
 

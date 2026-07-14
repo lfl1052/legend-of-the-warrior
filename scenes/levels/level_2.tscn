@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://c6level20001"]
+[gd_scene load_steps=24 format=3 uid="uid://c6level20001"]
 
 [ext_resource type="PackedScene" uid="uid://b1plyrwarrior" path="res://scenes/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" uid="uid://x4c2oomdeyvs" path="res://scenes/enemy/snail.tscn" id="2_snail"]
@@ -16,6 +16,10 @@
 [ext_resource type="PackedScene" path="res://scenes/props/chest.tscn" id="14_chest"]
 [ext_resource type="PackedScene" path="res://scenes/props/breakable_rock.tscn" id="15_rock"]
 [ext_resource type="PackedScene" path="res://scenes/props/collectible_reward.tscn" id="16_collectible"]
+[ext_resource type="TileSet" path="res://data/tilesets/forest_background_tileset.tres" id="17_background_tileset"]
+[ext_resource type="TileSet" path="res://data/forest_tileset.tres" id="18_geometry_tileset"]
+[ext_resource type="TileSet" path="res://data/tilesets/forest_water_tileset.tres" id="19_water_tileset"]
+[ext_resource type="TileSet" path="res://data/tilesets/forest_foreground_tileset.tres" id="20_foreground_tileset"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
 size = Vector2(80, 800)
@@ -106,13 +110,20 @@ layout_id = &"level_2"
 
 [node name="BackgroundTiles" type="TileMapLayer" parent="MapVisuals"]
 z_index = -2
+tile_set = ExtResource("17_background_tileset")
 collision_enabled = false
 
 [node name="GeometryTiles" type="TileMapLayer" parent="MapVisuals" unique_id=1475835486]
 z_index = -1
+tile_set = ExtResource("18_geometry_tileset")
+
+[node name="WaterTiles" type="TileMapLayer" parent="MapVisuals"]
+tile_set = ExtResource("19_water_tileset")
+collision_enabled = false
 
 [node name="ForegroundTiles" type="TileMapLayer" parent="MapVisuals"]
 z_index = 2
+tile_set = ExtResource("20_foreground_tileset")
 collision_enabled = false
 
 [node name="World" type="Node2D" parent="." unique_id=674485758]

@@ -13,6 +13,7 @@ const LEVEL_CHECKS := {
 			"NearForest",
 			"MapVisuals/BackgroundTiles",
 			"MapVisuals/GeometryTiles",
+			"MapVisuals/WaterTiles",
 			"MapVisuals/ForegroundTiles",
 			"World/CameraBounds",
 			"SnailA",
@@ -39,6 +40,7 @@ const LEVEL_CHECKS := {
 			"NearForest",
 			"MapVisuals/BackgroundTiles",
 			"MapVisuals/GeometryTiles",
+			"MapVisuals/WaterTiles",
 			"MapVisuals/ForegroundTiles",
 			"Snail",
 			"Bee",
@@ -166,14 +168,34 @@ func _effective_z_index(item: CanvasItem) -> int:
 func _tilemap_layers_are_valid(scene: Node) -> bool:
 	var background := scene.get_node_or_null("MapVisuals/BackgroundTiles") as TileMapLayer
 	var geometry := scene.get_node_or_null("MapVisuals/GeometryTiles") as TileMapLayer
+	var water := scene.get_node_or_null("MapVisuals/WaterTiles") as TileMapLayer
 	var foreground := scene.get_node_or_null("MapVisuals/ForegroundTiles") as TileMapLayer
-	if background == null or geometry == null or foreground == null:
+	if background == null or geometry == null or water == null or foreground == null:
 		return false
-	if background.collision_enabled or not geometry.collision_enabled or foreground.collision_enabled:
+	if (
+			background.collision_enabled
+			or not geometry.collision_enabled
+			or water.collision_enabled
+			or foreground.collision_enabled):
 		return false
-	if geometry.get_used_rect().size.x <= 0 or geometry.tile_set == null:
+	if (
+			geometry.get_used_rect().size.x <= 0
+			or background.tile_set == null
+			or geometry.tile_set == null
+			or water.tile_set == null
+			or foreground.tile_set == null):
+		return false
+	if (
+			background.tile_set == geometry.tile_set
+			or water.tile_set == geometry.tile_set
+			or foreground.tile_set == geometry.tile_set):
 		return false
 	if geometry.tile_set.get_physics_layers_count() != 1:
+		return false
+	if (
+			background.tile_set.get_physics_layers_count() != 0
+			or water.tile_set.get_physics_layers_count() != 0
+			or foreground.tile_set.get_physics_layers_count() != 0):
 		return false
 	var atlas := geometry.tile_set.get_source(0) as TileSetAtlasSource
 	if atlas == null:

@@ -1,0 +1,17 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/Map Assets/Forest-2.png" id="ext_000"]
+
+[sub_resource type="AtlasTexture" id="sub_000"]
+atlas = ExtResource("ext_000")
+region = Rect2(144, 224, 96, 32)
+
+[node name="MapComponentsForest2Default11" type="Node2D"]
+metadata/asset_id = "map.components.forest_2.default.11"
+metadata/editor_role = "foliage_scene"
+metadata/visual_only = false
+
+[node name="Visual" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(0, -16)
+texture = SubResource("sub_000")

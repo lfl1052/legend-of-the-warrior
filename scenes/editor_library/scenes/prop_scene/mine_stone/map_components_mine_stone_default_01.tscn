@@ -1,0 +1,17 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/Map Assets/Mine Stone.png" id="ext_000"]
+
+[sub_resource type="AtlasTexture" id="sub_000"]
+atlas = ExtResource("ext_000")
+region = Rect2(96, 0, 128, 160)
+
+[node name="MapComponentsMineStoneDefault01" type="Node2D"]
+metadata/asset_id = "map.components.mine_stone.default.01"
+metadata/editor_role = "prop_scene"
+metadata/visual_only = true
+
+[node name="Visual" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(0, -80)
+texture = SubResource("sub_000")

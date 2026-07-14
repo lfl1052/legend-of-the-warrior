@@ -278,6 +278,7 @@ func _quit_after_cleanup(ok: bool) -> void:
 		return
 	if tree.current_scene != null:
 		tree.current_scene.queue_free()
+	for _frame in range(3):
+		await tree.process_frame
 	queue_free()
-	await tree.process_frame
 	tree.quit(0 if ok else 1)

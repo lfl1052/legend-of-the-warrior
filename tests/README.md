@@ -34,6 +34,7 @@
 | `test_data_manager.gd` | 存档读写 / 损坏隔离 | 3 |
 | `test_enemy_combatant.gd` | 敌人受击 / 死亡 | 2 |
 | `test_enemy_perception.gd` | 敌人范围感知 / 世界遮挡 | 2 |
+| `test_editor_asset_library.gd` | 原图集素材目录 / 分类 TileSet / 动态水体 / Scene Paint | 5 |
 | `test_fade_canvas.gd` | 淡入淡出 | 1 |
 | `test_forest_tileset.gd` | Terrain 规则 / 碰撞 / 安全装饰 / 背景树裁切 | 5 |
 | `test_game_events.gd` | 全局信号契约 | 10 |
@@ -45,7 +46,7 @@
 | `test_scene_resource_validator.gd` | 场景资源死链校验 | 5 |
 | `test_snail_behavior.gd` | 蜗牛感知 / 缩壳 | 3 |
 
-Godot 4.7 stable 验证基线（2026-07-13）：**24 个测试套件，98/98 用例通过**。
+Godot 4.7 stable 验证基线（2026-07-14）：**25 个测试套件，103/103 用例通过**。
 
 ### 推荐运行方式 — 编辑器内
 
@@ -105,6 +106,7 @@ E:\Godot\Godot.exe --path . res://tests/e2e/smoke_test.tscn
 - `tests/integration/level_2_traversal_test.tscn`：自动玩家穿越完整 `level_2` 路线，防止平台布局形成死路。
 - `tests/visual/level_2_playtest_capture.tscn`：生成 arrival / combine / boss 三个代表状态截图到 `reports/playtest/`。
 - `tests/visual/menu_playtest_capture.tscn`：生成 640×360 逻辑视口下的菜单截图到 `reports/playtest/`。
+- `tests/visual/editor_asset_library_capture.tscn`：验证原 atlas 的树木、建筑、岩石、动画角色与动态水体可共同实例化和绘制。
 
 ### 隔离保证
 

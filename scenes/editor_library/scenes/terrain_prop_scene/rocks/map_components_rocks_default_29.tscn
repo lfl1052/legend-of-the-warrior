@@ -1,0 +1,17 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/Map Assets/Props-Rocks.png" id="ext_000"]
+
+[sub_resource type="AtlasTexture" id="sub_000"]
+atlas = ExtResource("ext_000")
+region = Rect2(214, 168, 20, 24)
+
+[node name="MapComponentsRocksDefault29" type="Node2D"]
+metadata/asset_id = "map.components.rocks.default.29"
+metadata/editor_role = "terrain_prop_scene"
+metadata/visual_only = true
+
+[node name="Visual" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(0, -12)
+texture = SubResource("sub_000")

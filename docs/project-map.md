@@ -53,8 +53,11 @@
 - 资源类: `scripts/resources/`
 - 场景切换组件: `scripts/transition/`
 - 工具脚本: `scripts/tools/`
-  - `level_2_forest_tile_painter.gd`: 按 `layout_id` 生成三层森林 TileMapLayer
+  - `level_2_forest_tile_painter.gd`: 按 `layout_id` 生成 Geometry，并管理 Background/Water/Foreground 编辑层
   - `build_forest_tileset.gd`: 重建森林 TileSet 的 World 碰撞
+  - `process_art_assets.py`: 扫描原图集并记录帧/组件区域，不生成裁剪 PNG
+  - `build_editor_asset_catalog.py`: 生成编辑器职责和动画目录
+  - `build_editor_asset_library.gd`: 生成分类 TileSet、Scene Paint 场景和动画预览
 
 ## 场景
 
@@ -76,6 +79,8 @@
 - 场景关系: `data/scene_links.json`
 - UI 文本: `data/ui_strings.json`
 - 森林 TileSet: `data/forest_tileset.tres`
+- 编辑器素材目录: `data/editor_asset_catalog.json`
+- 分类 TileSet: `data/tilesets/`
 - 森林关卡布局: `data/level_layouts.json`
 - 大型美术处理清单: `data/asset_manifest.json`
 
@@ -95,9 +100,14 @@
 
 ## 美术目录约定
 
-- `art/imported/`: 原始导入素材包。很多文件是素材库，不一定被当前场景直接引用。
-- `art/processed/`: 处理后的切片/运行候选素材。当前大量文件尚未被场景直接使用。
-- `output/imagegen/`: 生成图和中间图，当前不作为运行时直接资源使用；现有生成敌人及其运行资源已移除。
+- `art/imported/`: 原始图集和 sheet，是编辑器与运行时纹理的主要真相来源。
+- `art/runtime/derived/`: 仅保存原图无法直接表达的人工合成/修复素材。
+- `scenes/editor_library/`: 引用原图 region 的 Scene Paint 场景和动画预览。
+- `data/tilesets/`: Background / Foreground / Water / Library 分类 TileSet。
+- `art/processed/`: 已于 2026-07-14 移除；不再生成单格或逐帧裁剪 PNG。
+- `output/imagegen/`: 生成图和中间图，不作为运行时直接资源使用。
+
+完整使用方法见 `docs/art-asset-library.md`。
 
 ## 文档和生产资料
 

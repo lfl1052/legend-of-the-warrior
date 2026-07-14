@@ -3,7 +3,13 @@ extends GdUnitTestSuite
 const SCENE_LOADER_SCRIPT := preload("res://scripts/autoload/scene_loader.gd")
 
 
-func test_scene_loader_waits_for_fade_before_polling_threaded_load() -> void:
+func test_scene_loader_avoids_godot_4_7_threaded_request_leak() -> void:
+	var source := FileAccess.get_file_as_string("res://scripts/autoload/scene_loader.gd")
+	assert_bool(source.contains("ResourceLoader.load_threaded_request(")).is_false()
+	assert_bool(source.contains("wait_to_finish()")).is_true()
+
+
+func test_scene_loader_waits_for_fade_before_starting_background_load() -> void:
 	var loader: Node = auto_free(SCENE_LOADER_SCRIPT.new())
 	add_child(loader)
 	var scene_res := GameSceneResource.new()
@@ -12,7 +18,7 @@ func test_scene_loader_waits_for_fade_before_polling_threaded_load() -> void:
 	loader.call("_on_scene_load_requested", scene_res, Vector3.ZERO, true)
 	await get_tree().process_frame
 
-	assert_str(String(loader.get("_pending_scene_path"))).is_empty()
+	assert_object(loader.get("_load_thread")).is_null()
 	assert_str(str(loader.get("_queued_scene_path"))).is_equal(scene_res.scene_path)
 
 	loader.set("_is_loading", false)

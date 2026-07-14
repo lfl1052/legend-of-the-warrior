@@ -1,0 +1,17 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/Map Assets/Trees/Green-Tree.png" id="ext_000"]
+
+[sub_resource type="AtlasTexture" id="sub_000"]
+atlas = ExtResource("ext_000")
+region = Rect2(837, 1092, 70, 108)
+
+[node name="MapComponentsTreesGreen33" type="Node2D"]
+metadata/asset_id = "map.components.trees.green.33"
+metadata/editor_role = "background_scene"
+metadata/visual_only = false
+
+[node name="Visual" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(0, -54)
+texture = SubResource("sub_000")

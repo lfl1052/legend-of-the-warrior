@@ -5,7 +5,7 @@ extends SceneTree
 const TILESET_PATH := "res://data/forest_tileset.tres"
 const SOURCE_ID := 0
 const CORNER_SOURCE_ID := 1
-const CORNER_TEXTURE_PATH := "res://art/processed/map/terrain/forest_ground_inner_corners.png"
+const CORNER_TEXTURE_PATH := "res://art/runtime/derived/terrain/forest_ground_inner_corners.png"
 const TERRAIN_SET := 0
 const FOREST_GROUND := 0
 

@@ -1,12 +1,16 @@
 class_name ForestLevelTilemap
 extends Node2D
-## 根据 data/level_layouts.json 的稳定 layout_id 生成森林三层 TileMapLayer。
+## 根据 data/level_layouts.json 的稳定 layout_id 生成森林实体地形，并保留编辑器装饰绘制。
 ##
-## BackgroundTiles：预留给背景装饰，永不参与碰撞。
-## GeometryTiles：只接收占用单元，由 Terrain Set 自动选择边、角和中心。
-## ForegroundTiles：完整单格蘑菇，永不参与碰撞。
+## BackgroundTiles：原图集背景调色板，永不参与碰撞，人工绘制内容不会被清空。
+## GeometryTiles：默认由布局数据生成；关闭 generate_geometry_from_layout 后可完全人工绘制。
+## WaterTiles：原图集动态水体调色板，永不参与碰撞，人工绘制内容不会被清空。
+## ForegroundTiles：前景装饰调色板；程序散布只填补空单元，不覆盖人工绘制。
 
-const FOREST_TILESET := preload("res://data/forest_tileset.tres")
+const FOREST_GEOMETRY_TILESET := preload("res://data/forest_tileset.tres")
+const FOREST_BACKGROUND_TILESET := preload("res://data/tilesets/forest_background_tileset.tres")
+const FOREST_FOREGROUND_TILESET := preload("res://data/tilesets/forest_foreground_tileset.tres")
+const FOREST_WATER_TILESET := preload("res://data/tilesets/forest_water_tileset.tres")
 const SOURCE_ID := 0
 const TERRAIN_SET := 0
 const FOREST_GROUND := 0
@@ -16,12 +20,16 @@ const FOREGROUND_DECOR: Array[Vector2i] = [
 ]
 
 @export var layout_id: StringName = &"level_2"
+@export var generate_geometry_from_layout: bool = true
+@export var generate_surface_decor: bool = true
 @export_node_path("TileMapLayer") var background_layer_path: NodePath = ^"BackgroundTiles"
 @export_node_path("TileMapLayer") var geometry_layer_path: NodePath = ^"GeometryTiles"
+@export_node_path("TileMapLayer") var water_layer_path: NodePath = ^"WaterTiles"
 @export_node_path("TileMapLayer") var foreground_layer_path: NodePath = ^"ForegroundTiles"
 
 @onready var _background_layer := get_node_or_null(background_layer_path) as TileMapLayer
 @onready var _geometry_layer := get_node_or_null(geometry_layer_path) as TileMapLayer
+@onready var _water_layer := get_node_or_null(water_layer_path) as TileMapLayer
 @onready var _foreground_layer := get_node_or_null(foreground_layer_path) as TileMapLayer
 
 
@@ -30,18 +38,25 @@ func _ready() -> void:
 
 
 func paint_layout() -> void:
-	if _background_layer == null or _geometry_layer == null or _foreground_layer == null:
-		push_error("ForestLevelTilemap: 缺少 Background/Geometry/Foreground TileMapLayer")
+	if (
+			_background_layer == null
+			or _geometry_layer == null
+			or _water_layer == null
+			or _foreground_layer == null):
+		push_error("ForestLevelTilemap: 缺少 Background/Geometry/Water/Foreground TileMapLayer")
+		return
+
+	_prepare_layer(_background_layer, FOREST_BACKGROUND_TILESET, false, false)
+	_prepare_layer(_geometry_layer, FOREST_GEOMETRY_TILESET, true, generate_geometry_from_layout)
+	_prepare_layer(_water_layer, FOREST_WATER_TILESET, false, false)
+	_prepare_layer(_foreground_layer, FOREST_FOREGROUND_TILESET, false, false)
+	if not generate_geometry_from_layout:
 		return
 
 	var layout := RuntimeData.try_get_level_layout(layout_id)
 	if layout.is_empty():
 		push_error("ForestLevelTilemap: 未找到布局 %s" % layout_id)
 		return
-
-	_prepare_layer(_background_layer, false)
-	_prepare_layer(_geometry_layer, true)
-	_prepare_layer(_foreground_layer, false)
 
 	var occupied: Dictionary[Vector2i, bool] = {}
 	var surfaces: Array[Dictionary] = []
@@ -93,20 +108,26 @@ func paint_layout() -> void:
 	cells.assign(occupied.keys())
 	_geometry_layer.set_cells_terrain_connect(cells, TERRAIN_SET, FOREST_GROUND, true)
 
-	var decoration_seed := int(layout.get("decoration_seed", 0))
-	for surface in surfaces:
-		_paint_surface_decor(
-			occupied,
-			int(surface["left"]),
-			int(surface["right"]),
-			int(surface["top_row"]),
-			decoration_seed + int(surface["salt"]))
+	if generate_surface_decor:
+		var decoration_seed := int(layout.get("decoration_seed", 0))
+		for surface in surfaces:
+			_paint_surface_decor(
+				occupied,
+				int(surface["left"]),
+				int(surface["right"]),
+				int(surface["top_row"]),
+				decoration_seed + int(surface["salt"]))
 
 
-func _prepare_layer(layer: TileMapLayer, collision_enabled: bool) -> void:
-	layer.tile_set = FOREST_TILESET
+func _prepare_layer(
+		layer: TileMapLayer,
+		tile_set: TileSet,
+		collision_enabled: bool,
+		clear_cells: bool) -> void:
+	layer.tile_set = tile_set
 	layer.collision_enabled = collision_enabled
-	layer.clear()
+	if clear_cells:
+		layer.clear()
 
 
 func _add_landmass(
@@ -153,9 +174,12 @@ func _paint_surface_decor(
 			continue
 		if not _should_place_decor(x, seed):
 			continue
+		var target_cell := Vector2i(x, top_row - 1)
+		if _foreground_layer.get_cell_source_id(target_cell) != -1:
+			continue
 		var decor_index := posmod((x * 13) + seed, FOREGROUND_DECOR.size())
 		_foreground_layer.set_cell(
-			Vector2i(x, top_row - 1), SOURCE_ID, FOREGROUND_DECOR[decor_index])
+			target_cell, SOURCE_ID, FOREGROUND_DECOR[decor_index])
 
 
 func _should_place_decor(x: int, seed: int) -> bool:

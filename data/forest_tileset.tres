@@ -1,7 +1,7 @@
 [gd_resource type="TileSet" format=3]
 
 [ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/Map Assets/Forest-1.png" id="1_forest1"]
-[ext_resource type="Texture2D" path="res://art/processed/map/terrain/forest_ground_inner_corners.png" id="2_w7ep7"]
+[ext_resource type="Texture2D" path="res://art/runtime/derived/terrain/forest_ground_inner_corners.png" id="2_w7ep7"]
 
 [sub_resource type="TileSetAtlasSource" id="atlas_forest1"]
 texture = ExtResource("1_forest1")

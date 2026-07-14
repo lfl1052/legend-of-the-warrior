@@ -1,0 +1,202 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/Enemies/Small Bee/MapAssets/Dark_Tree/Boar/Hit-Vanish/Hit-Sheet-Black.png" id="ext_000"]
+[ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/Enemies/Small Bee/MapAssets/Dark_Tree/Boar/Run/Run-Sheet-Black.png" id="ext_001"]
+[ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/Enemies/Small Bee/MapAssets/Dark_Tree/Boar/Walk/Walk-Base-SheetBlack.png" id="ext_002"]
+
+[sub_resource type="AtlasTexture" id="sub_000"]
+atlas = ExtResource("ext_000")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="sub_001"]
+atlas = ExtResource("ext_000")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="sub_002"]
+atlas = ExtResource("ext_000")
+region = Rect2(64, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="sub_003"]
+atlas = ExtResource("ext_000")
+region = Rect2(96, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="sub_004"]
+atlas = ExtResource("ext_000")
+region = Rect2(128, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="sub_005"]
+atlas = ExtResource("ext_000")
+region = Rect2(160, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="sub_006"]
+atlas = ExtResource("ext_001")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="sub_007"]
+atlas = ExtResource("ext_001")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="sub_008"]
+atlas = ExtResource("ext_001")
+region = Rect2(64, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="sub_009"]
+atlas = ExtResource("ext_001")
+region = Rect2(96, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="sub_010"]
+atlas = ExtResource("ext_001")
+region = Rect2(128, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="sub_011"]
+atlas = ExtResource("ext_001")
+region = Rect2(160, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="sub_012"]
+atlas = ExtResource("ext_001")
+region = Rect2(192, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="sub_013"]
+atlas = ExtResource("ext_001")
+region = Rect2(224, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="sub_014"]
+atlas = ExtResource("ext_001")
+region = Rect2(256, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="sub_015"]
+atlas = ExtResource("ext_002")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="sub_016"]
+atlas = ExtResource("ext_002")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="sub_017"]
+atlas = ExtResource("ext_002")
+region = Rect2(64, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="sub_018"]
+atlas = ExtResource("ext_002")
+region = Rect2(96, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="sub_019"]
+atlas = ExtResource("ext_002")
+region = Rect2(128, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="sub_020"]
+atlas = ExtResource("ext_002")
+region = Rect2(160, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="sub_021"]
+atlas = ExtResource("ext_002")
+region = Rect2(192, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="sub_022"]
+atlas = ExtResource("ext_002")
+region = Rect2(224, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="sub_023"]
+atlas = ExtResource("ext_002")
+region = Rect2(256, 0, 32, 32)
+
+[sub_resource type="SpriteFrames" id="sub_024"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("sub_000")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_001")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_002")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_003")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_004")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_005")
+}],
+"loop": 0,
+"name": &"hit_vanish",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("sub_006")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_007")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_008")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_009")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_010")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_011")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_012")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_013")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_014")
+}],
+"loop": 1,
+"name": &"run",
+"speed": 12.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("sub_015")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_016")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_017")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_018")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_019")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_020")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_021")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_022")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_023")
+}],
+"loop": 1,
+"name": &"walk",
+"speed": 9.0
+}]
+
+[node name="EnemyBoarBlack" type="Node2D"]
+metadata/asset_id = "enemy.boar.black"
+metadata/editor_role = "animation_preview"
+
+[node name="AnimatedVisual" type="AnimatedSprite2D" parent="."]
+texture_filter = 1
+position = Vector2(0, -16)
+sprite_frames = SubResource("sub_024")
+animation = &"hit_vanish"
+autoplay = "hit_vanish"

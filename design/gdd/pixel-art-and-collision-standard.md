@@ -36,6 +36,9 @@ CharacterBody2D  (root / authored floor anchor)
 
 ## Import And Review
 
+0. Prefer the original sheet/atlas and select content through TileSet atlas coordinates,
+   `AtlasTexture.region`, or SpriteFrames regions. Do not generate one PNG per tile or animation
+   frame. Only manually composed or repaired art belongs in `art/runtime/derived/`.
 1. Confirm frame columns and rows against the source image dimensions.
 2. Inspect non-transparent bounds for idle, movement, attack, hurt, and death frames.
 3. Set visual scale from the scale band, then align the representative idle frame to the body collider.

@@ -1,0 +1,27 @@
+[gd_resource type="TileSet" format=3]
+
+[ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/Map Assets/Forest-1.png" id="1_1xlxq"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ead6d"]
+resource_name = "Forest-1"
+texture = ExtResource("1_1xlxq")
+10:17/0 = 0
+10:17/0/custom_data_0 = "foreground_tile"
+10:17/0/custom_data_1 = "map.tiles.forest_1.10_17"
+10:18/0 = 0
+10:18/0/custom_data_0 = "foreground_tile"
+10:18/0/custom_data_1 = "map.tiles.forest_1.10_18"
+15:17/0 = 0
+15:17/0/custom_data_0 = "foreground_tile"
+15:17/0/custom_data_1 = "map.tiles.forest_1.15_17"
+15:18/0 = 0
+15:18/0/custom_data_0 = "foreground_tile"
+15:18/0/custom_data_1 = "map.tiles.forest_1.15_18"
+
+[resource]
+resource_name = "Forest Foreground"
+custom_data_layer_0/name = "editor_role"
+custom_data_layer_0/type = 4
+custom_data_layer_1/name = "asset_id"
+custom_data_layer_1/type = 4
+sources/0 = SubResource("TileSetAtlasSource_ead6d")

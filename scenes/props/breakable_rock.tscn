@@ -2,7 +2,11 @@
 
 [ext_resource type="Script" path="res://scripts/general/breakable.gd" id="1_breakable"]
 [ext_resource type="Script" path="res://scripts/utilities/data_definition.gd" id="2_data"]
-[ext_resource type="Texture2D" path="res://art/processed/map/terrain/rocks/props_rocks_01.png" id="3_rock"]
+[ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/Map Assets/Props-Rocks.png" id="3_rock_atlas"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rock"]
+atlas = ExtResource("3_rock_atlas")
+region = Rect2(146, 0, 13, 15)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_rock"]
 size = Vector2(32, 28)
@@ -22,7 +26,7 @@ id = "breakable_unassigned"
 [node name="Sprite2D" type="Sprite2D" parent="."]
 position = Vector2(0, -14)
 scale = Vector2(2, 2)
-texture = ExtResource("3_rock")
+texture = SubResource("AtlasTexture_rock")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, -14)

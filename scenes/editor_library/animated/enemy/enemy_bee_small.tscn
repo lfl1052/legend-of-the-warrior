@@ -1,0 +1,118 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/Enemies/Small Bee/Attack/Attack-Sheet.png" id="ext_000"]
+[ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/Enemies/Small Bee/Fly/Fly-Sheet.png" id="ext_001"]
+[ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/Enemies/Small Bee/Hit/Hit-Sheet.png" id="ext_002"]
+
+[sub_resource type="AtlasTexture" id="sub_000"]
+atlas = ExtResource("ext_000")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="sub_001"]
+atlas = ExtResource("ext_000")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="sub_002"]
+atlas = ExtResource("ext_000")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="sub_003"]
+atlas = ExtResource("ext_000")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="sub_004"]
+atlas = ExtResource("ext_001")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="sub_005"]
+atlas = ExtResource("ext_001")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="sub_006"]
+atlas = ExtResource("ext_001")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="sub_007"]
+atlas = ExtResource("ext_001")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="sub_008"]
+atlas = ExtResource("ext_002")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="sub_009"]
+atlas = ExtResource("ext_002")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="sub_010"]
+atlas = ExtResource("ext_002")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="sub_011"]
+atlas = ExtResource("ext_002")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="SpriteFrames" id="sub_012"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("sub_000")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_001")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_002")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_003")
+}],
+"loop": 0,
+"name": &"attack",
+"speed": 12.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("sub_004")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_005")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_006")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_007")
+}],
+"loop": 1,
+"name": &"fly",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("sub_008")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_009")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_010")
+}, {
+"duration": 1.0,
+"texture": SubResource("sub_011")
+}],
+"loop": 0,
+"name": &"hit",
+"speed": 10.0
+}]
+
+[node name="EnemyBeeSmall" type="Node2D"]
+metadata/asset_id = "enemy.bee.small"
+metadata/editor_role = "animation_preview"
+
+[node name="AnimatedVisual" type="AnimatedSprite2D" parent="."]
+texture_filter = 1
+position = Vector2(0, -32)
+sprite_frames = SubResource("sub_012")
+animation = &"attack"
+autoplay = "attack"
