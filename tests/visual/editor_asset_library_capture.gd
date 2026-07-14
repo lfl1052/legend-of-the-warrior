@@ -3,8 +3,8 @@ extends Node2D
 
 const TREE_SCENE := preload(
 	"res://scenes/editor_library/scenes/background_scene/trees/map_components_trees_green_00.tscn")
-const STRUCTURE_SCENE := preload(
-	"res://scenes/editor_library/scenes/structure_scene/buildings/map_components_buildings_default_01.tscn")
+const MINE_ENTRANCE_SCENE := preload(
+	"res://scenes/editor_library/scenes/prop_scene/mine_stone/map_components_mine_stone_default_01.tscn")
 const ROCK_SCENE := preload(
 	"res://scenes/editor_library/scenes/terrain_prop_scene/rocks/map_components_rocks_default_03.tscn")
 const PLAYER_PREVIEW := preload(
@@ -15,7 +15,7 @@ const OUTPUT_PATH := "res://reports/playtest/editor_asset_library.png"
 
 func _ready() -> void:
 	_add_asset(TREE_SCENE, Vector2(92, 338), Vector2(0.55, 0.55))
-	_add_asset(STRUCTURE_SCENE, Vector2(270, 318), Vector2(0.7, 0.7))
+	_add_asset(MINE_ENTRANCE_SCENE, Vector2(270, 318), Vector2(0.7, 0.7))
 	_add_asset(ROCK_SCENE, Vector2(420, 314), Vector2(1.5, 1.5))
 	_add_asset(PLAYER_PREVIEW, Vector2(530, 318), Vector2.ONE)
 

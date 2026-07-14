@@ -23,8 +23,10 @@
 3. `design/gdd/forest-chapter-redesign.md`
 4. 相关玩家、战斗、敌人和 UI GDD
 5. `data/level_layouts.json`
-6. 相关关卡场景、TileSet 规则和测试说明
-7. 当前未提交修改与任务重叠情况
+6. `docs/art-asset-library.md`
+7. `data/editor_asset_catalog.json`
+8. 相关关卡场景、TileSet 规则和测试说明
+9. 当前未提交修改与任务重叠情况
 
 ## 关卡设计原则
 
@@ -37,6 +39,31 @@
 - 检查点控制重复成本；失败不应要求重做已经掌握的长段教学。
 - 主路线清楚，但通过可选路线、秘密和风险奖励支持探索。
 - 前景装饰、HUD、特效和相机不能遮挡敌人启动动作或平台边缘。
+- 环境主题必须落到可执行的素材族、图层和碰撞职责，不能只写“矿区感”“森林感”。
+- 选材以 `editor_asset_catalog.json` 的 `family`、`editor.role`、`palette` 和标签为准，不凭文件名猜用途。
+- 原图集上的相邻排版不等于一个物件；只有 `editor_ready=true` 的区域才能交给地编直接绘制。
+
+## 主题与素材交接
+
+每个区域设计都必须提供一份“主题素材方案”，至少包含：
+
+| 字段 | 要求 |
+| --- | --- |
+| 主题 ID | 例如 `forest`、`mine`、`forest_to_mine_transition` |
+| 空间材质 | 地面、墙体、平台、背景轮廓和前景遮挡分别是什么 |
+| 素材族 | 对应 catalog 的 `family`，例如 `mine_stone`、`rocks`、`buildings` |
+| 绘制方式 | Terrain、普通 TileMap 绘制、Scene Paint 或正式 prefab |
+| 图层职责 | Background、Geometry、Water、Foreground 或独立场景节点 |
+| 碰撞职责 | World、Area2D、交互 prefab 或纯视觉无碰撞 |
+| 缺口与替代 | 当前没有专用 Terrain 时必须明确是灰盒替代还是新增资产需求 |
+
+用户只给出主题词时，先按 `docs/art-asset-library.md` 的“场景主题路由”生成上述方案，再进行灰盒设计。例如“矿区场景”默认使用：
+
+- `mine_stone`：矿石块和矿区标志性摆件，Scene Paint，纯视觉。
+- `rocks`：岩石堆、边缘碎石和层次填充，Scene Paint，纯视觉。
+- `buildings`：门、横梁、立柱等结构套件，只有能够说明完整组合关系时才使用；是否可碰撞由正式 prefab 决定。
+- 当前素材库**没有专用矿区 Geometry Terrain**。地面、墙体和平台必须在设计中标为资产缺口，或明确批准使用现有 Forest Ground 作为临时灰盒；不得把岩石摆件当作可站立地形。
+- 森林树木、花草和水体只有在“森林到矿区过渡”“潮湿矿洞”等明确语境下才复用，不能自动混入地下矿区核心区域。
 
 ## 每个区域必须定义
 
@@ -61,7 +88,8 @@
 7. 绘制强度曲线，标出峰值、恢复和 Boss 前准备区。
 8. 检查相机、平台、TileMap、碰撞和 640×360 可读性。
 9. 使用 `docs/templates/level-design.md` 形成正式规格。
-10. 用户批准后交给 `godot-level-builder.md` 实现。
+10. 附上主题素材方案，确认每个素材族的图层、绘制方式和碰撞职责。
+11. 用户批准后交给 `godot-level-builder.md` 实现。
 
 ## 输出要求
 
@@ -75,6 +103,7 @@
 - 检查点、失败恢复、秘密和奖励。
 - 地标、视线、相机与前景保护规则。
 - 数据、场景、资产和性能影响。
+- 主题素材方案：主题 ID、素材族、调色板、图层、碰撞与资产缺口。
 - Godot 实现交接清单。
 - 装载、通路、冒烟、截图和试玩计划。
 

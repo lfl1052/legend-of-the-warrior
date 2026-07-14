@@ -21,6 +21,7 @@
 | 文件 | 系统 | 用例数 |
 |------|------|--------|
 | `test_actor_visual_contracts.gd` | 角色比例 / 脚底基线 / 动画图集职责 | 6 |
+| `test_asset_showcase_level.gd` | 素材验收关卡结构 / 语义组合约束 | 2 |
 | `test_attack.gd` | Attack 冷却 / one-shot | 3 |
 | `test_audio_manager.gd` | 音效 / BGM / 音量 / 停止 | 9 |
 | `test_boss_skill_state.gd` | Boss 技能状态循环 | 1 |
@@ -34,7 +35,7 @@
 | `test_data_manager.gd` | 存档读写 / 损坏隔离 | 3 |
 | `test_enemy_combatant.gd` | 敌人受击 / 死亡 | 2 |
 | `test_enemy_perception.gd` | 敌人范围感知 / 世界遮挡 | 2 |
-| `test_editor_asset_library.gd` | 原图集素材目录 / 分类 TileSet / 动态水体 / Scene Paint | 5 |
+| `test_editor_asset_library.gd` | 原图集素材目录 / 分类 TileSet / 动态水体 / Scene Paint / 不规则图集筛选 | 6 |
 | `test_fade_canvas.gd` | 淡入淡出 | 1 |
 | `test_forest_tileset.gd` | Terrain 规则 / 碰撞 / 安全装饰 / 背景树裁切 | 5 |
 | `test_game_events.gd` | 全局信号契约 | 10 |
@@ -46,7 +47,7 @@
 | `test_scene_resource_validator.gd` | 场景资源死链校验 | 5 |
 | `test_snail_behavior.gd` | 蜗牛感知 / 缩壳 | 3 |
 
-Godot 4.7 stable 验证基线（2026-07-14）：**25 个测试套件，103/103 用例通过**。
+Godot 4.7 stable 验证基线（2026-07-14）：**26 个测试套件，107/107 用例通过**。
 
 ### 推荐运行方式 — 编辑器内
 
@@ -107,6 +108,8 @@ E:\Godot\Godot.exe --path . res://tests/e2e/smoke_test.tscn
 - `tests/visual/level_2_playtest_capture.tscn`：生成 arrival / combine / boss 三个代表状态截图到 `reports/playtest/`。
 - `tests/visual/menu_playtest_capture.tscn`：生成 640×360 逻辑视口下的菜单截图到 `reports/playtest/`。
 - `tests/visual/editor_asset_library_capture.tscn`：验证原 atlas 的树木、建筑、岩石、动画角色与动态水体可共同实例化和绘制。
+- `tests/visual/editor_asset_showcase.tscn`：分页检查分类 TileSet、经语义筛选的 Scene Paint 和动画预览；headless 会核对 catalog 数量。
+- `scenes/levels/asset_showcase_level.tscn`：可玩的森林高地、浅水石滩、矿洞入口短关卡，用于验证素材能否组成完整地点。
 
 ### 隔离保证
 

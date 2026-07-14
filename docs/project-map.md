@@ -11,6 +11,7 @@
 - 当前可玩关卡:
   - `scenes/levels/level_demo.tscn`
   - `scenes/levels/level_2.tscn`
+  - `scenes/levels/asset_showcase_level.tscn`：森林高地、浅水石滩和矿洞入口的素材组合验收关卡
 - 场景资源索引:
   - `data/scene_warrior_menu.tres`
   - `data/scene_level_demo.tres`
@@ -94,6 +95,7 @@
 - 视觉回归:
   - `tests/visual/level_2_playtest_capture.tscn`
   - `tests/visual/menu_playtest_capture.tscn`
+  - `tests/visual/editor_asset_showcase.tscn`：分类素材分页 QA 长廊
 - 冒烟测试:
   - `tests/e2e/smoke_test.tscn`
   - `tests/e2e/smoke_test.gd`
@@ -115,6 +117,7 @@
   - `forest-chapter-redesign.md`: Godot 4.7 森林关卡、角色和敌人重设计蓝图
 - 架构决策: `docs/architecture/`
 - Godot 4.7 教程校订: `docs/reference/warrior-legend-godot-notes/`
+- 《勇士传说》39 集视频合集的 Unity→Godot 制作映射: `docs/reference/warrior-legend-video-series-study.md`
 - 像素密度、角色比例和碰撞基线: `design/gdd/pixel-art-and-collision-standard.md`
 - 生产/故事/QA: `production/`
 - 项目说明: `CLAUDE.md`

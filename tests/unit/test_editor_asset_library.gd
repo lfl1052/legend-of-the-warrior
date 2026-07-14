@@ -76,3 +76,24 @@ func test_animation_preview_uses_regions_from_original_sprite_sheet() -> void:
 	assert_vector(idle_frame.region.size).is_equal(Vector2(56, 56))
 	assert_float(frames.get_animation_speed(&"attack_combo")).is_equal(12.0)
 	assert_bool(frames.get_animation_loop(&"death")).is_false()
+
+
+func test_irregular_atlas_candidates_require_semantic_editor_approval() -> void:
+	# Arrange / Act
+	var text := FileAccess.get_file_as_string("res://data/editor_asset_catalog.json")
+	var catalog := JSON.parse_string(text) as Dictionary
+	var assets := catalog.get("assets", []) as Array
+	var by_id: Dictionary = {}
+	for value: Variant in assets:
+		var asset := value as Dictionary
+		by_id[String(asset.get("id", ""))] = asset
+
+	# Assert
+	assert_bool(bool(by_id["map.components.hive.default.00"]["editor"]["editor_ready"])).is_false()
+	assert_str(String(by_id["map.components.hive.default.00"]["editor"]["placement"])).is_equal("atlas_fragment")
+	assert_bool(bool(by_id["map.components.forest_2.default.00"]["editor"]["editor_ready"])).is_false()
+	assert_bool(bool(by_id["map.components.buildings.default.03"]["editor"]["editor_ready"])).is_false()
+	assert_bool(bool(by_id["map.components.rocks.default.11"]["editor"]["editor_ready"])).is_false()
+	assert_bool(bool(by_id["map.components.mine_stone.default.01"]["editor"]["editor_ready"])).is_true()
+	assert_str(String(by_id["map.components.mine_stone.default.01"]["editor"]["placement"])).is_equal("standalone")
+	assert_int(int(catalog.get("summary", {}).get("scene_paint_ready", 0))).is_equal(218)

@@ -208,6 +208,9 @@ func _build_scene_paint_assets(assets: Array) -> int:
 		root.set_meta("asset_id", String(asset.get("id", "")))
 		root.set_meta("editor_role", String(editor.get("role", "scene")))
 		root.set_meta("visual_only", bool(editor.get("visual_only", false)))
+		var placement := String(editor.get("placement", "standalone"))
+		if placement != "standalone":
+			root.set_meta("placement", placement)
 		var sprite := Sprite2D.new()
 		sprite.name = "Visual"
 		sprite.texture = texture

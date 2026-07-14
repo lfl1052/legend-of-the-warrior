@@ -58,6 +58,29 @@ NON_LOOPING_ACTIONS = {
     "fall_land",
 }
 
+# 不规则组件图集不能把“透明像素连通块”直接等同于可独立摆放素材。
+# 下列集合只开放经过原图目视确认、边界完整且语义明确的区域；其余区域仍保留在
+# asset_manifest.json 作为技术索引，但不会生成 Scene Paint 场景。
+SCENE_PAINT_COMPONENTS: dict[str, set[int]] = {
+    "buildings": {1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+    # Forest-2 同时包含树干、蘑菇、蜂巢和连接块，当前连通块不能可靠表达其语义边界。
+    # 先只保留在完整 Atlas Library 中，待建立人工区域表后再开放 Scene Paint。
+    "forest_2": set(),
+    "hive": set(),
+    "mine_stone": {0, 1, 2, 3},
+    "rocks": {
+        0, 1, 2, 3, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 17, 18, 19,
+        20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
+    },
+}
+
+
+def component_index(asset_id: str) -> int | None:
+    try:
+        return int(asset_id.rsplit(".", 1)[1])
+    except (IndexError, ValueError):
+        return None
+
 
 def classify_tile(asset: dict[str, Any]) -> dict[str, Any]:
     family = str(asset["family"])
@@ -84,6 +107,7 @@ def editor_info(
     *,
     editor_ready: bool = True,
     visual_only: bool = False,
+    placement: str = "standalone",
 ) -> dict[str, Any]:
     return {
         "role": role,
@@ -93,6 +117,7 @@ def editor_info(
         "palette": palette,
         "editor_ready": editor_ready,
         "visual_only": visual_only,
+        "placement": placement,
     }
 
 
@@ -124,14 +149,36 @@ def classify(asset: dict[str, Any]) -> dict[str, Any]:
         return classify_tile(asset)
     if "tree" in tags or "component_crop" in tags:
         return editor_info("background_scene", "background", "none", "scene", "forest_background_scenes")
-    if "structures" in tags or family == "buildings":
-        return editor_info("structure_scene", "background", "none", "scene", "forest_structure_scenes")
-    if "terrain" in tags or family == "rocks":
-        return editor_info("terrain_prop_scene", "foreground", "none", "scene", "forest_prop_scenes", visual_only=True)
-    if "foliage" in tags or family == "forest_2":
-        return editor_info("foliage_scene", "background", "none", "scene", "forest_background_scenes")
+    if family in SCENE_PAINT_COMPONENTS:
+        index = component_index(asset_id)
+        ready = index is not None and index in SCENE_PAINT_COMPONENTS[family]
+        if family == "buildings":
+            return editor_info(
+                "structure_kit_scene", "background", "none", "scene", "forest_structure_kit",
+                editor_ready=ready, placement="kit_piece")
+        if family == "forest_2":
+            return editor_info(
+                "foliage_kit_scene", "background", "none", "scene", "forest_foliage_kit",
+                editor_ready=ready, placement="kit_piece")
+        if family == "hive":
+            return editor_info(
+                "atlas_reference", "library", "none", "none", "hive_reference",
+                editor_ready=False, visual_only=True, placement="atlas_fragment")
+        if family == "mine_stone":
+            return editor_info(
+                "prop_scene", "foreground", "none", "scene", "mine_props",
+                editor_ready=ready, visual_only=True, placement="standalone")
+        return editor_info(
+            "terrain_prop_scene", "foreground", "none", "scene", "forest_prop_scenes",
+            editor_ready=ready, visual_only=True, placement="standalone")
+    if "structures" in tags:
+        return editor_info("atlas_reference", "library", "none", "none", "atlas_reference", editor_ready=False)
+    if "terrain" in tags:
+        return editor_info("atlas_reference", "library", "none", "none", "atlas_reference", editor_ready=False)
+    if "foliage" in tags:
+        return editor_info("atlas_reference", "library", "none", "none", "atlas_reference", editor_ready=False)
     if "props" in tags:
-        return editor_info("prop_scene", "foreground", "none", "scene", "forest_prop_scenes", visual_only=True)
+        return editor_info("atlas_reference", "library", "none", "none", "atlas_reference", editor_ready=False, visual_only=True)
     return editor_info("unclassified", "library", "none", "none", "unclassified", editor_ready=False)
 
 
@@ -249,6 +296,10 @@ def main() -> None:
         },
         "summary": {
             "total_assets": len(assets),
+            "scene_paint_ready": sum(
+                1 for asset in assets
+                if asset["editor"]["paint_mode"] == "scene" and asset["editor"]["editor_ready"]
+            ),
             "by_role": dict(sorted(role_counts.items())),
             "by_palette": dict(sorted(palette_counts.items())),
         },
