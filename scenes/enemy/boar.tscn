@@ -1,0 +1,164 @@
+[gd_scene format=3 uid="uid://dab7c8vkvqi13"]
+
+[ext_resource type="Script" path="res://scripts/enemy/boar.gd" id="1_boar"]
+[ext_resource type="Script" path="res://scripts/general/character.gd" id="2_character"]
+[ext_resource type="Script" path="res://scripts/general/physics_check.gd" id="3_physics"]
+[ext_resource type="Script" path="res://scripts/general/attack.gd" id="4_attack"]
+[ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/Enemies/Small Bee/MapAssets/Dark_Tree/Boar/Idle/Idle-Sheet.png" id="5_idle"]
+[ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/Enemies/Small Bee/MapAssets/Dark_Tree/Boar/Walk/Walk-Base-Sheet.png" id="6_walk"]
+[ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/Enemies/Small Bee/MapAssets/Dark_Tree/Boar/Run/Run-Sheet.png" id="7_run"]
+[ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/Enemies/Small Bee/MapAssets/Dark_Tree/Boar/Hit-Vanish/Hit-Sheet.png" id="8_hit"]
+[ext_resource type="Script" path="res://scripts/general/hurt_box.gd" id="9_hurtbox"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_boar_body"]
+size = Vector2(28, 18)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_boar_attack"]
+size = Vector2(28, 16)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_boar_hurt"]
+size = Vector2(24, 14)
+
+[sub_resource type="Animation" id="Animation_reset"]
+length = 0.0
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual/Sprite2D:texture")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [ExtResource("5_idle")]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Visual/Sprite2D:hframes")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [4]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("Visual/Sprite2D:frame")
+tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [0]}
+
+[sub_resource type="Animation" id="Animation_idle"]
+resource_name = "idle"
+length = 0.64
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual/Sprite2D:texture")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [ExtResource("5_idle")]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Visual/Sprite2D:hframes")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [4]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("Visual/Sprite2D:frame")
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.16, 0.32, 0.48), "transitions": PackedFloat32Array(1, 1, 1, 1), "update": 1, "values": [0, 1, 2, 3]}
+
+[sub_resource type="Animation" id="Animation_walk"]
+resource_name = "walk"
+length = 0.72
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual/Sprite2D:texture")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [ExtResource("6_walk")]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Visual/Sprite2D:hframes")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [6]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("Visual/Sprite2D:frame")
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.12, 0.24, 0.36, 0.48, 0.6), "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1), "update": 1, "values": [0, 1, 2, 3, 4, 5]}
+
+[sub_resource type="Animation" id="Animation_run"]
+resource_name = "run"
+length = 0.42
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual/Sprite2D:texture")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [ExtResource("7_run")]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Visual/Sprite2D:hframes")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [6]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("Visual/Sprite2D:frame")
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.07, 0.14, 0.21, 0.28, 0.35), "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1), "update": 1, "values": [0, 1, 2, 3, 4, 5]}
+
+[sub_resource type="Animation" id="Animation_hurt"]
+resource_name = "hurt"
+length = 0.3
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual/Sprite2D:texture")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [ExtResource("8_hit")]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Visual/Sprite2D:hframes")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [4]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("Visual/Sprite2D:frame")
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.1, 0.2), "transitions": PackedFloat32Array(1, 1, 1), "update": 1, "values": [0, 1, 2]}
+
+[sub_resource type="Animation" id="Animation_dead"]
+resource_name = "dead"
+length = 0.6
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual/Sprite2D:texture")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [ExtResource("8_hit")]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Visual/Sprite2D:hframes")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [4]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("Visual/Sprite2D:frame")
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.15, 0.3, 0.45), "transitions": PackedFloat32Array(1, 1, 1, 1), "update": 1, "values": [0, 1, 2, 3]}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_boar"]
+_data = {"RESET": SubResource("Animation_reset"), "dead": SubResource("Animation_dead"), "hurt": SubResource("Animation_hurt"), "idle": SubResource("Animation_idle"), "run": SubResource("Animation_run"), "walk": SubResource("Animation_walk")}
+
+[node name="Boar" type="CharacterBody2D" groups=["enemy"]]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_boar")
+normal_speed = 72.0
+chase_speed = 180.0
+lost_time = 2.5
+check_distance = 180.0
+
+[node name="Visual" type="Node2D" parent="."]
+position = Vector2(0, -2)
+
+[node name="Sprite2D" type="Sprite2D" parent="Visual"]
+texture_filter = 1
+texture = ExtResource("5_idle")
+hframes = 4
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {"": SubResource("AnimationLibrary_boar")}
+autoplay = "walk"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 5)
+shape = SubResource("RectangleShape2D_boar_body")
+
+[node name="PhysicsCheck" type="Node2D" parent="."]
+script = ExtResource("3_physics")
+ground_layer = 1
+wall_layer = 1
+check_radius = 5.0
+
+[node name="Character" type="Node" parent="."]
+script = ExtResource("2_character")
+max_health = 3.0
+max_power = 10.0
+invulnerable_duration = 0.18
+
+[node name="HurtBox" type="Area2D" parent="."]
+collision_layer = 512
+collision_mask = 0
+monitoring = false
+script = ExtResource("9_hurtbox")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtBox"]
+position = Vector2(0, 3)
+shape = SubResource("RectangleShape2D_boar_hurt")
+
+[node name="AttackBox" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 258
+monitorable = false
+script = ExtResource("4_attack")
+damage = 1
+attack_rate = 0.9
+active_on_ready = false
+attacker_path = NodePath("..")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackBox"]
+position = Vector2(-18, 3)
+shape = SubResource("RectangleShape2D_boar_attack")

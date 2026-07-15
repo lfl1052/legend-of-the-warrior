@@ -12,6 +12,8 @@ func before_test() -> void:
 	_snail.auto_register_save = false
 	_snail.front_sight_distance = 120.0
 	_snail.check_distance = 40.0
+	# 本套件只验证前后方向窗口；世界遮挡由 test_enemy_perception 独立覆盖。
+	_snail.requires_line_of_sight = false
 	_snail.despawn_after_death = 0.0
 	add_child(_snail)
 	var player_body := CharacterBody2D.new()

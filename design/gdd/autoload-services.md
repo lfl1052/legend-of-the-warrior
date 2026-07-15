@@ -8,14 +8,14 @@
 | **系统名称** | Autoload 服务层 |
 | **优先级** | 🔴 P0 |
 | **状态** | ✅ 已实现 |
-| **反向文档日期** | 2026-05-20 |
-| **源码参考** | `scripts/autoload/` 共 7 个 `.gd` + `mcp_bridge_game.gd` |
+| **反向文档日期** | 2026-07-15 |
+| **源码参考** | `scripts/autoload/` 共 7 个运行时 `.gd` |
 
 ---
 
 ## 概述
 
-从 Unity 项目迁移过来的 8 个常驻服务，在 Godot 中通过 `project.godot [autoload]` 注册为场景树根节点子节点。每个服务负责一个横切关注点，通过 `GameEvents` 信号总线通信，模块间无直接引用。
+从 Unity 项目迁移过来的 7 个运行时常驻服务，在 Godot 中通过 `project.godot [autoload]` 注册为场景树根节点子节点。每个服务负责一个横切关注点，通过 `GameEvents` 信号总线通信，模块间无直接引用。MCP 由编辑器插件提供，不进入发布版 Autoload。
 
 ## 架构图
 
@@ -27,8 +27,7 @@ SceneTree.root
  ├── SceneLoader     # 场景加载
  ├── AudioManager    # 音频
  ├── LanguageManager # 双语
- ├── UIManager       # UI 根层
- └── McpBridgeGame   # 编辑器 MCP 协议桥
+ └── UIManager       # UI 根层
 ```
 
 ## 各服务详述
@@ -85,16 +84,17 @@ SceneTree.root
 
 ### 3. DataManager — 存档管理器
 
-**文件**: `scripts/autoload/data_manager.gd` (~177 行)
+**文件**: `scripts/autoload/data_manager.gd`
 
 替代 Unity 的 `DataManager` 单例 + Newtonsoft.Json。详见 ADR-002。
 
 **核心功能**:
 - ISaveable 鸭子类型注册表（`register` / `unregister`）
-- 写盘 `capture_runtime_state()` → `JSON.stringify` → `FileAccess.WRITE` → `user://SAVE_DATA/data.sav`
-- 读盘 `load_from_disk()` → 解析 JSON → 分发 `load_save_data` 给所有注册者
+- 写盘先校验 Schema 与 1 MiB 上限，再通过 `.tmp` + `.previous` 原子轮换提交
+- 读盘先检查大小，解析 JSON，执行 v0→v1 迁移和字段校验，再分发给注册者
 - 损坏存档自动隔离到 `data.sav.bak`
 - Schema v1: `{schema_version, scene_to_save, character_pos, float_data}`
+- 未来版本安全拒绝，不伪造降级
 
 **帮助方法**:
 - `record_character_position(id, position: Vector3)`
@@ -127,14 +127,16 @@ SceneTree.root
 
 ### 5. AudioManager — 音频管理器
 
-**文件**: `scripts/autoload/audio_manager.gd` (~85 行)
+**文件**: `scripts/autoload/audio_manager.gd`
 
 替代 Unity 的 `AudioManager` + `AudioMixer`。
 
 **架构**:
 - 一个 BGM 播放器（`AudioStreamPlayer`，循环）
-- 8 个 FX 播放池（`_fx_pool: Array[AudioStreamPlayer]`），全在播时复用第一个
-- 所有播放器走 `Master` 总线
+- 8 个 FX 播放池（`_fx_pool: Array[AudioStreamPlayer]`），全在播时抢占最早使用的槽
+- BGM 路由 `Music`，FX 路由 `SFX`，两者发送到 `Master`
+- 三路音量直接写 AudioServer Bus，0 值使用 mute 实现真静音
+- `slide` / `interact` 等调用使用稳定内容 ID；正式课程音源缺失时只提供明确占位
 
 **事件驱动**:
 | 事件 | 行为 |
@@ -176,11 +178,11 @@ SceneTree.root
 
 **暂停**: 监听 `GameEvents.pause_toggled` → `get_tree().paused = _is_paused`
 
-### 8. McpBridgeGame — MCP 桥
+### 开发期 MCP（非 Autoload）
 
-**文件**: `mcp_bridge_game.gd`
+**位置**: `addons/godot_ai/` 编辑器插件与根目录旧桥接脚本
 
-编辑器与 Godot 引擎之间的 MCP 协议桥，用于开发期工具链集成。不参与运行时逻辑。
+编辑器与 Godot 引擎之间的 MCP 协议桥，仅用于开发期工具链集成。`project.godot` 不再注册 MCP 运行时 Autoload，导出过滤同时排除插件和旧桥接脚本。
 
 ## 注册表
 
@@ -194,7 +196,6 @@ SceneLoader="*res://scripts/autoload/scene_loader.gd"
 AudioManager="*res://scripts/autoload/audio_manager.gd"
 LanguageManager="*res://scripts/autoload/language_manager.gd"
 UIManager="*res://scripts/autoload/ui_manager.gd"
-McpBridgeGame="*res://mcp_bridge_game.gd"
 ```
 
 ## 通信约束

@@ -22,11 +22,6 @@ func logic_update(delta: float) -> void:
 			current_enemy.switch_state(Enums.NPCState.PATROL)
 			return
 
-	current_enemy.lost_time_counter -= delta
-	if current_enemy.lost_time_counter <= 0.0:
-		current_enemy.switch_state(Enums.NPCState.PATROL)
-		return
-
 	var attacker_node := current_enemy.attacker as Node2D
 	if attacker_node == null:
 		_move_dir = Vector2.ZERO

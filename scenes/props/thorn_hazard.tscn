@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/general/environment_hazard.gd" id="1_hazard"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_thorns"]
+size = Vector2(96, 18)
+
+[node name="ThornHazard" type="Area2D"]
+collision_layer = 64
+collision_mask = 256
+monitorable = false
+script = ExtResource("1_hazard")
+
+[node name="Thorns" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-48, 10, -48, 4, -40, -10, -32, 4, -24, -14, -16, 4, -8, -11, 0, 4, 8, -14, 16, 4, 24, -10, 32, 4, 40, -14, 48, 4, 48, 10)
+color = Color(0.58, 0.68, 0.22, 1)
+z_index = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 1)
+shape = SubResource("RectangleShape2D_thorns")

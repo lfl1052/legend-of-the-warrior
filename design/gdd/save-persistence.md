@@ -55,11 +55,12 @@ func load_save_data(_data: Dictionary) -> void: pass
 **继承**: `Node2D`
 
 **功能**:
-- 属于 `interactable` 组
-- `trigger_action()`: 标记已激活 → `GameEvents.raise_save_data()` → 播放动画 → 广播奖励
-- 首次激活发出 `first_activation` 信号 + 奖励事件（`first_activation_reward`，默认 `power-refill`）
-- 呼吸脉冲动画（`loop_pulse` + `pulse_period`）
-- ISaveable: 保存/恢复 `_activated` 状态
+- 使用 `Area2D` prefab 与 Interactable 层，人物的 Sign 可通过真实交互范围发现它。
+- 状态为 inactive / saving / active；保存前暂时置 active 供 DataManager 采集，失败时回滚。
+- 成功才发出 `activated`、首次奖励、“进度已保存”通知和 `save_success` 音效；失败发明确通知与 `save_failure` 音效。
+- 重复交互会再次保存，但 `first_activation_reward` 只成功发放一次。
+- 使用稳定 `save_id_prefix` 写新键，并读取旧场景路径键以兼容已有 v1 存档。
+- `scenes/props/save_point.tscn` 按课程第 42 课组合原始 Props-Rocks 岩石与 SignCharacters 熄灭/点亮双 Sprite，并用 CanvasGroup 对应 Sort Group，避免组合子图层穿插。
 
 ## 存档数据格式（Schema v1）
 
@@ -89,6 +90,13 @@ func load_save_data(_data: Dictionary) -> void: pass
 
 **注意**: `float_data` 是万能的存档字段，几乎所有 ISaveable 都把状态编码为 `float` 塞进去。
 
+## 版本与校验
+
+- 当前 Schema 为 v1；缺少版本号或 `schema_version=0` 的课程旧档会迁移后再校验。
+- v0 兼容 `sceneToSave`、`characterPos` / `characterPosDict`、`floatData` / `floatDataDict` 及场景子字段别名。
+- 高于当前版本的存档不会伪装降级，直接隔离到 `.bak`，避免新版本数据被旧程序覆写。
+- 读写上限为 1 MiB；`scene_to_save`、`character_pos`、`float_data` 均校验容器、键和值类型及有限数值。
+
 ## 写盘流程
 
 ```
@@ -100,8 +108,10 @@ DataManager.save()
     │         ├─ is_instance_valid() 过滤僵尸引用
     │         └─ saveable.call("get_save_data", _data)
     ├─ _data["schema_version"] = 1
-    ├─ JSON.stringify(_data)
-    └─ FileAccess.open(user://SAVE_DATA/data.sav, WRITE)
+    ├─ Schema 校验 + JSON.stringify + 1 MiB 上限检查
+    ├─ 写入 data.sav.tmp 并 flush/close
+    ├─ 旧主文件轮换为 data.sav.previous
+    └─ 临时文件原子替换为 data.sav，广播 save_completed(success)
 ```
 
 ## 读盘流程
@@ -111,10 +121,11 @@ GameEvents.load_data_requested
     ↓
 DataManager.load_from_disk()
     ├─ FileAccess.file_exists(SAVE_FILE) ?
-    ├─ JSON.parse_string(raw)
-    │    └─ 格式错误 → _quarantine_corrupted() → 空数据回退
-    └─ 遍历 _saveables[]
-         └─ saveable.call("load_save_data", _data)
+    ├─ 文件大小检查 → JSON.parse_string(raw)
+    ├─ v0→v1 迁移 → v1 字段校验
+    │    └─ 格式/版本/字段错误 → _quarantine_corrupted() → 空数据回退
+    ├─ 先注入当前已注册对象
+    └─ SceneLoader 完成目标场景实例化后再次注入新注册对象
 ```
 
 ## 已实现 ISaveable 的节点
@@ -149,11 +160,11 @@ DataManager.load_from_disk()
 | 风险 | 概率 | 影响 | 缓解 |
 |------|------|------|------|
 | Web 平台 IndexedDB 行为差异 | 中 | 中 | `OS.has_feature("web")` 分支 |
-| schema 升级遗漏迁移函数 | 中 | 高 | 改 schema 必须写 `_migrate_vN_to_vN+1` |
+| schema 升级遗漏迁移函数 | 低 | 高 | 已有 v0→v1 路由；改 schema 必须新增 `_migrate_vN_to_vN+1` 与 fixture |
 | `_saveables` 漏 unregister | 中 | 低 | 写盘时 `is_instance_valid` 过滤 |
 | `float_data` 键冲突 | 低 | 中 | `PersistenceKeyUtility` + 命名约定 |
 
 ## 待做
 
-- [ ] 单元测试: `record_float` / `record_character_position` 往返测试
+- [x] 单元测试: `record_float` / `record_character_position` 往返测试
 - [ ] Web 平台手动验证 IndexedDB 行为

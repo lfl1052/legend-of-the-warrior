@@ -8,6 +8,20 @@ extends EnemyMinion
 @export var front_sight_distance: float = 96.0
 @export var rear_blind_margin: float = 10.0
 
+@onready var _contact_attack: Attack = get_node_or_null(^"AttackBox") as Attack
+@onready var _contact_hitbox: CollisionShape2D = \
+		get_node_or_null(^"AttackBox/CollisionShape2D") as CollisionShape2D
+var _contact_attack_distance: float = 0.0
+
+
+func _ready() -> void:
+	if _contact_hitbox != null:
+		_contact_attack_distance = absf(_contact_hitbox.position.x)
+	if _contact_attack != null:
+		_contact_attack.damage = attack_damage
+	super._ready()
+	hurt_started.connect(_on_hurt_started)
+
 
 func _setup_states() -> void:
 	patrol_state = SnailPatrolState.new()
@@ -61,3 +75,19 @@ func _get_facing_direction() -> int:
 	if visual_root == null:
 		return 1
 	return 1 if visual_root.scale.x < 0.0 else -1
+
+
+func face_direction(dir_x: float) -> void:
+	super.face_direction(dir_x)
+	if is_zero_approx(dir_x) or _contact_hitbox == null:
+		return
+	_contact_hitbox.position.x = _contact_attack_distance * (1.0 if dir_x > 0.0 else -1.0)
+
+
+func set_contact_attack_active(active: bool) -> void:
+	if _contact_attack != null:
+		_contact_attack.set_active(active)
+
+
+func _on_hurt_started(_attacker: Node) -> void:
+	set_contact_attack_active(false)

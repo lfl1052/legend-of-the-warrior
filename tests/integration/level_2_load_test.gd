@@ -18,6 +18,7 @@ const LEVEL_CHECKS := {
 			"World/CameraBounds",
 			"SnailA",
 			"BeeA",
+			"BoarA",
 			"BossEnemy",
 			"ChestA",
 			"BreakableRockA",
@@ -27,7 +28,7 @@ const LEVEL_CHECKS := {
 			"UI/HUD/PlayerStatBar",
 			"UI/HUD/RewardNotification",
 		],
-		"min_enemy_count": 3,
+		"min_enemy_count": 4,
 	},
 	"res://scenes/levels/level_demo.tscn": {
 		"name": "level_demo",
@@ -259,6 +260,7 @@ func _level_2_terrain_tiles_follow_atlas_contract(scene: Node) -> bool:
 func _level_2_encounter_order_is_valid(scene: Node) -> bool:
 	var ordered_paths := [
 		"Player",
+		"BoarA",
 		"SnailA",
 		"BeeA",
 		"SavePoint",
@@ -277,10 +279,11 @@ func _level_2_encounter_order_is_valid(scene: Node) -> bool:
 
 func _sprite_bottom_y(sprite: Sprite2D) -> float:
 	if sprite.texture == null:
-		return sprite.global_position.y
+		return sprite.position.y
 	var rect := sprite.region_rect if sprite.region_enabled else Rect2(Vector2.ZERO, sprite.texture.get_size())
 	var local_bottom := rect.size.y * (0.5 if sprite.centered else 1.0)
-	return sprite.global_position.y + absf(sprite.global_scale.y) * local_bottom
+	# Parallax2D 会根据当前相机改写全局变换；这里检查的是作者设置的落地位置。
+	return sprite.position.y + absf(sprite.scale.y) * local_bottom
 
 
 func _assert(condition: bool, message: String) -> void:

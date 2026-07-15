@@ -40,12 +40,15 @@ var chase_state: BaseState
 var skill_state: BaseState
 
 var _active_state: BaseState
+var _perception_shape: CircleShape2D
+var _perception_query: PhysicsShapeQueryParameters2D
 
 
 func _ready() -> void:
 	super._ready()
 	spawn_point = global_position
 	current_speed = normal_speed
+	_setup_perception_query()
 	_setup_states()
 	switch_state(Enums.NPCState.PATROL)
 
@@ -53,13 +56,9 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if is_dead:
 		return
+	_update_target_tracking(delta)
 	if _active_state != null:
 		_active_state.logic_update(delta)
-	# 失去目标计数
-	if attacker != null:
-		lost_time_counter -= delta
-		if lost_time_counter <= 0.0:
-			attacker = null
 
 
 func _physics_process(delta: float) -> void:
@@ -101,20 +100,56 @@ func found_player() -> bool:
 	var space := get_world_2d().direct_space_state
 	if space == null:
 		return false
-	var shape := CircleShape2D.new()
-	shape.radius = check_distance
-	var query := PhysicsShapeQueryParameters2D.new()
-	query.shape = shape
-	query.transform = Transform2D(0.0, global_position)
-	query.collision_mask = attack_layer_mask
-	query.collide_with_bodies = true
-	for hit in space.intersect_shape(query, 4):
-		var node: Node = hit.get("collider")
-		if node != null and node.is_in_group(&"player") and can_see_target(node as Node2D):
-			attacker = node
+	if _perception_query == null or _perception_shape == null:
+		_setup_perception_query()
+	_perception_shape.radius = check_distance
+	_perception_query.transform = Transform2D(0.0, global_position)
+	_perception_query.collision_mask = attack_layer_mask
+	for hit: Dictionary in space.intersect_shape(_perception_query, 8):
+		var candidate := hit.get("collider") as Node2D
+		if _is_target_detectable(candidate):
+			attacker = candidate
 			lost_time_counter = lost_time
 			return true
 	return false
+
+
+func _setup_perception_query() -> void:
+	_perception_shape = CircleShape2D.new()
+	_perception_shape.radius = check_distance
+	_perception_query = PhysicsShapeQueryParameters2D.new()
+	_perception_query.shape = _perception_shape
+	_perception_query.collide_with_areas = false
+	_perception_query.collide_with_bodies = true
+	_perception_query.exclude = [get_rid()]
+
+
+func _update_target_tracking(delta: float) -> void:
+	if current_state != Enums.NPCState.CHASE or attacker == null:
+		return
+	var target := attacker as Node2D
+	if not is_instance_valid(target):
+		_clear_target()
+		return
+	if _is_target_detectable(target):
+		lost_time_counter = lost_time
+		return
+	lost_time_counter = maxf(0.0, lost_time_counter - delta)
+	if lost_time_counter <= 0.0:
+		_clear_target()
+
+
+func _is_target_detectable(target: Node2D) -> bool:
+	if target == null or not target.is_in_group(&"player"):
+		return false
+	if global_position.distance_squared_to(target.global_position) > check_distance * check_distance:
+		return false
+	return can_see_target(target)
+
+
+func _clear_target() -> void:
+	attacker = null
+	lost_time_counter = 0.0
 
 
 func can_see_target(target: Node2D) -> bool:

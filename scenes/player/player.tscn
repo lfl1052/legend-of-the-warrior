@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://b1plyrwarrior"]
+[gd_scene load_steps=33 format=3 uid="uid://b1plyrwarrior"]
 
 [ext_resource type="Script" path="res://scripts/player/player_controller.gd" id="1_player"]
 [ext_resource type="Script" path="res://scripts/general/character.gd" id="2_character"]
@@ -10,16 +10,83 @@
 [ext_resource type="Script" path="res://scripts/player/sign.gd" id="8_sign"]
 [ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/HUD/GameButtons.png" id="9_buttons"]
 [ext_resource type="Texture2D" uid="uid://c7p8h43qdksin" path="res://art/imported/Generic-Character/png/blue/char_blue_2.png" id="10_sprite_actions"]
+[ext_resource type="Script" path="res://scripts/general/hurt_box.gd" id="11_hurtbox"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_body"]
 radius = 12.0
 height = 40.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_attack"]
-size = Vector2(56, 40)
+size = Vector2(44, 32)
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_hurt"]
+radius = 10.0
+height = 34.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_sign"]
 radius = 42.0
+
+[sub_resource type="Animation" id="Animation_prompt_show"]
+resource_name = "show"
+length = 0.12
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Prompt:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.12),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Prompt:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.12),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0, -44), Vector2(0, -48)]
+}
+
+[sub_resource type="Animation" id="Animation_prompt_hide"]
+resource_name = "hide"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Prompt:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Prompt:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0, -48), Vector2(0, -44)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_prompt"]
+_data = {
+"hide": SubResource("Animation_prompt_hide"),
+"show": SubResource("Animation_prompt_show")
+}
 
 [sub_resource type="Animation" id="Animation_idle"]
 resource_name = "idle"
@@ -43,6 +110,25 @@ length = 0.4
 [sub_resource type="Animation" id="Animation_fall"]
 resource_name = "fall"
 length = 0.4
+loop_mode = 1
+
+[sub_resource type="Animation" id="Animation_land"]
+resource_name = "land"
+length = 0.2
+
+[sub_resource type="Animation" id="Animation_crouch"]
+resource_name = "crouch"
+length = 0.5
+loop_mode = 1
+
+[sub_resource type="Animation" id="Animation_block"]
+resource_name = "block"
+length = 0.5
+loop_mode = 1
+
+[sub_resource type="Animation" id="Animation_climb"]
+resource_name = "climb"
+length = 0.8
 loop_mode = 1
 
 [sub_resource type="Animation" id="Animation_attack1"]
@@ -125,6 +211,48 @@ length = 0.6
 resource_name = "slide"
 length = 0.44
 
+[sub_resource type="Animation" id="Animation_skill_slash"]
+resource_name = "skill_slash"
+length = 0.64
+tracks/0/type = "method"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.32, 0.62),
+"transitions": PackedFloat32Array(1, 1),
+"values": [{
+"args": [],
+"method": &"on_skill_slash_active"
+}, {
+"args": [],
+"method": &"on_skill_slash_animation_finished"
+}]
+}
+
+[sub_resource type="Animation" id="Animation_heal"]
+resource_name = "heal"
+length = 0.64
+tracks/0/type = "method"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.32, 0.62),
+"transitions": PackedFloat32Array(1, 1),
+"values": [{
+"args": [],
+"method": &"on_heal_active"
+}, {
+"args": [],
+"method": &"on_heal_animation_finished"
+}]
+}
+
 [sub_resource type="Animation" id="Animation_wall"]
 resource_name = "wall"
 length = 0.4
@@ -135,12 +263,18 @@ _data = {
 "attack1": SubResource("Animation_attack1"),
 "attack2": SubResource("Animation_attack2"),
 "attack3": SubResource("Animation_attack3"),
+"block": SubResource("Animation_block"),
+"climb": SubResource("Animation_climb"),
+"crouch": SubResource("Animation_crouch"),
 "dead": SubResource("Animation_dead"),
 "fall": SubResource("Animation_fall"),
+"heal": SubResource("Animation_heal"),
 "hurt": SubResource("Animation_hurt"),
 "idle": SubResource("Animation_idle"),
 "jump": SubResource("Animation_jump"),
+"land": SubResource("Animation_land"),
 "run": SubResource("Animation_run"),
+"skill_slash": SubResource("Animation_skill_slash"),
 "slide": SubResource("Animation_slide"),
 "walk": SubResource("Animation_walk"),
 "wall": SubResource("Animation_wall")
@@ -167,6 +301,16 @@ autoplay = "idle"
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CapsuleShape2D_body")
 
+[node name="HurtBox" type="Area2D" parent="."]
+collision_layer = 256
+collision_mask = 0
+monitoring = false
+script = ExtResource("11_hurtbox")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtBox"]
+position = Vector2(0, -2)
+shape = SubResource("CapsuleShape2D_hurt")
+
 [node name="PhysicsCheck" type="Node2D" parent="."]
 script = ExtResource("3_physics")
 ground_layer = 129
@@ -182,7 +326,7 @@ max_power = 100.0
 
 [node name="Attack" type="Area2D" parent="AttackPivot"]
 collision_layer = 8
-collision_mask = 4
+collision_mask = 516
 monitorable = false
 script = ExtResource("4_attack")
 damage = 1
@@ -191,14 +335,14 @@ active_on_ready = false
 attacker_path = NodePath("../..")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackPivot/Attack"]
-position = Vector2(40, 0)
+position = Vector2(34, -2)
 shape = SubResource("RectangleShape2D_attack")
 disabled = true
 
 [node name="HealSkill" type="Node" parent="."]
 script = ExtResource("5_heal")
 
-[node name="SkillSlash" type="Node" parent="."]
+[node name="SkillSlash" type="Node2D" parent="."]
 script = ExtResource("6_slash")
 
 [node name="Sign" type="Area2D" parent="."]
@@ -209,6 +353,7 @@ script = ExtResource("8_sign")
 player_controller_path = NodePath("..")
 player_visual_path = NodePath("../Sprite")
 sign_sprite_path = NodePath("Prompt")
+sign_animation_player_path = NodePath("PromptAnimationPlayer")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Sign"]
 shape = SubResource("CircleShape2D_sign")
@@ -216,6 +361,12 @@ shape = SubResource("CircleShape2D_sign")
 [node name="Prompt" type="Sprite2D" parent="Sign"]
 visible = false
 position = Vector2(0, -48)
+modulate = Color(1, 1, 1, 0)
 texture = ExtResource("9_buttons")
 region_enabled = true
 region_rect = Rect2(96, 64, 16, 16)
+
+[node name="PromptAnimationPlayer" type="AnimationPlayer" parent="Sign"]
+libraries = {
+"": SubResource("AnimationLibrary_prompt")
+}

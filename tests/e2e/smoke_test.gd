@@ -8,6 +8,7 @@ extends Node
 ##   4. test_save_point_writes_save_file_to_disk
 ##   5. test_demo_and_level_2_round_trip
 ##   6. test_teleport_to_menu_returns_to_main_menu
+##   7. test_continue_restores_saved_player_state
 ##
 ## 每一步遵循 Arrange / Act / Assert 写法（在注释里标注）。
 ## 用例之间彼此隔离：开始前 _purge_save_dir() 清掉 user://SAVE_DATA/，
@@ -65,6 +66,8 @@ func _run() -> void:
 		_finish(false, "Demo 与 level_2 往返失败"); return
 	if not await test_teleport_to_menu_returns_to_main_menu():
 		_finish(false, "回菜单 Teleport 失败"); return
+	if not await test_continue_restores_saved_player_state():
+		_finish(false, "Continue 未完整恢复玩家状态"); return
 	_finish(true, "全部步骤通过")
 
 
@@ -73,7 +76,7 @@ func _run() -> void:
 # ---------------------------------------------------------------------------
 
 func test_menu_new_game_loads_level_demo() -> bool:
-	_log("[1/6] menu_new_game_loads_level_demo")
+	_log("[1/7] menu_new_game_loads_level_demo")
 	# Arrange ----------------------------------------------------------------
 	var menu := await _await_node_in_scene("WarriorMenu")
 	if menu == null:
@@ -91,7 +94,7 @@ func test_menu_new_game_loads_level_demo() -> bool:
 
 
 func test_level_demo_world_nodes_present() -> bool:
-	_log("[2/6] level_demo_world_nodes_present")
+	_log("[2/7] level_demo_world_nodes_present")
 	# Arrange ----------------------------------------------------------------
 	await get_tree().process_frame
 	var root := get_tree().current_scene
@@ -103,6 +106,7 @@ func test_level_demo_world_nodes_present() -> bool:
 		"Camera2D",
 		"Snail",
 		"Bee",
+		"TrainingLadder",
 		"SavePoint",
 		"TeleportToMenu",
 		"UI/HUD/PlayerStatBar",
@@ -114,12 +118,20 @@ func test_level_demo_world_nodes_present() -> bool:
 		if root.get_node_or_null(NodePath(path)) == null:
 			_log("  ERR  缺少节点 %s" % path)
 			return false
+	var player := root.get_node_or_null("Player") as PlayerController
+	if player == null or absf(player.global_position.y - 492.0) > 0.5:
+		_log("  ERR  玩家出生点未落在 Demo 地面高度 y=492（实际 %s）" % player.global_position.y if player != null else "  ERR  Player 缺失")
+		return false
+	await get_tree().physics_frame
+	if not player.is_on_floor():
+		_log("  ERR  玩家出生后未站在地面碰撞上")
+		return false
 	_log("  OK  关卡节点齐备")
 	return true
 
 
 func test_player_automation_attack_damages_enemy() -> bool:
-	_log("[3/6] player_automation_attack_damages_enemy")
+	_log("[3/7] player_automation_attack_damages_enemy")
 	# Arrange ----------------------------------------------------------------
 	var root := get_tree().current_scene
 	var player := root.get_node_or_null("Player") as PlayerController
@@ -153,13 +165,23 @@ func test_player_automation_attack_damages_enemy() -> bool:
 
 
 func test_save_point_writes_save_file_to_disk() -> bool:
-	_log("[4/6] save_point_writes_save_file_to_disk")
+	_log("[4/7] save_point_writes_save_file_to_disk")
 	# Arrange ----------------------------------------------------------------
 	var root := get_tree().current_scene
 	var save_point := root.get_node_or_null("SavePoint")
 	if save_point == null or not save_point.has_method("trigger_action"):
 		_log("  ERR  SavePoint 没有 trigger_action")
 		return false
+	var player := root.get_node_or_null("Player") as PlayerController
+	var character: Character = null
+	if player != null:
+		character = player.get_node_or_null("Character") as Character
+	if player == null or character == null:
+		_log("  ERR  存档前无法找到玩家规则状态")
+		return false
+	player.global_position = Vector2(340.0, 492.0)
+	character.current_health = 3.0
+	character.current_power = 42.0
 	# Act --------------------------------------------------------------------
 	save_point.call("trigger_action")
 	await get_tree().create_timer(0.2).timeout
@@ -172,7 +194,7 @@ func test_save_point_writes_save_file_to_disk() -> bool:
 
 
 func test_teleport_to_menu_returns_to_main_menu() -> bool:
-	_log("[6/6] teleport_to_menu_returns_to_main_menu")
+	_log("[6/7] teleport_to_menu_returns_to_main_menu")
 	# Arrange ----------------------------------------------------------------
 	var root := get_tree().current_scene
 	var teleport := root.get_node_or_null("TeleportToMenu")
@@ -189,8 +211,48 @@ func test_teleport_to_menu_returns_to_main_menu() -> bool:
 	return true
 
 
+func test_continue_restores_saved_player_state() -> bool:
+	_log("[7/7] continue_restores_saved_player_state")
+	# current_scene 会早于 SceneLoader 的淡出收尾就绪，等待加载锁释放。
+	await get_tree().create_timer(0.5).timeout
+	var menu := get_tree().current_scene
+	var continue_button := menu.get_node_or_null("UI/MainMenu/Center/Buttons/ContinueButton") as Button
+	if continue_button == null or continue_button.disabled:
+		_log("  ERR  有合法存档时 Continue 不可用")
+		return false
+	continue_button.emit_signal("pressed")
+	if not await _await_scene_root_named("LevelDemo"):
+		_log("  ERR  Continue 未返回保存场景")
+		return false
+	await get_tree().create_timer(0.6).timeout
+	var root := get_tree().current_scene
+	var player := root.get_node_or_null("Player") as PlayerController
+	var character: Character = null
+	if player != null:
+		character = player.get_node_or_null("Character") as Character
+	if player == null or character == null:
+		_log("  ERR  Continue 后玩家规则节点缺失")
+		return false
+	if player.global_position.distance_to(Vector2(340.0, 492.0)) > 1.0:
+		_log("  ERR  Continue 位置未恢复，实际 %s" % player.global_position)
+		return false
+	if not is_equal_approx(character.current_health, 3.0):
+		_log("  ERR  Continue 生命未恢复，实际 %.2f" % character.current_health)
+		return false
+	if character.current_power < 42.0 or character.current_power >= 70.0:
+		_log("  ERR  Continue 能量未恢复到保存区间，实际 %.2f" % character.current_power)
+		return false
+	var health_bar := root.get_node_or_null("UI/HUD/PlayerStatBar/HealthBar") as Range
+	var power_bar := root.get_node_or_null("UI/HUD/PlayerStatBar/PowerBar") as Range
+	if health_bar == null or power_bar == null or absf(health_bar.value - 60.0) > 1.0 or power_bar.value >= 75.0:
+		_log("  ERR  Continue 后 HUD 未同步")
+		return false
+	_log("  OK  场景、位置、生命、能量与 HUD 均已恢复")
+	return true
+
+
 func test_demo_and_level_2_round_trip() -> bool:
-	_log("[5/6] demo_and_level_2_round_trip")
+	_log("[5/7] demo_and_level_2_round_trip")
 	var demo := get_tree().current_scene
 	var to_level_2 := demo.get_node_or_null("TeleportToLevel2")
 	if to_level_2 == null or not to_level_2.has_method("trigger_action"):
@@ -245,7 +307,15 @@ func _await_node_in_scene(scene_name: String) -> Node:
 
 
 func _await_scene_root_named(expected_name: String) -> bool:
-	return await _await_node_in_scene(expected_name) != null
+	var t := 0.0
+	while t < STEP_TIMEOUT:
+		var current := get_tree().current_scene
+		var transition_active := SceneLoader.is_transition_active()
+		if current != null and current.name == StringName(expected_name) and not transition_active:
+			return true
+		await get_tree().process_frame
+		t += get_process_delta_time()
+	return false
 
 
 func _purge_save_dir() -> void:

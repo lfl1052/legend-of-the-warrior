@@ -25,6 +25,7 @@ func on_enter(enemy: Node) -> void:
 	current_enemy.current_speed = 0.0
 	current_enemy.lost_time_counter = current_enemy.lost_time
 	_phase = ShellPhase.HIDING
+	_set_contact_attack_active(false)
 	_timer = _get_animation_length(&"hide") if _play_animation(&"hide") else 0.0
 
 	if _timer <= 0.0:
@@ -81,7 +82,13 @@ func on_exit() -> void:
 		var character: Character = _get_character()
 		if character != null:
 			character.set_invulnerable_for(0.0)
+	_set_contact_attack_active(false)
 	super.on_exit()
+
+
+func _set_contact_attack_active(active: bool) -> void:
+	if current_enemy != null and current_enemy.has_method("set_contact_attack_active"):
+		current_enemy.call("set_contact_attack_active", active)
 
 
 func _get_character() -> Character:

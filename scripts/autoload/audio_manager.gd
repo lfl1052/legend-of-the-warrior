@@ -2,13 +2,22 @@ extends Node
 
 const FX_POOL_SIZE := 8
 const MASTER_BUS := &"Master"
+const MUSIC_BUS := &"Music"
+const SFX_BUS := &"SFX"
 const DEFAULT_MASTER_VOLUME := 0.0
 const DEFAULT_SFX_IDS := [
 	&"attack",
+	&"skill_slash",
+	&"heal",
+	&"block",
 	&"hurt",
 	&"jump",
+	&"slide",
+	&"interact",
 	&"chest_open",
 	&"breakable_break",
+	&"save_success",
+	&"save_failure",
 ]
 const DEFAULT_BGM_IDS := [
 	&"demo_theme",
@@ -22,6 +31,8 @@ var _bgm_volume: float = 0.55
 var _sfx_library: Dictionary = {}
 var _bgm_library: Dictionary = {}
 var _last_fx_player: AudioStreamPlayer = null
+var _fx_sequence_counter: int = 0
+var _fx_slot_sequences: Dictionary = {}
 var _audio_shutdown := false
 var _disable_real_playback := false
 var _bgm_fade_tween: Tween = null
@@ -29,19 +40,22 @@ var _bgm_fade_tween: Tween = null
 
 func _ready() -> void:
 	_disable_real_playback = DisplayServer.get_name() == "headless"
+	_ensure_audio_bus(MUSIC_BUS, MASTER_BUS)
+	_ensure_audio_bus(SFX_BUS, MASTER_BUS)
 	_build_placeholder_library()
 	_bgm_player = AudioStreamPlayer.new()
-	_bgm_player.bus = String(MASTER_BUS)
+	_bgm_player.bus = String(MUSIC_BUS)
 	_bgm_player.autoplay = false
-	_bgm_player.volume_db = linear_to_db(_bgm_volume)
+	_bgm_player.volume_db = 0.0
 	add_child(_bgm_player)
 
 	for i in FX_POOL_SIZE:
 		var player := AudioStreamPlayer.new()
-		player.bus = String(MASTER_BUS)
-		player.volume_db = linear_to_db(_sfx_volume)
+		player.bus = String(SFX_BUS)
+		player.volume_db = 0.0
 		add_child(player)
 		_fx_pool.append(player)
+		_fx_slot_sequences[player.get_instance_id()] = -1
 	if not _fx_pool.is_empty():
 		_last_fx_player = _fx_pool[0]
 
@@ -52,6 +66,8 @@ func _ready() -> void:
 	GameEvents.volume_changed.connect(_on_volume_changed)
 	GameEvents.pause_toggled.connect(_on_pause_toggled)
 	GameEvents.after_scene_loaded.connect(_on_after_scene_loaded)
+	_set_bus_volume(MUSIC_BUS, _bgm_volume)
+	_set_bus_volume(SFX_BUS, _sfx_volume)
 	_set_master_volume(DEFAULT_MASTER_VOLUME)
 
 
@@ -80,7 +96,7 @@ func _play_bgm(stream: AudioStream, fade_duration: float) -> void:
 	if fade_duration > 0.0:
 		_bgm_player.volume_db = linear_to_db(0.0001)
 	else:
-		_bgm_player.volume_db = linear_to_db(_bgm_volume)
+		_bgm_player.volume_db = 0.0
 	if not _disable_real_playback:
 		_bgm_player.play()
 	_start_bgm_fade(fade_duration)
@@ -95,7 +111,9 @@ func _on_play_fx(stream: AudioStream, _world_pos: Vector2) -> void:
 		return
 	var slot := _next_free_fx_slot()
 	slot.stream = stream
-	slot.volume_db = linear_to_db(_sfx_volume)
+	slot.volume_db = 0.0
+	_fx_sequence_counter += 1
+	_fx_slot_sequences[slot.get_instance_id()] = _fx_sequence_counter
 	_last_fx_player = slot
 	if not _disable_real_playback:
 		slot.play()
@@ -119,10 +137,29 @@ func _set_master_volume(amount: float) -> void:
 	GameEvents.raise_volume_synced(normalized)
 
 
+func set_master_volume(amount: float) -> void:
+	_set_master_volume(amount)
+
+
+func get_master_volume() -> float:
+	var bus_idx := AudioServer.get_bus_index(MASTER_BUS)
+	if bus_idx < 0 or AudioServer.is_bus_mute(bus_idx):
+		return 0.0
+	return db_to_linear(AudioServer.get_bus_volume_db(bus_idx))
+
+
 func _on_pause_toggled() -> void:
-	_is_paused = not _is_paused
+	set_paused(not _is_paused)
+
+
+func set_paused(paused: bool) -> void:
+	_is_paused = paused
 	if _bgm_player != null:
 		_bgm_player.stream_paused = _is_paused
+
+
+func is_paused() -> bool:
+	return _is_paused
 
 
 func _on_after_scene_loaded() -> void:
@@ -140,15 +177,21 @@ func get_available_sfx_ids() -> Array:
 
 
 func set_fx_volume(amount: float) -> void:
-	_sfx_volume = clampf(amount, 0.0001, 1.0)
-	for player in _fx_pool:
-		player.volume_db = linear_to_db(_sfx_volume)
+	_sfx_volume = clampf(amount, 0.0, 1.0)
+	_set_bus_volume(SFX_BUS, _sfx_volume)
+
+
+func get_sfx_volume() -> float:
+	return _get_bus_volume(SFX_BUS, _sfx_volume)
 
 
 func set_bgm_volume(amount: float) -> void:
-	_bgm_volume = clampf(amount, 0.0001, 1.0)
-	if _bgm_player != null:
-		_bgm_player.volume_db = linear_to_db(_bgm_volume)
+	_bgm_volume = clampf(amount, 0.0, 1.0)
+	_set_bus_volume(MUSIC_BUS, _bgm_volume)
+
+
+func get_bgm_volume() -> float:
+	return _get_bus_volume(MUSIC_BUS, _bgm_volume)
 
 
 func play_sfx_id(sfx_id: StringName, world_pos: Vector2 = Vector2.ZERO) -> void:
@@ -183,7 +226,14 @@ func _next_free_fx_slot() -> AudioStreamPlayer:
 	for player in _fx_pool:
 		if not player.playing:
 			return player
-	return _fx_pool[0]
+	var oldest := _fx_pool[0]
+	var oldest_sequence := int(_fx_slot_sequences.get(oldest.get_instance_id(), -1))
+	for player in _fx_pool.slice(1):
+		var sequence := int(_fx_slot_sequences.get(player.get_instance_id(), -1))
+		if sequence < oldest_sequence:
+			oldest = player
+			oldest_sequence = sequence
+	return oldest
 
 
 func _build_placeholder_library() -> void:
@@ -191,10 +241,17 @@ func _build_placeholder_library() -> void:
 		return
 	var frequencies := {
 		&"attack": 420.0,
+		&"skill_slash": 760.0,
+		&"heal": 880.0,
+		&"block": 260.0,
 		&"hurt": 180.0,
 		&"jump": 620.0,
+		&"slide": 235.0,
+		&"interact": 700.0,
 		&"chest_open": 520.0,
 		&"breakable_break": 120.0,
+		&"save_success": 940.0,
+		&"save_failure": 145.0,
 	}
 	for id in DEFAULT_SFX_IDS:
 		_sfx_library[id] = _make_placeholder_wav(float(frequencies.get(id, 330.0)), 0.11, false)
@@ -217,6 +274,7 @@ func _shutdown_audio() -> void:
 		if player != null and is_instance_valid(player):
 			player.free()
 	_fx_pool.clear()
+	_fx_slot_sequences.clear()
 	_last_fx_player = null
 	_sfx_library.clear()
 	_bgm_library.clear()
@@ -244,12 +302,39 @@ func _start_bgm_fade(fade_duration: float) -> void:
 		_bgm_fade_tween.kill()
 		_bgm_fade_tween = null
 	if fade_duration <= 0.0:
-		_bgm_player.volume_db = linear_to_db(_bgm_volume)
+		_bgm_player.volume_db = 0.0
 		return
 	if _disable_real_playback:
 		return
 	_bgm_fade_tween = create_tween()
-	_bgm_fade_tween.tween_property(_bgm_player, "volume_db", linear_to_db(_bgm_volume), fade_duration)
+	_bgm_fade_tween.tween_property(_bgm_player, "volume_db", 0.0, fade_duration)
+
+
+func _ensure_audio_bus(bus_name: StringName, send_bus: StringName) -> void:
+	if AudioServer.get_bus_index(bus_name) >= 0:
+		return
+	AudioServer.add_bus()
+	var bus_index := AudioServer.bus_count - 1
+	AudioServer.set_bus_name(bus_index, bus_name)
+	AudioServer.set_bus_send(bus_index, send_bus)
+
+
+func _set_bus_volume(bus_name: StringName, amount: float) -> void:
+	var bus_index := AudioServer.get_bus_index(bus_name)
+	if bus_index < 0:
+		return
+	var normalized := clampf(amount, 0.0, 1.0)
+	AudioServer.set_bus_mute(bus_index, is_zero_approx(normalized))
+	AudioServer.set_bus_volume_db(bus_index, linear_to_db(maxf(normalized, 0.0001)))
+
+
+func _get_bus_volume(bus_name: StringName, fallback: float) -> float:
+	var bus_index := AudioServer.get_bus_index(bus_name)
+	if bus_index < 0:
+		return fallback
+	if AudioServer.is_bus_mute(bus_index):
+		return 0.0
+	return db_to_linear(AudioServer.get_bus_volume_db(bus_index))
 
 
 func _make_placeholder_wav(frequency: float, duration: float, loop: bool) -> AudioStreamWAV:

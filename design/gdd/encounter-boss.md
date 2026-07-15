@@ -9,7 +9,7 @@
 | **优先级** | 🟠 P1 |
 | **状态** | ✅ 已实现 |
 | **反向文档日期** | 2026-05-20 |
-| **源码参考** | `scripts/enemy/enemy_encounter_contracts.gd`, `scripts/enemy/enemy_encounter_combatant.gd`, `scripts/enemy/elite_enemy.gd`, `scripts/enemy/boss_enemy.gd`, `scripts/enemy/enemy_minion.gd` |
+| **源码参考** | `scripts/enemy/enemy_encounter_contracts.gd`, `scripts/enemy/enemy_encounter_combatant.gd`, `scripts/enemy/encounter_reward_controller.gd`, `scripts/enemy/boss_enemy.gd` |
 
 ---
 
@@ -99,7 +99,7 @@ Encounter 完成信号
 
 ## 待做
 
-- [ ] BossEnemy 专用 skill_state 实现
+- [x] BossEnemy 专用 skill_state 实现
 - [ ] 多阶段 Boss 战完整流程
 - [ ] Encounter 区域锁定机制
-- [ ] 战利品表与 Encounter 绑定
+- [x] 战利品表与 Encounter 绑定；稳定 ID 与 PlayerProgression 存档负责防重复

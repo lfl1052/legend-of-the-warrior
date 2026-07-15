@@ -14,6 +14,7 @@ extends Node
 # === 流程类（VoidEventSO） =====================================================
 signal new_game_started
 signal save_data_requested
+signal save_completed(success: bool)
 signal load_data_requested
 signal back_to_menu_requested
 signal game_over
@@ -21,6 +22,7 @@ signal after_scene_loaded
 signal camera_shake
 signal camera_shake_requested(strength: float, duration: float)
 signal pause_toggled
+signal restart_requested
 
 # === 数值类（FloatEventSO） ====================================================
 ## 玩家或滑块拖动时实时改变音量
@@ -91,6 +93,10 @@ func raise_camera_shake(strength: float = 1.0, duration: float = 0.2) -> void:
 
 func raise_pause_toggled() -> void:
 	pause_toggled.emit()
+
+
+func raise_restart_requested() -> void:
+	restart_requested.emit()
 
 
 func raise_volume_changed(amount: float) -> void:
@@ -171,6 +177,10 @@ func raise_load_data_requested() -> void:
 
 func raise_save_data_requested() -> void:
 	save_data_requested.emit()
+
+
+func raise_save_completed(success: bool) -> void:
+	save_completed.emit(success)
 
 
 func raise_back_to_menu_requested() -> void:

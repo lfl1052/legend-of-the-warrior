@@ -71,6 +71,7 @@ func logic_update(delta: float) -> void:
 	if _retreat_pending and not window_in_progress:
 		_retreat_pending = false
 		_retreat_counter = float(current_enemy.call("get_post_attack_retreat_duration"))
+		_play_chase_animation()
 
 	if window_in_progress:
 		_is_attacking = true
@@ -83,6 +84,7 @@ func logic_update(delta: float) -> void:
 				"get_retreat_target_position", attacker_node, _retreat_direction)
 		_move_dir = (retreat_target - current_enemy.global_position).normalized()
 		current_enemy.current_speed = current_enemy.chase_speed * float(current_enemy.call("get_retreat_speed_multiplier"))
+		_play_chase_animation()
 	else:
 		current_enemy.current_speed = current_enemy.chase_speed
 		var can_attack := absf(attack_target.x - current_enemy.global_position.x) <= horizontal_tol \
@@ -101,9 +103,9 @@ func logic_update(delta: float) -> void:
 		else:
 			_is_attacking = false
 			_move_dir = (chase_target - current_enemy.global_position).normalized()
+			_play_chase_animation()
 
 	current_enemy.face_direction(_move_dir.x)
-	current_enemy.lost_time_counter -= delta
 
 
 func physics_update(_delta: float) -> void:
@@ -120,3 +122,10 @@ func on_exit() -> void:
 	if current_enemy != null and current_enemy.anim != null and current_enemy.anim.has_animation("idle"):
 		current_enemy.anim.play("idle")
 	super.on_exit()
+
+
+func _play_chase_animation() -> void:
+	if current_enemy != null and current_enemy.anim != null \
+			and current_enemy.anim.has_animation(&"chase") \
+			and current_enemy.anim.current_animation != &"chase":
+		current_enemy.anim.play(&"chase")

@@ -32,6 +32,11 @@ var _invulnerable_timer: float = 0.0
 func _ready() -> void:
 	current_health = max_health
 	current_power = max_power
+	DataManager.register(self)
+
+
+func _exit_tree() -> void:
+	DataManager.unregister(self)
 
 
 func _process(delta: float) -> void:
@@ -77,9 +82,13 @@ func heal(amount: float) -> void:
 
 
 func consume_power(amount: float) -> bool:
+	if amount <= 0.0:
+		return true
 	if current_power < amount:
 		return false
 	current_power -= amount
+	health_changed.emit()
+	GameEvents.raise_character_health_changed(self)
 	return true
 
 

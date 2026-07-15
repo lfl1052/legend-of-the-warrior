@@ -8,7 +8,7 @@
 | **系统名称** | 场景切换 / 传送 |
 | **优先级** | 🟠 P1 |
 | **状态** | ✅ 已实现 |
-| **反向文档日期** | 2026-05-20 |
+| **反向文档日期** | 2026-07-15 |
 | **源码参考** | `scripts/autoload/scene_loader.gd`, `scripts/transition/teleport_point.gd`, `scripts/transition/initial_load.gd`, `scripts/resources/game_scene_resource.gd` |
 
 **ADR**: [ADR-003: GameSceneResource .tres 场景资源化](../architecture/adr-003-game-scene-resource.md)
@@ -55,25 +55,29 @@ DataManager.try_capture_runtime_state_for_scene_transition()  ← 场景退出�
     ↓
 GameEvents.raise_scene_unloaded(...)
     ↓
-ResourceLoader.load_threaded_request(scene_path)
+自持 Thread 调用 ResourceLoader.load(scene_path)
     ↓
-_process loop: load_threaded_get_status
-    ├─ THREAD_LOAD_LOADED → _apply_packed_scene
-    ├─ THREAD_LOAD_FAILED → push_error + reset
-    └─ THREAD_LOAD_INVALID_RESOURCE → push_error + reset
+_process 等待工作线程结束
+    ├─ PackedScene 有效 → _apply_packed_scene
+    └─ 加载/切换失败 → 揭开原场景 → 恢复输入 → 清理状态
     ↓
 _apply_packed_scene(packed)
     ├─ tree.change_scene_to_packed(packed)
     ├─ current_scene_resource = _pending_scene_resource
     ├─ After 1 process_frame:
-    │    └─ _apply_player_position()
-    │         └─ find "player" group → set global_position
-    ├─ fade_out (可选)
-    └─ raise_after_scene_loaded()
+    │    ├─ 锁定新 Player 输入
+    │    ├─ _apply_player_position()
+    │    └─ DataManager.apply_pending_scene_restore()
+    ├─ fade_out 并等待揭幕完成（可选）
+    ├─ raise_after_scene_loaded()
+    └─ 恢复输入并回到 IDLE
 ```
 
 **关键设计**:
-- `_is_loading` 防止并发加载
+- `TransitionPhase` 明确区分 IDLE / FADING_TO_BLACK / LOADING / REVEALING
+- `_is_loading` 防止并发加载；`is_transition_active()` 为等待方提供只读状态
+- 旧场景和新场景的 Player 都在不可信画面阶段保持输入锁定
+- 失败路径保留原场景，揭开黑屏后恢复控制，不让玩家永久卡在黑屏
 - 2D 项目: 位置只取 `Vector2(_pending_position.x, _pending_position.y)`
 - `current_scene_resource` 跟踪当前场景元数据，用于存档
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://b3lvldemo0001"]
+[gd_scene load_steps=26 format=3 uid="uid://b3lvldemo0001"]
 
 [ext_resource type="PackedScene" uid="uid://b1plyrwarrior" path="res://scenes/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" uid="uid://b3snailenemy01" path="res://scenes/enemy/snail.tscn" id="2_snail"]
@@ -8,7 +8,7 @@
 [ext_resource type="Script" path="res://scripts/ui/player_stat_bar.gd" id="6_stat_bar"]
 [ext_resource type="Script" path="res://scripts/ui/reward_notification_ui.gd" id="7_reward"]
 [ext_resource type="Script" path="res://scripts/transition/teleport_point.gd" id="8_teleport"]
-[ext_resource type="Script" path="res://scripts/player/save_point.gd" id="9_save_point"]
+[ext_resource type="PackedScene" path="res://scenes/props/save_point.tscn" id="9_save_point"]
 [ext_resource type="Resource" uid="uid://b3reswarriormenu1" path="res://data/scene_warrior_menu.tres" id="10_menu_res"]
 [ext_resource type="Script" path="res://scripts/tools/level_2_forest_tile_painter.gd" id="11_tile_painter"]
 [ext_resource type="PackedScene" path="res://scenes/props/chest.tscn" id="12_chest"]
@@ -20,6 +20,8 @@
 [ext_resource type="TileSet" path="res://data/forest_tileset.tres" id="19_geometry_tileset"]
 [ext_resource type="TileSet" path="res://data/tilesets/forest_water_tileset.tres" id="20_water_tileset"]
 [ext_resource type="TileSet" path="res://data/tilesets/forest_foreground_tileset.tres" id="21_foreground_tileset"]
+[ext_resource type="PackedScene" path="res://scenes/props/ladder.tscn" id="22_ladder"]
+[ext_resource type="PackedScene" path="res://scenes/props/thorn_hazard.tscn" id="23_thorns"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
 size = Vector2(80, 800)
@@ -159,6 +161,12 @@ shape = SubResource("RectangleShape2D_camera_bounds")
 [node name="Player" parent="." instance=ExtResource("1_player")]
 position = Vector2(0, 492)
 
+[node name="TrainingLadder" parent="." instance=ExtResource("22_ladder")]
+position = Vector2(-600, 476)
+
+[node name="TrainingThorns" parent="." instance=ExtResource("23_thorns")]
+position = Vector2(-760, 502)
+
 [node name="Snail" parent="." instance=ExtResource("2_snail")]
 position = Vector2(280, 500)
 
@@ -189,13 +197,10 @@ reward_id = &"upgrade-token"
 [node name="DataDefinition" parent="CollectibleTokenA"]
 id = "level_demo_collectible_token_a"
 
-[node name="SavePoint" type="Node2D" parent="."]
+[node name="SavePoint" parent="." instance=ExtResource("9_save_point")]
 position = Vector2(160, 500)
-script = ExtResource("9_save_point")
 save_id_prefix = "level_demo_save_point"
-
-[node name="Sprite2D" type="Sprite2D" parent="SavePoint"]
-modulate = Color(0.95, 0.83, 0.32, 1)
+legacy_save_ids = ["/root/LevelDemo/SavePoint"]
 
 [node name="TeleportToMenu" type="Area2D" parent="." groups=["interactable"]]
 position = Vector2(-960, 500)

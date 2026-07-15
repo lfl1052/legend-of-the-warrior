@@ -8,7 +8,7 @@
 | **系统名称** | UI / HUD / 菜单 |
 | **优先级** | 🟡 P2 |
 | **状态** | ✅ 已实现 |
-| **反向文档日期** | 2026-05-20 |
+| **反向文档日期** | 2026-07-15 |
 | **源码参考** | `scripts/ui/` 共 12 个 `.gd` 文件 |
 
 ---
@@ -67,6 +67,8 @@ UI Root (CanvasLayer, layer=10)
 - `value_changed` → `GameEvents.raise_volume_changed(value)`
 - 监听 `volume_synced` → 用 `set_value_no_signal` 回填
 
+主菜单视觉按课程第 40 课复用 `Legacy-Fantasy-High Forest` 的树木原图集，使用三层 Parallax2D 与循环 AnimationPlayer 构成缓慢森林景深；按钮区由半透明 Panel 承载。背景遮罩固定为 `640×360` 逻辑尺寸，课程纹理、循环动画和既有导航节点路径由 `test_menu_visual_contract.gd` 保护。
+
 **菜单流控**由 `menu_flow.gd` 负责将按钮事件转为 `scene_load_requested`。
 
 ## 暂停
@@ -82,6 +84,12 @@ ui_pause_state_changed.emit(_is_paused)
 
 AudioManager 也会在 pause 时暂停 BGM。
 
+`GameplayOverlay` 在常驻 `UIRootLayer` 中提供继续、返回主菜单，以及主音量、音乐音量和音效音量三路控制。面板使用 `PROCESS_MODE_ALWAYS`，因此场景树暂停后仍可操作；UIManager 以显式状态同步 AudioManager，避免多系统各自翻转布尔值。
+
+## Game Over
+
+玩家死亡广播 `GameEvents.game_over` 后，UIManager 暂停场景树并显示“重新开始 / 返回主菜单”。重新开始通过 `restart_requested` 让 SceneLoader 重载当前 `GameSceneResource`，保留关卡默认出生点；返回菜单同样走 SceneLoader，不在 UI 中直接引用场景路径。两个面板都配置默认键盘焦点，并在 640×360 逻辑视口内完整显示。
+
 ## FadeCanvas
 
 **文件**: `scripts/ui/fade_canvas.gd`
@@ -94,7 +102,7 @@ AudioManager 也会在 pause 时暂停 BGM。
 - `fade_in=false`: 从彩色到透明（淡入到亮）
 - 通过 Tween 修改 `ColorRect.modulate.a` 实现
 
-不阻塞输入，不修改 `process_mode`。
+FadeCanvas 自身不决定 gameplay input，也不修改 `process_mode`；SceneLoader 在转场业务阶段显式锁定旧/新 Player，并在揭幕和依赖刷新后恢复。
 
 ## HUD
 

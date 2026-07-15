@@ -1,15 +1,16 @@
-[gd_scene load_steps=24 format=3 uid="uid://c6level20001"]
+[gd_scene load_steps=27 format=3 uid="uid://c6level20001"]
 
 [ext_resource type="PackedScene" uid="uid://b1plyrwarrior" path="res://scenes/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" uid="uid://x4c2oomdeyvs" path="res://scenes/enemy/snail.tscn" id="2_snail"]
 [ext_resource type="PackedScene" uid="uid://gugxqolxr0vs" path="res://scenes/enemy/bee.tscn" id="3_bee"]
 [ext_resource type="PackedScene" uid="uid://coh11yn3iw42w" path="res://scenes/enemy/boss_enemy.tscn" id="4_boss"]
+[ext_resource type="PackedScene" uid="uid://d4boarwarrior01" path="res://scenes/enemy/boar.tscn" id="4_boar"]
 [ext_resource type="Script" uid="uid://c8gfhpxk7hvm" path="res://scripts/utilities/camera_control.gd" id="5_camera"]
 [ext_resource type="Script" uid="uid://do3wghrq2s04" path="res://scripts/ui/fade_canvas.gd" id="6_fade"]
 [ext_resource type="Script" uid="uid://co4kk2d87frni" path="res://scripts/ui/player_stat_bar.gd" id="7_stat_bar"]
 [ext_resource type="Script" uid="uid://0luyfnvokv08" path="res://scripts/ui/reward_notification_ui.gd" id="8_reward"]
 [ext_resource type="Script" uid="uid://bued6yeyws8we" path="res://scripts/transition/teleport_point.gd" id="9_teleport"]
-[ext_resource type="Script" uid="uid://cufsk4j6gc2x3" path="res://scripts/player/save_point.gd" id="10_save_point"]
+[ext_resource type="PackedScene" path="res://scenes/props/save_point.tscn" id="10_save_point"]
 [ext_resource type="Resource" uid="uid://dmd6d6j8kg5ym" path="res://data/scene_level_demo.tres" id="11_demo_res"]
 [ext_resource type="Script" path="res://scripts/tools/level_2_forest_tile_painter.gd" id="12_tile_painter"]
 [ext_resource type="Texture2D" uid="uid://cvhiwuqkeed20" path="res://art/imported/Legacy-Fantasy-High Forest/Map Assets/Trees/Green-Tree.png" id="13_tree_atlas"]
@@ -20,6 +21,8 @@
 [ext_resource type="TileSet" path="res://data/forest_tileset.tres" id="18_geometry_tileset"]
 [ext_resource type="TileSet" path="res://data/tilesets/forest_water_tileset.tres" id="19_water_tileset"]
 [ext_resource type="TileSet" path="res://data/tilesets/forest_foreground_tileset.tres" id="20_foreground_tileset"]
+[ext_resource type="PackedScene" path="res://scenes/props/water_hazard.tscn" id="21_water_hazard"]
+[ext_resource type="Script" path="res://scripts/enemy/encounter_reward_controller.gd" id="22_encounter_reward"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
 size = Vector2(80, 800)
@@ -161,8 +164,20 @@ position = Vector2(-1220, 435)
 [node name="BeeA" parent="." unique_id=449388943 instance=ExtResource("3_bee")]
 position = Vector2(-360, 390)
 
+[node name="BoarA" parent="." instance=ExtResource("4_boar")]
+position = Vector2(-1720, 492)
+
 [node name="BossEnemy" parent="." unique_id=242791067 instance=ExtResource("4_boss")]
 position = Vector2(1850, 490)
+
+[node name="BossEncounterRewards" type="Node" parent="."]
+script = ExtResource("22_encounter_reward")
+encounter_id = "level_2_boss_arena"
+loot_table_id = &"level_2_boss_encounter"
+enemy_paths = [NodePath("../BossEnemy")]
+
+[node name="WaterHazard" parent="." instance=ExtResource("21_water_hazard")]
+position = Vector2(1120, 500)
 
 [node name="ChestA" parent="." instance=ExtResource("14_chest")]
 position = Vector2(2300, 512)
@@ -188,13 +203,10 @@ notification_english = "Map token gained"
 [node name="DataDefinition" parent="CollectibleMapTokenA"]
 id = "level_2_collectible_map_token_a"
 
-[node name="SavePoint" type="Node2D" parent="." unique_id=2095607063]
+[node name="SavePoint" parent="." unique_id=2095607063 instance=ExtResource("10_save_point")]
 position = Vector2(560, 500)
-script = ExtResource("10_save_point")
 save_id_prefix = "level_2_save_point"
-
-[node name="Sprite2D" type="Sprite2D" parent="SavePoint" unique_id=1329533073]
-modulate = Color(0.95, 0.83, 0.32, 1)
+legacy_save_ids = ["/root/Level2/SavePoint"]
 
 [node name="TeleportToDemo" type="Area2D" parent="." unique_id=397142373 groups=["interactable"]]
 position = Vector2(2490, 500)

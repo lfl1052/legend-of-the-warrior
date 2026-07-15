@@ -69,6 +69,22 @@ func test_attack_target_exit_clears_cooldown() -> void:
 	assert_int(_target.hit_count).is_equal(2)
 
 
+func test_attack_uses_hurtbox_as_single_damage_receiver() -> void:
+	var receiver := auto_free(TestTarget.new()) as TestTarget
+	var hurtbox := HurtBox.new()
+	hurtbox.name = "HurtBox"
+	receiver.add_child(hurtbox)
+	add_child(receiver)
+	await get_tree().process_frame
+	_attack.per_target_one_hit = true
+
+	_attack._try_apply_damage(receiver)
+	_attack._try_apply_damage(hurtbox)
+	_attack._try_apply_damage(hurtbox)
+
+	assert_int(receiver.hit_count).is_equal(1)
+
+
 # ----- 内部 fake 目标 ----------------------------------------------------------
 
 class TestTarget extends Node2D:

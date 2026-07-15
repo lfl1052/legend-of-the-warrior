@@ -12,10 +12,11 @@ func before_test() -> void:
 
 
 func after_test() -> void:
-	var bus_idx := AudioServer.get_bus_index(&"Master")
-	if bus_idx >= 0:
-		AudioServer.set_bus_mute(bus_idx, false)
-		AudioServer.set_bus_volume_db(bus_idx, 0.0)
+	for bus_name in [&"Master", &"Music", &"SFX"]:
+		var bus_idx := AudioServer.get_bus_index(bus_name)
+		if bus_idx >= 0:
+			AudioServer.set_bus_mute(bus_idx, false)
+			AudioServer.set_bus_volume_db(bus_idx, 0.0)
 	_manager = null
 
 
@@ -23,8 +24,13 @@ func test_audio_manager_provides_at_least_five_placeholder_sfx() -> void:
 	var ids: Array = _manager.get_available_sfx_ids()
 
 	assert_bool(ids.has(&"attack")).is_true()
+	assert_bool(ids.has(&"skill_slash")).is_true()
+	assert_bool(ids.has(&"heal")).is_true()
+	assert_bool(ids.has(&"block")).is_true()
 	assert_bool(ids.has(&"hurt")).is_true()
 	assert_bool(ids.has(&"jump")).is_true()
+	assert_bool(ids.has(&"slide")).is_true()
+	assert_bool(ids.has(&"interact")).is_true()
 	assert_bool(ids.has(&"chest_open")).is_true()
 	assert_bool(ids.has(&"breakable_break")).is_true()
 	assert_int(ids.size()).is_greater_equal(5)
@@ -53,7 +59,8 @@ func test_audio_manager_play_sfx_id_uses_fx_volume() -> void:
 
 	var slot: AudioStreamPlayer = _manager.get_debug_last_fx_player()
 	assert_object(slot.stream).is_not_null()
-	assert_float(db_to_linear(slot.volume_db)).is_equal_approx(0.25, 0.01)
+	assert_str(slot.bus).is_equal("SFX")
+	assert_float(_manager.get_sfx_volume()).is_equal_approx(0.25, 0.01)
 
 
 func test_audio_manager_bgm_id_uses_separate_volume_and_looping_stream() -> void:
@@ -64,8 +71,21 @@ func test_audio_manager_bgm_id_uses_separate_volume_and_looping_stream() -> void
 
 	var player: AudioStreamPlayer = _manager.get_debug_bgm_player()
 	assert_object(player.stream).is_not_null()
-	assert_float(db_to_linear(player.volume_db)).is_equal_approx(0.65, 0.01)
-	assert_float(db_to_linear(_manager.get_debug_last_fx_player().volume_db)).is_not_equal(0.65)
+	assert_str(player.bus).is_equal("Music")
+	assert_float(_manager.get_bgm_volume()).is_equal_approx(0.65, 0.01)
+	assert_float(_manager.get_sfx_volume()).is_equal_approx(0.2, 0.01)
+
+
+func test_audio_manager_bus_volumes_support_true_mute() -> void:
+	_manager.set_bgm_volume(0.0)
+	_manager.set_fx_volume(0.0)
+
+	var music_idx := AudioServer.get_bus_index(&"Music")
+	var sfx_idx := AudioServer.get_bus_index(&"SFX")
+	assert_bool(AudioServer.is_bus_mute(music_idx)).is_true()
+	assert_bool(AudioServer.is_bus_mute(sfx_idx)).is_true()
+	assert_float(_manager.get_bgm_volume()).is_zero()
+	assert_float(_manager.get_sfx_volume()).is_zero()
 
 
 func test_audio_manager_placeholder_bgm_has_rhythmic_energy_changes() -> void:
@@ -95,6 +115,19 @@ func test_audio_manager_bgm_fade_duration_starts_from_silence() -> void:
 	var player: AudioStreamPlayer = _manager.get_debug_bgm_player()
 	assert_object(player.stream).is_not_null()
 	assert_bool(db_to_linear(player.volume_db) <= 0.01).is_true()
+
+
+func test_audio_manager_explicit_pause_is_idempotent() -> void:
+	_manager.play_bgm_id(&"demo_theme", 0.0)
+	_manager.set_paused(true)
+	_manager.set_paused(true)
+
+	assert_bool(_manager.is_paused()).is_true()
+	assert_bool(_manager.get_debug_bgm_player().stream_paused).is_true()
+
+	_manager.set_paused(false)
+	assert_bool(_manager.is_paused()).is_false()
+	assert_bool(_manager.get_debug_bgm_player().stream_paused).is_false()
 
 
 func test_audio_manager_stop_all_clears_active_streams() -> void:

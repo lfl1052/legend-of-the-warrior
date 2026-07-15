@@ -525,7 +525,7 @@ public class PlayerAnimation : MonoBehaviour
 
 素材与设置影响：本课没有引入新的外部图片，继续从同一人物 Sprite Sheet 引用连续帧；新增内容是多段空中 Clips、Land Clip、以 `velocityY` 驱动的 1D Blend Tree、`isGround` Animator Bool，以及对应 Transition/Interruption 配置。各阶段帧仍需保持统一脚底基线和 Pivot；Land 片段是否允许被移动打断，会直接影响落地反馈与操作响应，需要结合音效、尘土特效和相机反馈整体检查。
 
-Godot 项目采用的结论：当前 `scripts/player/player_controller.gd` 已把人物帧分为 `jump=[24,25,26,27]` 和 `fall=[28,29]`，并在空中用 `velocity.y < 0.0` 直接选择 Jump/Fall；这等价于最小化的两段纵向状态，不需要为了复刻 Unity 而强制引入 AnimationTree。项目目前没有独立 Land 动画或“上一物理帧在空中、当前帧接地”的落地边沿状态，因此不能声称已经覆盖课程的落地反馈和打断规则。若 GDD 后续批准增强落地表现，应由脚本保存前后帧接地状态，触发一次性 Land 业务/表现事件，再允许移动、攻击、滑铲等高优先级状态按明确规则打断；不能让动画播放完毕本身成为角色能否行动的唯一真相。若素材需要三段以上空中表现，可用 `velocity.y` 阈值做显式状态映射或 AnimationTree BlendSpace1D，但最终阈值必须根据 Godot 的 `jump_velocity=-600`、重力、可变跳高和实际帧素材试玩确定，不能照抄 Unity Blend Tree 数值。
+Godot 项目采用的结论：`scripts/player/player_controller.gd` 已把人物帧分为 `jump=[24,25,26,27]`、`fall=[32,33,34,35,36,37]` 和 `land=[38,39]`，分别引用原图集的 Jump Up 与 Fall/Land 行。空中用 `velocity.y < 0.0` 选择 Jump/Fall；控制器保存前后物理帧接地状态，在落地边沿开启 `0.18s` 的一次性 Land 表现窗口。Land 不锁定业务状态，水平移动及攻击、滑铲等高优先级动作可立即打断，覆盖了课程强调的落地反馈和打断规则，同时不让动画播放完毕决定玩家能否行动。当前仍采用明确的三段状态映射而非 AnimationTree Blend Tree；若未来增加更多空中阶段，阈值必须根据 Godot 的 `jump_velocity=-600`、重力、可变跳高和实际帧素材试玩确定，不能照抄 Unity 数值。
 
 ### 中文课堂第 14 课：实现人物下蹲逻辑和动画
 
@@ -582,7 +582,7 @@ public void Move()
 
 素材与设置影响：本课新增两个下蹲 Clip、一个 Animator Bool 和一个下蹲 Sub-State Machine；没有引入新的外部图片。碰撞体变化属于玩法状态，必须与动画分别维护，并保持脚底锚点不漂移。视频中的绝对尺寸只适用于其 Unity 世界单位和角色资源，不能直接复制到本项目的 16 px 网格与 640×360 逻辑视口。
 
-Godot 项目采用的结论：当前项目没有 `crouch` Input Map action、`is_crouching` 状态、顶棚检测或下蹲动画；`slide` 虽然已有独立 action、速度、冷却和无敌时间，但只临时调整碰撞 mask，并未缩短 `scenes/player/player.tscn` 中半径 `12`、高度 `40` 的 `CapsuleShape2D`，不能把滑铲直接当作已完成的下蹲。若后续正式设计下蹲，应先由 GDD 决定是独立 action 还是复用 `move` 纵轴、是否允许蹲走、与攻击/跳跃/滑铲的优先级以及低顶下的站起失败规则；实现上缓存站立/下蹲 Shape 参数，通过顶棚 ShapeCast/RayCast 确认能否恢复，并为状态转换、脚底基线、低顶保持、移动锁定和旧存档无新增字段写确定性测试。此课仅作为机制研究，不在本轮改变现有玩家体验。
+Godot 项目采用的结论：项目现已复用 `move_down` 纵向 Input Map action 实现 `is_crouching`，没有新增绑定到具体键位的业务判断。下蹲仅能在接地时进入并锁定水平移动，播放原图集 `crouch` 72–74 帧；玩家 Capsule 高度由 40 缩到 28，碰撞体同步下移以保持脚底不动。松开输入时通过世界 Shape Query 检查完整站立体积，头顶空间不足会继续保持下蹲。实现还为每个玩家实例复制 Shape，避免运行时尺寸变化污染共享资源，并用确定性测试覆盖状态切换、脚底基线、低顶保持和移动规则。滑铲仍是独立的高速无敌动作，不与下蹲混为同一状态。
 
 ### 中文课堂第 15 课：人物属性及伤害计算
 
@@ -754,7 +754,7 @@ Godot 项目采用的结论：玩家场景使用独立 `AttackPivot/Attack` Area
 
 玩家体验与制作影响：基础野猪的职责是形成可读的地面移动威胁。玩家首先应能从轮廓、朝向和步频判断它会向哪边移动，再决定跳过、攻击或保持距离。Idle/Walk 切换必须与实际速度一致，墙面碰撞和脚底接触必须稳定，否则敌人会抖动、卡墙或滑出平台，破坏攻击时机的可读性。
 
-Godot 项目采用的结论：项目的 `Boar` 继承 `EnemyMinion`/`Enemy` 状态机，不把所有逻辑堆进单个脚本。移动由 `BoarPatrolState` 和 `BoarChaseState` 设置 `CharacterBody2D.velocity.x`，统一在 Enemy 物理流程中 `move_and_slide()`；速度使用 Godot 每秒单位，不额外乘 delta。动画由状态进入时播放 Walk/相应表现，Character 与 Attack 继续复用共享战斗组件。课程对 prefab、Idle/Walk 和公共敌人速度字段的拆分可作为对应参考，但项目保留显式 Patrol/Chase/Skill 架构。
+Godot 项目采用的结论：项目的 `Boar` 继承 `EnemyMinion`/`Enemy` 状态机，不把所有逻辑堆进单个脚本。移动由 `BoarPatrolState` 和 `BoarChaseState` 设置 `CharacterBody2D.velocity.x`，统一在 Enemy 物理流程中 `move_and_slide()`；速度使用 Godot 每秒单位，不额外乘 delta。普通野猪使用持续接触攻击区，`attack_damage` 会写入共享 Attack 组件；Patrol/Chase 分别播放 Walk/Run，受击恢复后由当前状态重新选择正确动画。课程对 prefab、Idle/Walk 和公共敌人速度字段的拆分已覆盖，项目保留显式 Patrol/Chase/Skill 架构。
 
 ### 中文课堂第 20 课：野猪——撞墙判定和等候计时
 
@@ -773,7 +773,7 @@ Godot 项目采用的结论：项目的 `Boar` 继承 `EnemyMinion`/`Enemy` 状�
 
 玩家体验与制作影响：墙前短暂停顿既是 AI 技术处理，也是玩家可利用的恢复窗口。它让野猪的巡逻周期更可预测，玩家能在转身前后选择背刺或越过。等待时间、检测半径和墙面形状要共同调试；过短会像碰撞抖动，过长会让敌人失去压力。关卡还需要检查平台边缘，不能只保证撞墙转身而让野猪走出悬崖。
 
-Godot 项目采用的结论：`scripts/general/physics_check.gd` 用缓存的 CircleShape2D/PhysicsShapeQueryParameters2D 检查地面、左右墙和前方地面，默认从父节点 CollisionShape2D 推导偏移，并排除自身 RID。`should_turn_for_patrol(direction)` 同时处理迎面墙壁和前方无地面，比课程只做墙面更完整。`BoarPatrolState` 在需要转向时先反转 `_direction`、设置 `0.4s` 等待并把速度清零，随后才恢复巡逻；检测节点不依赖视觉 Sprite 缩放，而是显式接收方向参数，避免 `localScale` 同时影响碰撞、视觉和业务朝向。课程关于平整 Tilemap 墙面和调试检测点的提醒仍适用于项目 Geometry 碰撞验收。
+Godot 项目采用的结论：`scripts/general/physics_check.gd` 用缓存的 CircleShape2D/PhysicsShapeQueryParameters2D 检查地面、左右墙和前方地面，默认从父节点 CollisionShape2D 推导偏移，并排除自身 RID。`should_turn_for_patrol(direction)` 同时处理迎面墙壁和前方无地面，比课程只做墙面更完整。`BoarPatrolState` 在需要转向时反转待恢复方向、设置 `0.4s` 等待、清零速度并播放 Idle，计时结束后恢复 Walk；检测节点不依赖视觉 Sprite 缩放，而是显式接收方向参数。课程关于等待反馈、平整 Tilemap 墙面和调试检测点的目标均已接入。
 
 ### 中文课堂第 21 课：野猪——受伤及死亡的逻辑和动画
 
@@ -792,7 +792,7 @@ Godot 项目采用的结论：`scripts/general/physics_check.gd` 用缓存的 Ci
 
 玩家体验与制作影响：敌人受击需要同时传达“命中了谁、从哪边命中、是否还能追击”。方向击退给玩家位置优势，死亡动画则确认威胁已解除；碰撞与攻击区必须在死亡开始时立即停用，不能等动画末帧才停止伤害。销毁前若有奖励，应在死亡真相首次成立时只结算一次，动画结束只负责表现收尾。
 
-Godot 项目采用的结论：`EnemyCombatant` 监听子节点 Character 的 `took_damage`/`died` 信号。受击时设置硬直计时、按攻击者方向写入水平和向上击退、播放 Hurt 并闪红；死亡时立即记录持久化状态、关闭身体和所有 Area2D 碰撞、播放 Dead、发出事件并按 `despawn_after_death` 延时移除。它不依赖动画末帧事件才能关闭战斗，也能在旧存档加载死亡状态时直接移除对象。`tests/unit/test_enemy_combatant.gd` 已覆盖死亡碰撞关闭、存档记录和移除路径；野猪具体 Hurt/Dead 素材仍需实际场景试玩验收。
+Godot 项目采用的结论：`EnemyCombatant` 监听子节点 Character 的 `took_damage`/`died` 信号。受击时设置硬直计时、按攻击者方向写入水平和向上击退、播放 Hurt 并闪红；死亡时立即记录持久化状态、关闭身体和所有 Area2D 碰撞、播放 Dead、发出事件并按 `despawn_after_death` 延时移除。它不依赖动画末帧事件才能关闭战斗，也能在旧存档加载死亡状态时直接移除对象。野猪当前状态会在受击恢复后重新选择 Walk/Run；Windows/OpenGL 的 Idle/Run 代表截图和动作回归测试已补齐素材与恢复路径验收。
 
 ### 中文课堂第 22 课：有限状态机、抽象类与多态
 
@@ -832,7 +832,7 @@ Godot 项目采用的结论：项目的 `BaseState` 使用 `RefCounted`，提供
 
 玩家体验与制作影响：追击需要给玩家清晰的 Read 阶段——敌人由 Walk 变 Run、朝向锁定、速度提升，让玩家知道自己已被发现。短暂丢失计时提供可利用的脱战规则，但不能让敌人在墙后透视追踪。关卡应测试同层直线、隔墙、高台、平台边缘和反复进出检测边界，确认状态不会抖动。
 
-Godot 项目采用的结论：Enemy 的 `found_player()` 先用范围 Shape 查询候选玩家，再用射线 `can_see_target()` 验证 World 遮挡；发现玩家时保存 attacker 并重置 `lost_time_counter`。Patrol 发现玩家后切 Chase，BoarChaseState 根据目标位置设置方向、处理墙/边缘并用加速度逼近追击速度；目标清空或计时耗尽时返回 Patrol。需要记录一个当前实现差异：`Enemy._process()` 在 attacker 存在时递减 `lost_time_counter`，`BoarChaseState.logic_update()` 目前也会再次递减，因此野猪追击中的有效丢失时间可能约为配置值的一半；课程页强调计时应由公共协议统一管理，这一项应在后续代码任务中单独修正并补回归测试，本轮只记录研究结论，不修改玩法。
+Godot 项目采用的结论：Enemy 的 `found_player()` 先用缓存的范围 Shape 查询候选玩家，再用射线 `can_see_target()` 验证 World 遮挡；发现玩家时保存 attacker 并重置 `lost_time_counter`。Patrol 发现玩家后切 Chase，BoarChaseState 根据目标位置设置方向、处理墙/边缘并用加速度逼近追击速度；目标清空或计时耗尽时返回 Patrol。2026-07-15 已按课程修正统一计时职责：只有 `Enemy._update_target_tracking()` 在 Chase 中刷新或递减目标记忆，Boar/Bee/Boss 的 Chase 状态不再重复扣时；`test_enemy_perception.gd` 覆盖持续可见时刷新、离开范围后按配置时长清除目标。
 
 ### 中文课堂第 24 课：蜗牛——基本的移动逻辑和动画
 
@@ -852,7 +852,7 @@ Godot 项目采用的结论：Enemy 的 `found_player()` 先用范围 Shape 查�
 
 玩家体验与制作影响：蜗牛应作为低移动压力、强位置判断的敌人。玩家需要读出它的正面感知与缩壳倾向，选择从背后接近或在它伸出身体时攻击。巡逻太快会削弱这种观察玩法，检测覆盖全方向又会消灭背刺窗口。死亡动画虽可后补，但战斗碰撞必须在死亡真相成立时立即停用，不能依赖最后一帧 Event 才停止攻击。
 
-Godot 项目采用的结论：`Snail` 继承 EnemyMinion，Patrol 以低速移动、墙/边缘等待并播放 Walk；其 `found_player()` 使用前方距离、垂直容差、朝向和后方盲区，且继续检查世界遮挡，为玩家保留明确背刺窗口。受到伤害也会主动切入 Skill，而不是只在视觉检测到玩家后缩壳。`tests/unit/test_snail_behavior.gd` 已覆盖正面发现、背后忽略和受伤进入壳状态。项目已有死亡通用逻辑，但具体蜗牛 Dead 素材和场景表现仍需实际验收。
+Godot 项目采用的结论：`Snail` 继承 EnemyMinion，Patrol 以低速移动、墙/边缘等待并播放 Walk；其 `found_player()` 使用前方距离、垂直容差、朝向和后方盲区，且继续检查世界遮挡，为玩家保留明确背刺窗口。受到伤害也会主动切入 Skill。前向接触攻击区会与视觉朝向同步翻转；Walk 和 Dead 使用各自完整 0–7 帧，死亡开始时立即关闭战斗碰撞。感知、接触伤害、朝向和完整动作条均有确定性测试与实际截图证据。
 
 ### 中文课堂第 25 课：蜗牛——特殊技能状态的实现
 
@@ -870,7 +870,7 @@ Godot 项目采用的结论：`Snail` 继承 EnemyMinion，Patrol 以低速移�
 
 玩家体验与制作影响：缩壳是防御节奏而非单纯无敌。玩家应能读出进入壳、保持和退出三个阶段，并选择等待、绕后或转移目标；若壳内永久无敌且玩家站近会无限刷新，战斗可能停滞。需要最短缩壳时间、玩家离开条件、重新发现时的打断规则，以及壳内命中的明确反馈。
 
-Godot 项目采用的结论：`SnailSkillState` 已拆成 HIDING、WAITING、UNHIDING 三阶段。进入后速度归零并播放 Hide；壳内固定到明确帧，持续刷新 Character 无敌；玩家离开正面视野后才播放 Unhide，伸出过程中若重新发现玩家会回到壳内；最短退出时间独立于 Enemy 的 lost_time。状态退出时清除无敌。该实现比课程单计时器更能避免动画/业务耦合，但仍需用实际遭遇验证玩家能否理解背刺窗口和防御反馈。
+Godot 项目采用的结论：`SnailSkillState` 已拆成 HIDING、WAITING、UNHIDING 三阶段。原 `Hide-Sheet` 的动作语义是前半段缩入、后半段伸出，因此 Hide 使用 0–3 帧、壳内保持第 3 帧、Unhide 使用作者绘制的 4–7 帧，而不是机械反放前半段。壳内持续刷新 Character 无敌；玩家离开正面视野后才伸出，重新发现时回到壳内；状态退出清除无敌。该实现保留课程防御节奏，同时把最短承诺时间与目标丢失计时分离。
 
 ### 中文课堂第 26 课：蜜蜂——基本的移动逻辑和动画
 
@@ -906,7 +906,7 @@ Godot 项目采用的结论：`Bee` 使用 `uses_gravity=false` 的 Enemy 流程
 4. `14:30–18:30` 加入攻击频率计时和 Attack Trigger：冷却归零时播放攻击动画并重置为 `attack.attackRate`。Animator 增加 Attack/Hurt/Dead 关系，攻击动作期间停止移动。
 5. `18:30–20:59` 配置攻击动画事件/判定区并进行最终运行测试，观察蜜蜂接近、停在攻击位置、出招、重新追击和离开范围后的冷却恢复。结尾没有新增独立代码结构，主要确认页面补丁后的追击/攻击循环可连续运行。
 
-Godot 项目采用的结论：`BeeChaseState` 每帧在范围判断前递减 `_attack_rate_counter`，符合课时页修正；追击目标、攻击悬停高度、横纵容差和攻击间隔均为独立参数。进入攻击时停止移动并排队 startup/active 命中窗口，窗口结束后还有退避阶段，再恢复追击，避免蜜蜂一直贴在玩家身上连续触发。受伤/死亡会取消攻击窗口，状态退出同样关闭命中盒。课程最终运行循环已被当前项目覆盖并扩展，本轮不调整蜜蜂数值。
+Godot 项目采用的结论：`BeeChaseState` 每帧在范围判断前递减 `_attack_rate_counter`，符合课时页修正；追击目标、攻击悬停高度、横纵容差和攻击间隔均为独立参数。进入攻击时停止移动并执行 0.35s Startup、0.12s Active、0.55s Retreat；Active 现在通过 `Attack.set_active()` 同时启停 monitoring 与碰撞形状，计时归零当帧关闭，并由实际玩家扣血测试证明伤害链有效。攻击/受击结束后恢复 Chase/Fly，Dead 使用 Hit/Vanish 0–3 完整序列。课程最终循环已覆盖，项目额外保留退避和世界遮挡。
 
 ### 中文课堂第 28 课：创建人物状态栏
 
@@ -963,7 +963,7 @@ Godot 项目采用的结论：`Character.take_damage()`、heal、reset 和存档
 
 玩家体验与制作影响：滑墙给玩家一个“把失误转成下一步”的恢复动作，蹬墙跳则把墙面变成路线资源。玩家应清楚读出何时抓墙、向哪边弹出和何时重新获得空中控制。关卡应先用单墙安全井教学，再用双墙上升确认，最后与尖刺、敌人和移动平台组合施压；失败后重试点不能让玩家重复过长的攀爬段。
 
-Godot 项目采用的结论：`PlayerController` 通过 PhysicsCheck 左/右检测和 `not on_floor` 计算 `is_on_wall_grab`，将下落速度限制为 `WALL_SLIDE_MAX_SPEED=140`。跳跃缓冲存在时，贴墙会写入 `WALL_JUMP_Y=-560` 与离墙 `WALL_JUMP_X=380`，并设置 `wall_jump_input_lock=0.10s`，防止持续方向输入立即把玩家拉回墙；同时保留土狼时间、跳跃缓冲和松键短跳。动画直接使用 Wall 状态，不让动画决定物理真相。当前测试只间接检查 wall-jump input lock 参数，完整左右墙方向、滑落限速和连跳仍应补确定性回归测试，并在 640×360 实际关卡中试玩。
+Godot 项目采用的结论：`PlayerController` 通过 PhysicsCheck 左/右检测和 `not on_floor` 计算 `is_on_wall_grab`，将下落速度限制为 `wall_slide_max_speed=140`。跳跃缓冲存在时，贴墙会写入 `wall_jump_vertical_velocity=-560` 与离墙 `wall_jump_horizontal_velocity=380`，并设置 `wall_jump_input_lock=0.10s`，防止持续方向输入立即把玩家拉回墙；同时保留土狼时间、跳跃缓冲和松键短跳。动画使用 `char_blue_2` 的 Wall Slide 24–27 帧，不让动画决定物理真相。单元测试覆盖墙滑必须处于下落且输入朝墙、动作图集语义和输入锁参数；完整左右墙连跳仍需在 640×360 实际关卡中持续试玩。
 
 ### 中文课堂第 31 课：滑铲的逻辑和动画的实现
 
@@ -983,7 +983,7 @@ Godot 项目采用的结论：`PlayerController` 通过 PhysicsCheck 左/右检�
 
 玩家体验与制作影响：滑铲是快速穿越危险区和调整站位的承诺动作。玩家需要预判朝向、剩余能量和落点；关卡应先用宽阔安全地面教学，再用低矮通道或可穿越攻击确认用途，最后与敌人、尖刺和平台边缘组合施压。碰撞体缩放、无敌窗口和实体穿透必须与动画帧同步，否则会出现“看似躲过但仍受击”或卡入墙体的问题。
 
-Godot 项目采用的结论：现有 `PlayerController` 使用 `slide` Input Map action、`slide_speed=540`、`slide_duration=0.42s` 和独立冷却；开始时按朝向写入速度，临时移除敌人攻击/危险层的 collision mask，并通过 Character 提供前 60% 时长的无敌窗口。离地会把剩余时间压到 `0.05s`，结束时恢复碰撞并清零水平速度。项目没有复制“固定距离协程 + Power 消耗”，而是采用时间、速度、冷却和短无敌的动作规则；当前还把 `jump` 占位音效复用于滑铲。单元测试覆盖启动速度、无敌和冷却，但尚未覆盖碰撞 mask 恢复、离地提前结束、左右朝向和撞墙停止，实际手感与动画/碰撞同步仍需可视试玩。
+Godot 项目采用的结论：`PlayerController` 使用 `slide` Input Map action，以 `slide_speed=320` 向朝向侧固定 `slide_distance=140.8px` 目标推进，并保留独立冷却和短无敌窗口。开始时消耗可导出的 `slide_power_cost=20`，该数值是项目默认值，课程画面未提供可核实原值；能量不足不会进入状态或触发冷却。滑铲时身体 Capsule 从高 40 缩到 24，HurtBox 从高 34 缩到 20，均下移以保持脚底基线，同时临时移除敌人攻击/危险层 collision mask。到点、撞墙、离地、超时及所有外部打断都走 `_end_slide()` 统一恢复碰撞、形状和水平速度，音频改用独立 `slide` ID。15 项单测覆盖左右方向、重复输入、Power、碰撞形状/mask、撞墙、离地、冷却与打断恢复；Windows/OpenGL `player_slide.png` 已核对姿态和 HUD 能量反馈。
 
 ### 中文课堂第 32 课：摄像机跟随及攻击抖动实现
 
@@ -1001,7 +1001,7 @@ Godot 项目采用的结论：现有 `PlayerController` 使用 `slide` Input Map
 
 玩家体验与制作影响：跟随相机应优先展示玩家下一步要去的空间，同时减少频繁反向时的晃动。攻击抖动用于强调命中重量，不应在普通移动或每个弱反馈上滥用；强度、持续时间和触发来源需要数据化，并为眩晕敏感玩家保留减弱或关闭选项。关卡边界必须在场景加载完成后立即生效，避免出生首帧看到场外空白。
 
-Godot 项目采用的结论：`CameraControl : Camera2D` 监听 `GameEvents.camera_shake_requested` 与 `after_scene_loaded`，使用 dead zone、指数插值、水平前视和垂直偏移跟随 player 组；场景边界来自 `camera_bounds` 组中的矩形 CollisionShape2D，并按视口尺寸夹紧相机中心。受击反馈通过 GameEvents 传入强度和时长，Camera2D offset 使用衰减随机噪声恢复到零。现有测试覆盖 640×360/整数缩放、dead zone 和出生位置构图，但尚未覆盖边界刷新、视口夹紧、抖动强度/持续时间及结束归零；这些应补确定性测试，并在实际战斗中检查弱攻击与重击的反馈层级。
+Godot 项目采用的结论：`CameraControl : Camera2D` 监听 `GameEvents.camera_shake_requested` 与 `after_scene_loaded`，使用 dead zone、指数插值、水平前视和垂直偏移跟随 player 组；场景边界来自 `camera_bounds` 组中的矩形 CollisionShape2D，并按视口尺寸夹紧相机中心。边界计算包含碰撞子节点的偏移、旋转与缩放；地图轴小于 640×360 可见范围时相机固定在该轴中心。受击反馈通过 GameEvents 传入强度和时长，Camera2D offset 使用衰减随机噪声并在结束或零时长请求时归零。7 项相机单测覆盖逻辑视口、dead zone、出生构图、边界刷新/夹紧、小地图居中和抖动归零；Fade 另有 4 项测试覆盖暂停树下仍完成 Tween。Level 2 OpenGL 到达区与 Boss 区截图已检查边界和 HUD 构图。
 
 ### 中文课堂第 33 课：音源设置和音效播放
 
@@ -1019,7 +1019,7 @@ Godot 项目采用的结论：`CameraControl : Camera2D` 监听 `GameEvents.came
 
 玩家体验与制作影响：音频是动作可读性的一部分。移动、攻击、命中、受伤、奖励和环境危险应有不同职责，BGM 不应掩盖关键战斗提示；同类音效需要并发上限、音量/音高变化和优先级，避免快速攻击时互相截断或形成刺耳叠加。暂停、场景切换、设置持久化和无障碍音量选项也必须纳入同一音频契约。
 
-Godot 项目采用的结论：`AudioManager` 通过 `GameEvents.play_bgm_id/play_sfx` 等信号接收稳定内容 ID，使用一个循环 BGM Player 和 8 槽 FX 池，支持独立 BGM/FX 逻辑音量、BGM 淡入、暂停和场景加载时停止残留效果音；`AudioDefinition` 可挂在场景节点上，把 AudioStream 请求转发给 Autoload。单元测试覆盖占位 SFX、BGM 循环与节奏变化、独立音量、淡入、停止和销毁后忽略事件。当前所有播放器仍路由到 Master bus，尚未建立课程中的实体 BGM/FX Bus；正式资产也仍是程序生成占位音。后续接入正式声音时应增加 bus layout、并发/抢占规则和实际可听混音验收，滑铲还应替换当前复用的 jump 占位音效。
+Godot 项目采用的结论：`AudioManager` 通过 `GameEvents.play_bgm_id/play_sfx` 等信号接收稳定内容 ID，使用一个循环 BGM Player 和 8 槽 FX 池；BGM 路由 `Music`、FX 路由 `SFX`，两者发送到 `Master`。三路线性音量写入真实 AudioServer Bus，0 值通过 mute 实现真静音；BGM Player 只承担淡入，FX 满载时抢占最早使用的槽。`slide` 与 `interact` 已使用独立内容 ID，场景加载仍会清理残留 FX。11 项单测覆盖 Bus 路由、真静音、占位 SFX、BGM 循环/节奏、淡入、暂停、停止和销毁后事件。仓库没有课程正式音频文件，因此现有程序生成声音仍明确作为占位，正式录音/授权资产与可听混音验收是外部资产阻塞，不能标为严格完成。
 
 ### 中文课堂第 34 课：水和荆棘的逻辑实现
 
@@ -1036,7 +1036,7 @@ Godot 项目采用的结论：`AudioManager` 通过 `GameEvents.play_bgm_id/play
 
 玩家体验与制作影响：水和荆棘必须在玩家承诺动作前清楚可读。致死水域需要安全边缘、明确落点和快速重试；可受伤荆棘需要预警轮廓、受击反馈与无敌窗口，不能因每物理帧重复伤害瞬间清空生命。关卡应先在低惩罚位置单独介绍，再与跳跃、滑铲或敌人压力组合；检查点要控制重复路程。
 
-Godot 项目采用的结论：当前项目已有独立 Water TileSet 动画，且 Background/Water/Geometry 图层职责明确；Character 的统一 `take_damage()`、无敌帧和死亡事件链也已具备。但现有可玩关卡没有水/荆棘 Hazard prefab 或确定性环境伤害脚本，`forest-chapter-redesign.md` 还明确暂不加入无底坑。因此课程对应的玩法部分仍是缺口，不能把动画水体当作已完成危险区。后续实现应使用独立 Area2D 和 Hazard 层调用既有伤害入口，明确“致死水域”还是“固定伤害水域”、持续接触间隔、击退/复位与检查点恢复，并增加进入、持续接触、滑铲无敌和重生的自动化及实际试玩证据。
+Godot 项目采用的结论：项目已把水体视觉与玩法触发分离，并新增独立 `water_hazard.tscn`、`thorn_hazard.tscn` 与 `EnvironmentHazard : Area2D`。当前项目默认采用固定 1 点伤害、`0.75s` 每目标间隔且不可格挡，伤害统一经过目标 `take_damage()`；滑铲仍按玩家既有无敌规则忽略 Hazard 层。Level 2 已放置可见水域危险区，2 项单测覆盖统一伤害入口、间隔和 HurtBox 去重，Windows/OpenGL `level_2_water_hazard.png` 已检查视觉区域与触发范围。课程没有给出持续接触精确数值，因此这些参数是项目批准默认值，不冒充课程原值。
 
 ### 中文课堂第 35 课：人物可互动标识
 
@@ -1054,7 +1054,7 @@ Godot 项目采用的结论：当前项目已有独立 Water TileSet 动画，�
 
 玩家体验与制作影响：交互提示只应回答“现在可以做什么”，不应抢占移动和战斗视线。提示应在玩家进入有效距离后稳定出现，离开后及时消失；多个对象重叠时必须有确定的目标选择规则。键鼠、手柄和未来触屏图标应来自当前输入设备映射，不能永远显示固定键位。
 
-Godot 项目采用的结论：玩家场景已有 `Sign : Area2D`、CircleShape 检测区和 16×16 Prompt Sprite；脚本监听 body/area 进入退出，仅在输入启用、角色存活且未暂停时显示，并修正提示的水平缩放。它接受 `interactable` 组或拥有 `trigger_action` 方法的对象，符合项目的鸭子类型协议。当前 Prompt 直接切 visible，`sign_animation_player_path` 尚未在 player.tscn 配置，因此课程中的出现动画没有实际落地；也没有针对进入/退出、死亡/暂停隐藏、朝向和多个重叠目标的单元测试。现有 `_target` 采用“最后进入者”单引用，重叠交互物的退出顺序可能清掉当前提示，后续应改为候选集合或最近目标选择并补测试。
+Godot 项目采用的结论：玩家场景的 `Sign : Area2D` 使用 CircleShape 检测区和课程 HUD `GameButtons.png` 的 16×16 Prompt；脚本监听 body/area 进入退出，仅在输入启用、角色存活且未暂停时显示，并修正提示的水平缩放。可交互对象以 WeakRef 候选集合登记，每帧清理失效引用并选择最近目标；当前目标离开后会自动回退到剩余候选，不受进入顺序影响。`player.tscn` 已配置独立 PromptAnimationPlayer，show/hide 只改变 alpha 与 Y 偏移，不与朝向 scale 冲突。Sign 使用 ALWAYS process，在 SceneTree 暂停时禁止交互并收起提示。4 项单测覆盖最近目标、退出回退、暂停隐藏和动画轨道契约，Windows/OpenGL `player_interaction_prompt.png` 已核对图标、位置和场景遮挡。
 
 ### 中文课堂第 36 课：场景互动的逻辑实现
 
@@ -1071,7 +1071,7 @@ Godot 项目采用的结论：玩家场景已有 `Sign : Area2D`、CircleShape �
 
 玩家体验与制作影响：交互必须满足“看见提示—按下动作—立即反馈—状态持久”的闭环。宝箱打开后应明确给出动画、音效、奖励和不可重复状态；无效输入不能静默让玩家怀疑按键失效。若多个目标同时可用，应按距离/朝向或优先级选择，并把选择结果通过提示位置或高亮表达。
 
-Godot 项目采用的结论：项目以 `IInteractable` 命名约定和 `trigger_action()` 鸭子类型替代 C# interface。Sign 的 `_unhandled_input()` 读取 `interact` action，调用缓存目标并播放交互音效；Chest 实现一次性打开、动画、SFX、Loot 表、PlayerProgression 奖励、通知 UI、碰撞关闭和 ISaveable 持久化。`CollectibleReward` 与 `Breakable` 进一步覆盖自动拾取和攻击破坏奖励。测试已验证宝箱奖励只发一次、打开状态写入存档、稳定 ID、收集物去重及加载后移除；相较课程的最小示例更完整。剩余重点是 Sign 本身和端到端“进入范围→提示→输入→打开→奖励”的自动化/可视验收，以及多个交互物重叠时的确定性选择。
+Godot 项目采用的结论：项目以 `IInteractable` 命名约定和 `trigger_action()` 鸭子类型替代 C# interface。Sign 的 `_unhandled_input()` 读取 `interact` action，调用最近的缓存目标并广播独立 `interact` 音效 ID；Chest 实现一次性打开、动画、SFX、Loot 表、PlayerProgression 奖励、通知 UI、碰撞关闭和 ISaveable 持久化。`CollectibleReward` 与 `Breakable` 进一步覆盖自动拾取和攻击破坏奖励。测试已验证宝箱奖励只发一次、打开状态写入存档、稳定 ID、收集物去重及加载后移除；Sign 自身的重叠候选/最近目标和 Prompt 动画也已有确定性测试与可视截图。完整“真实输入按键→目标副作用”的设备级录制仍可在最终可执行候选包上补做，但不再是规则实现缺口。
 
 ### 中文课堂第 37 课：场景管理和切换
 
@@ -1089,7 +1089,7 @@ Godot 项目采用的结论：项目以 `IInteractable` 命名约定和 `trigger
 
 玩家体验与制作影响：场景切换不是单纯换地图，而是“提交离开—遮蔽加载—在明确入口恢复控制”的完整过渡。玩家应在交互后立即得到反馈，不能在黑屏前继续移动或重复触发；新场景必须保持正确朝向、出生位置、HUD、相机边界和音频状态。场景元数据要使用稳定内容 ID/资源引用，才能支撑存档、继续游戏和旧版本迁移。
 
-Godot 项目采用的结论：项目使用 `GameSceneResource.tres` 保存 `scene_path/display_name/scene_type`，TeleportPoint 通过 `GameEvents.scene_load_requested` 传递资源、二维出生坐标和淡入选项。SceneLoader 是 Autoload，负责切换前捕获存档状态、工作线程加载 PackedScene、`change_scene_to_packed()` 和加载锁；由于 Godot 4.7 的 threaded request 泄漏回归，当前实现明确避开 `load_threaded_request()`，使用自持 Thread + `ResourceLoader.load()`。与课程的 Additive 持久 Player 架构不同，Godot 每个地点场景包含自己的 Player/UI/Camera，只有 Autoload 服务跨场景持久；因此每个可加载场景必须满足相同入口契约。现有测试检查线程策略和淡入前不启动加载，e2e 已覆盖菜单、Demo、Level2 往返和回菜单。
+Godot 项目采用的结论：项目使用 `GameSceneResource.tres` 保存 `scene_path/display_name/scene_type`，TeleportPoint 通过 `GameEvents.scene_load_requested` 传递资源、二维出生坐标和淡入选项。SceneLoader 是 Autoload，负责切换前捕获存档状态、工作线程加载 PackedScene、`change_scene_to_packed()` 和加载锁；由于 Godot 4.7 的 threaded request 泄漏回归，当前实现明确避开 `load_threaded_request()`，使用自持 Thread + `ResourceLoader.load()`。与课程的 Additive 持久 Player 架构不同，Godot 每个地点场景包含自己的 Player/UI/Camera，只有 Autoload 服务跨场景持久；因此每个可加载场景必须满足相同入口契约。SceneLoader 现以 IDLE/FADING_TO_BLACK/LOADING/REVEALING 表达业务阶段，`_is_loading` 忽略并发请求；单元测试检查线程策略、淡入前不启动加载与并发保护，e2e 覆盖菜单、Demo、Level2 往返和回菜单。
 
 ### 中文课堂第 38 课：场景加载后的执行逻辑
 
@@ -1107,7 +1107,7 @@ Godot 项目采用的结论：项目使用 `GameSceneResource.tres` 保存 `scen
 
 玩家体验与制作影响：出生点必须是加载完成后的第一个可信玩法状态。相机、HUD、输入、碰撞和音频只能在新场景与玩家坐标都就绪后恢复；若先发事件再放置玩家，会产生首帧相机跳动、错误边界或存档坐标覆盖。加载失败也需要恢复输入、显示错误或安全返回菜单，不能永久停留黑屏。
 
-Godot 项目采用的结论：`change_scene_to_packed()` 后，SceneLoader 等到下一帧 `_finish_scene_change()`，再从 player 组解析新 Player、应用请求坐标、发出 fade out 与 `after_scene_loaded`，CameraControl、AudioManager 和 PlayerMapPanel 随后刷新。Godot 不需要重新激活持久 Player，但依赖每个新场景已经实例化并注册 player 组。端到端冒烟测试覆盖 Demo↔Level2 往返及回菜单，且会等待加载锁释放；不过单元测试尚未直接断言“位置应用→fade out→after_scene_loaded→解锁”的严格顺序、并发请求忽略和加载失败恢复，这些仍是关键回归缺口。
+Godot 项目采用的结论：`change_scene_to_packed()` 后，SceneLoader 等到下一帧 `_finish_scene_change()`，先锁定新场景 Player，再应用请求坐标和延迟存档恢复；随后请求揭幕并等待完成，按“位置/数据恢复→揭幕→after_scene_loaded→输入解锁”收尾。CameraControl、AudioManager 和 PlayerMapPanel 在通知阶段刷新，而玩家只在这些依赖稳定后恢复控制。加载或 `change_scene_to_packed()` 失败时不会切走原场景，SceneLoader 会先揭开黑屏、再恢复原 Player 输入并清理请求状态。单元测试已覆盖严格顺序、并发请求和真实 0.4 秒失败回滚；e2e 等待 `is_transition_active()` 归零后再操作，并覆盖 Demo↔Level2、回菜单与 Continue。
 
 ### 中文课堂第 39 课：场景淡入淡出效果
 
@@ -1125,7 +1125,7 @@ Godot 项目采用的结论：`change_scene_to_packed()` 后，SceneLoader 等�
 
 玩家体验与制作影响：Fade 的职责是隐藏不可信加载状态并清楚表达空间转换，不应成为无意义等待。淡入持续时间要足够覆盖卸载，但不拖慢频繁往返；淡出前必须保证出生点和相机稳定。过渡期间应阻止玩家输入和重复交互，并为慢盘加载保留持续黑屏或加载提示，而不是固定延时后提前揭开空场景。
 
-Godot 项目采用的结论：`FadeCanvas : CanvasLayer` 在 layer 100 创建全屏 ColorRect，监听带颜色、时长和方向的 `GameEvents.fade_requested`，用原生 Tween 插值，因此无需引入 DOTween 类依赖；Tween 设置为暂停时仍处理，并会取消前一次未完成 Tween。SceneLoader 先请求覆盖黑屏并等待 `0.4s`，再启动后台加载；切换完成后请求透明并发出 AfterSceneLoaded。单元测试覆盖零时长的全黑/透明端点，e2e 验证场景往返，但尚未覆盖非零时长、中途取消、不同颜色、暂停状态与输入封锁。当前 FadeCanvas 明确 `MOUSE_FILTER_IGNORE` 且不会阻断 gameplay input，SceneLoader 等待黑屏的 `0.4s` 内旧 Player 仍可能移动；正式体验验收前应决定是否由过渡状态统一禁用输入，并澄清脚本注释中 fade_in/fade_out 命名与“覆盖/揭开”语义。
+Godot 项目采用的结论：`FadeCanvas : CanvasLayer` 在 layer 100 创建全屏 ColorRect，监听带颜色、时长和方向的 `GameEvents.fade_requested`，用原生 Tween 插值，因此无需引入 DOTween 类依赖；Tween 设置为暂停时仍处理，并会取消前一次未完成 Tween。SceneLoader 在覆盖黑屏前锁定旧 Player，等待 `0.4s` 后启动后台加载；新场景定位和存档恢复完成后再请求透明，揭幕完成才广播 AfterSceneLoaded 并解锁新 Player。FadeCanvas 的 `MOUSE_FILTER_IGNORE` 只表达它不承担业务输入规则，输入真相由 SceneLoader 管理。4 项 Fade 单测覆盖零/非零时长、不同颜色、最新请求取消旧 Tween以及暂停树下仍完成；SceneLoader 另有 7 项测试和 E2E 覆盖转场顺序、并发忽略与失败恢复。
 
 ### 中文课堂第 40 课：主场景制作
 
@@ -1143,7 +1143,7 @@ Godot 项目采用的结论：`FadeCanvas : CanvasLayer` 在 layer 100 创建全
 
 玩家体验与制作影响：主菜单是玩家第一次判断游戏气质、可读性和控制方式的场景。动态背景可以提前建立冒险氛围，但不能抢走按钮对比度；默认焦点、禁用态和手柄导航必须无需鼠标也能完成。进入游戏后只能在新场景、出生点、相机和淡出都可信时恢复控制。
 
-Godot 项目采用的结论：`warrior_menu.tscn` 已有标题、“新的冒险 / 继续游戏 / 退出”、音量与语言切换，Control 使用全屏锚点，符合项目 `640×360` 逻辑视口和整数缩放基线；`MainMenu` 也会根据存档启用继续按钮并设置默认焦点。当前背景只是深色 `ColorRect`，没有课程中的动态森林、半透明菜单承载面板或正式主题/字体，因此功能闭环已具备但视觉身份仍明显不足。菜单视觉捕获测试存在，但正式体验验收还应覆盖 640×360 实际缩放、键盘/手柄导航、无存档禁用态和动态背景不干扰文本。课程结尾再次暴露转场输入封锁缺口：当前 FadeCanvas 不拦截 gameplay input，SceneLoader 也没有统一的加载输入锁，应在后续实现时通过明确的过渡状态处理，而不是让 UI 遮罩承担业务规则。
+Godot 项目采用的结论：`warrior_menu.tscn` 已有标题、“新的冒险 / 继续游戏 / 退出”、音量与语言切换，Control 使用全屏锚点，符合项目 `640×360` 逻辑视口和整数缩放基线；`MainMenu` 也会根据存档启用继续按钮并设置默认焦点。菜单现复用课程 `Legacy-Fantasy-High Forest` 的 `Green-Tree.png` 建立三层循环森林景深，并通过 AnimationPlayer 缓慢移动各层；按钮区使用半透明承载面板保证文字对比，没有引入课程外素材。3 项菜单资源契约测试保护课程纹理、三层 Parallax、循环动画、640×360 遮罩和既有导航路径，Windows/OpenGL `warrior_menu.png` 已检查标题、按钮、禁用态和场景遮挡。转场输入封锁继续由 SceneLoader 的显式阶段负责，FadeCanvas 不作为输入规则来源。
 
 ### 中文课堂第 41 课：实现“新的冒险”逻辑
 
@@ -1161,7 +1161,7 @@ Godot 项目采用的结论：`warrior_menu.tscn` 已有标题、“新的冒险
 
 玩家体验与制作影响：“新的冒险”必须建立完全干净且可预测的新会话，不能继承上一局的生命、奖励、场景对象或存档内存态。菜单按下后要立即给出选中/转场反馈，并在加载完成前禁止重复提交。继续游戏与新游戏必须是两条明确的数据路径；默认焦点则保证玩家用键盘或手柄打开菜单后可以马上操作。
 
-Godot 项目采用的结论：`MainMenu` 发出 `GameEvents.new_game_started`，`DataManager` 清空内存数据，PlayerController 与 PlayerProgression 分别重置运行态，`MenuFlow` 再把事件转换成带 `GameSceneResource` 的默认关卡加载请求；继续游戏则读取存档场景并走独立事件。退出使用 `get_tree().quit()`。这比课程示例更明确地分离了 UI、数据和场景职责。当前默认焦点策略优先选择可用的“继续游戏”，无存档时才选“新的冒险”，与课程始终选 New Game 不同但有合理依据；需要通过 UX 试玩确认是否符合玩家预期。e2e 已覆盖点击新游戏进入 Demo，但仍缺新游戏确实清空旧内存数据、继续与新游戏不会串线、转场中重复按键被忽略及菜单退出行为的确定性测试。
+Godot 项目采用的结论：`MainMenu` 发出 `GameEvents.new_game_started`，`DataManager` 清空内存数据，PlayerController 与 PlayerProgression 分别重置运行态，`MenuFlow` 再把事件转换成带 `GameSceneResource` 的默认关卡加载请求；继续游戏则读取存档场景并走独立事件。退出使用 `get_tree().quit()`。这比课程示例更明确地分离了 UI、数据和场景职责。当前默认焦点策略优先选择可用的“继续游戏”，无存档时才选“新的冒险”，与课程始终选 New Game 不同但有合理依据。DataManager 单测已验证新游戏事件清空旧坐标、数值、场景和加载状态；SceneLoader 单测覆盖转场并发忽略；E2E 同时覆盖新游戏进入 Demo 与 Continue 恢复场景、位置、生命、能量和 HUD。`get_tree().quit()` 不在单元测试中调用，退出按钮的存在和导航由菜单场景契约与实际截图验证。
 
 ### 中文课堂第 42 课：存储点及画面效果
 
@@ -1179,7 +1179,7 @@ Godot 项目采用的结论：`MainMenu` 发出 `GameEvents.new_game_started`，
 
 玩家体验与制作影响：存储点必须同时表达“这里可以保存”“是否已经激活”“保存是否成功”。只有写文件而没有光效、动画、音效或 HUD 回执会让玩家不确定进度是否安全；反过来，持续强烈后处理也会污染战斗可读性。首次激活奖励、重复使用、恢复生命、重生点更新和失败重试规则需要由设计明确，并与实际持久化成功/失败状态一致。
 
-Godot 项目采用的结论：`save_point.gd` 已实现 `trigger_action()`、首次激活信号/奖励、`GameEvents.save_data_requested` 和 ISaveable 状态；e2e 已验证触发后写出 `user://SAVE_DATA/data.sav`，DataManager 也有损坏文件隔离和稳定键协议。当前关卡里的 SavePoint 只配置了一个着色 `Sprite2D`，没有绑定 `glow_sprite_path`、AnimationPlayer、明暗两态、交互范围视觉、音效或局部画面效果；因此脚本的呼吸光 `_process()` 实际不会运行，加载已激活存档时也只恢复布尔值而不会刷新视觉。场景没有复杂岩石子层级，所以暂时不需要等价 YSort/CanvasGroup 处理，但未来制作正式组合资产时必须把根与子物体的排序契约一并验证。现有测试只证明文件被写出，尚未验证首次奖励只发一次、重复激活、加载后的亮态、存档失败反馈、重生位置和实际截图；课程提醒我们不能把“成功写文件”视为存储点体验完成。
+Godot 项目采用的结论：`SavePoint : Area2D` 已实现真实 Interactable 范围和 inactive/saving/active 规则状态。视觉严格使用课程素材族：Props-Rocks 岩石作为底座，SignCharacters 同一 X 符号的深色/青色区域分别作为熄灭与点亮 Sprite，并用 CanvasGroup 对应课程 Sort Group，未生成或手绘替代符号。触发时先让 DataManager 采集激活态，写盘成功后才确认激活、播放专用音效 ID、显示“进度已保存”并发首次奖励；失败则回滚首次激活、不给奖励并明确提示磁盘问题。重复交互仍会保存但不会重复给首次奖励，读档会恢复亮态，同时兼容旧场景路径键。自动化覆盖成功、失败、重复激活、旧档和交互层契约；Windows/OpenGL 截图覆盖未激活、已激活、成功和失败四态。当前声音仍是 AudioManager 生成的占位音，正式录制音频归入独立音频管线任务。
 
 ### 中文课堂第 43 课：数据结构及坐标保存加载
 
@@ -1197,7 +1197,7 @@ Godot 项目采用的结论：`save_point.gd` 已实现 `trigger_action()`、首
 
 玩家体验与制作影响：坐标保存的真正契约是“同一个内容对象在未来版本仍能被识别”，而不只是当前运行能取到 Transform。稳定 ID、注册顺序和加载时机一旦错误，玩家会在错误地点出生、对象状态串位或继续游戏失败。保存与加载应有明确成功/失败反馈，并对重复 ID、缺失对象和旧版本字段提供可诊断处理。
 
-Godot 项目采用的结论：项目已有共享 Dictionary Schema、DataManager 注册表、`get_save_data/load_save_data` 鸭子协议和 `PersistenceKeyUtility`；PlayerController 按稳定键保存二维位置，Character、SavePoint、敌人、宝箱、破坏物和收集物都接入同一协议。DataManager 是 Autoload，因此初始化顺序天然早于普通场景节点，避免了课程的 MonoBehaviour 单例竞态。项目还增加 `schema_version`、损坏文件隔离和可测试路径覆盖。当前风险是 `PersistenceKeyUtility` 在缺少 DataDefinition 时仍可能回退节点路径，场景重组会破坏旧存档；GDD 标记的 schema 迁移函数尚未实现。单元测试覆盖写盘、浮点恢复和损坏隔离，但缺角色坐标、场景信息、重复稳定 ID、注册/注销与旧 Schema 迁移的确定性测试。
+Godot 项目采用的结论：项目已有共享 Dictionary Schema、DataManager 注册表、`get_save_data/load_save_data` 鸭子协议和 `PersistenceKeyUtility`；PlayerController 按稳定键保存二维位置，Character、SavePoint、敌人、宝箱、破坏物和收集物都接入同一协议。DataManager 是 Autoload，因此初始化顺序天然早于普通场景节点，避免了课程的 MonoBehaviour 单例竞态。项目增加 `schema_version`、损坏文件隔离、1 MiB 上限和可测试路径覆盖；缺少版本号或 v0 的 `sceneToSave`、`characterPosDict`、`floatDataDict` 等课程旧字段会迁移到 v1 后再校验，未来版本则安全拒绝。当前保留的结构风险是缺少 DataDefinition 时 `PersistenceKeyUtility` 会回退节点路径，场景重组仍需显式 legacy key。DataManager 11 项单测覆盖原子写盘、延迟注入、v0 迁移、角色坐标/浮点往返、未来版本、错误字段、超大文件和损坏隔离。
 
 ### 中文课堂第 44 课：人物数值及场景的保存加载
 
@@ -1233,7 +1233,7 @@ Godot 项目采用的结论：Character 用稳定键保存生命/能量，Player
 
 玩家体验与制作影响：失败界面不是死亡提示文字，而是“理解失败—选择恢复策略—安全回到可玩状态”的闭环。重试应明确说明从最近存储点、当前场景入口还是新游戏开始，并保留/回滚正确的数据；返回菜单不能留下暂停、输入锁、死亡动画或半透明遮罩。按钮必须有默认焦点，且失败原因、损失和可恢复内容应在玩家做决定前可理解。
 
-Godot 项目采用的结论：PlayerController 死亡后会禁用输入/碰撞、播放死亡动画、发出 `GameEvents.game_over`，并提供 `revive_at()` 恢复满血、位置、碰撞与交互；SceneLoader 已监听 `back_to_menu_requested` 并能回到菜单。项目目前没有任何脚本订阅 `GameEvents.game_over`，关卡场景也没有 Game Over 面板、重试/回菜单按钮或默认焦点，因此课程对应的玩家失败闭环仍是明确缺口。现有测试只覆盖死亡后身体/交互禁用及直接调用 `revive_at()`，没有验证真实死亡后出现 UI、输入焦点、从存储点恢复、重复死亡、回菜单和存档语义。GDD 将“游戏结束面板”标为部分具备过于乐观，应在后续制作规划中按待实现处理，并先明确重试是读取最近存档还是仅复活到检查点。
+Godot 项目采用的结论：PlayerController 死亡后禁用输入/碰撞、播放死亡动画并发出 `GameEvents.game_over`；常驻 `GameplayOverlay` 订阅该事件，暂停场景树并显示带默认焦点的“重新开始 / 返回主菜单”。重试通过 `SceneLoader.restart_requested` 重新装载当前 `GameSceneResource`，使用关卡默认出生点；返回菜单同样复用 SceneLoader/Fade，完成后清理暂停和输入锁。角色单测覆盖死亡/复活规则，UIManager、SceneLoader 与 E2E 覆盖重试、回菜单和转场恢复，Windows/OpenGL `gameplay_game_over.png` 已核对 640×360 下的按钮可读性与遮挡。
 
 ### 中文课堂第 46 课：序列化保存数据文件
 
@@ -1251,7 +1251,7 @@ Godot 项目采用的结论：PlayerController 死亡后会禁用输入/碰撞�
 
 玩家体验与制作影响：磁盘存档必须是原子、可恢复和可诊断的。玩家不应因断电、磁盘满、权限失败或版本升级丢掉唯一进度；写盘成功后才应播放“保存完成”反馈。文本 JSON 便于调试但也容易被篡改，单机项目可以接受可编辑性，却仍需要 schema、备份和损坏隔离。
 
-Godot 项目采用的结论：DataManager 已用 `user://SAVE_DATA/data.sav`、内置 `JSON.stringify/parse_string` 与 FileAccess 完成同等流程，不需要引入 Newtonsoft.Json；Vector2/Vector3 被显式展开为 `{x,y,z}`，也不需要自定义转换器。项目比课程多了 `schema_version` 和损坏文件 `.bak` 隔离，单元测试覆盖合法写盘、加载与非法 JSON。仍有两个可靠性缺口：当前直接以 WRITE 覆盖主文件，不是“临时文件写完并 flush/close 后原子替换”，写入中断可能损坏唯一存档；写盘失败只 `push_error`，存储点仍会发出普通激活/奖励反馈，玩家无法知道保存失败。后续还应限制文件大小、校验字段类型并实现版本迁移。
+Godot 项目采用的结论：DataManager 使用 `user://SAVE_DATA/data.sav`、内置 `JSON.stringify/parse_string` 与 FileAccess；Vector2/Vector3 显式展开为 `{x,y,z}`。写盘先校验字段和 1 MiB 上限，写入 `.tmp` 并 flush/close，再把旧主文件轮换为 `.previous` 后提交；失败会广播 `save_completed(false)`，SavePoint 回滚激活、不发首次奖励并显示失败反馈。读盘先检查大小，再执行 v0→v1 迁移与场景/坐标/浮点字段校验；无效或未来版本隔离到 `.bak`，不注入运行态。11 项 DataManager、4 项 SavePoint 单测和 E2E Continue 路径覆盖这些规则；Web IndexedDB 和真实磁盘满仍需目标平台验证。
 
 ### 中文课堂第 47 课：实现移动设备屏幕操控
 
@@ -1305,7 +1305,7 @@ Godot 项目采用的结论：GameEvents、UIManager 与 AudioManager 已有暂�
 
 玩家体验与制作影响：发布验证必须使用真正的独立包，因为编辑器缓存、开发资源路径、输入焦点、窗口模式、存档目录和性能都可能不同。构建成功不等于游戏可发布，仍需验证新安装启动、继续游戏、音频、全屏切换、退出、崩溃日志和目标平台权限。
 
-Godot 项目采用的结论：项目已锁定 640×360 逻辑视口、1280×720 默认窗口、整数缩放和 Windows/Linux PC 目标，也有 headless import、单元、集成、e2e 与视觉捕获入口。2026-07-15 已新增 `export_presets.cfg`，Windows Desktop 与 Linux x86_64 release 均完成命令行导出；Windows 独立包已在编辑器外启动并持续运行 8 秒，Linux 产物已确认是 64 位 ELF。完整命令、退出码、文件大小、哈希和限制记录在 `production/releases/pc-build-evidence-2026-07-15.md`。由于当前主机没有 WSL 或 Linux 实机，Linux 运行时冒烟仍未完成；预设暂用 `all_resources`，测试、gdUnit4 和开发期 MCP 内容也尚未从发布包精简。Godot 不需要 Addressables Build，但所有动态 `ResourceLoader` 路径和 GameSceneResource 引用必须被导出预设包含；正式发布前仍需在干净用户目录和原生 Linux 环境验证启动、输入、音频、退出及 `user://` 存档。课程的核心结论是“每次内容变化后重新生成并运行最终包”，不能用编辑器内测试替代。
+Godot 项目采用的结论：项目已锁定 640×360 逻辑视口、1280×720 默认窗口、整数缩放和 Windows/Linux PC 目标，也有 headless import、单元、集成、E2E 与视觉捕获入口。`export_presets.cfg` 已排除 tests、gdUnit4、MCP 运行时、报告、制作文档、构建目录和编辑器展示内容，Windows/Linux 精简 PCK 已生成且开发目录枚举为 0；Windows Godot 4.7 以 `--main-pack` 挂载精简 PCK 启动通过。完整命令、哈希和限制记录在 `production/releases/pc-build-evidence-2026-07-15.md`。当前环境没有 4.7 export templates，无法把最新精简 PCK 重新封装为 EXE/ELF；原生 Linux 运行仍需 Linux/CI 环境。课程的核心结论仍是“每次内容变化后重新生成并运行最终包”，因此这两项保持外部阻塞，不以编辑器内测试替代。
 
 ### 中文课堂第 50 课：全部代码文件
 
@@ -1451,6 +1451,7 @@ Godot 项目采用的结论：不下载或导入完整课程代码。当前仓�
 - **已具备**：项目已有对应实现和基本测试。
 - **部分具备**：已有基础，但体验、内容或验证未完整覆盖。
 - **待实现**：教程涉及，项目尚无可靠实现。
+- **外部阻塞**：仓库内代码管线已完成，但缺少授权资产、导出模板或目标平台环境。
 - **非当前目标**：不属于当前 Windows/Linux PC 范围。
 
 | # | 视频 | 教程核心 | Godot / 当前项目映射 | 状态 |
@@ -1465,35 +1466,35 @@ Godot 项目采用的结论：不下载或导入完整课程代码。当前仓�
 | 8 | [人物跳跃](https://www.bilibili.com/video/BV1gh411j73Q) | 刚体跳跃 | 跳跃、土狼时间、跳跃缓冲和松键减速 | 已具备并超出教程基础 |
 | 9 | [物理环境监测和 Gizmos](https://www.bilibili.com/video/BV1Cg4y1575P) | 地面、墙体和前方检测 | `physics_check.gd`、墙面和悬崖检测 | 已具备 |
 | 10 | [人物基本动画](https://www.bilibili.com/video/BV1Rz4y1t7wp) | Animator、Clip、参数切换 | AnimationPlayer 和原 sheet 帧映射 | 已具备 |
-| 11 | [跳跃动画 Blend Tree](https://www.bilibili.com/video/BV11M4y1e7kD) | 上升、下落、落地动画混合 | 速度/状态驱动的跳跃动画映射 | 部分具备；仍需逐状态视觉验收 |
+| 11 | [跳跃动画 Blend Tree](https://www.bilibili.com/video/BV11M4y1e7kD) | 上升、下落、落地动画混合 | Jump/Fall/Land 独立帧映射、落地边沿窗口及视觉截图 | 已具备 |
 | 12 | [人物属性和伤害](https://www.bilibili.com/video/BV14u4y1d7yE) | 属性、碰撞与伤害计算 | `character.gd`、统一伤害入口 | 已具备 |
 | 13 | [受伤和死亡](https://www.bilibili.com/video/BV1Fk4y1H7TQ) | 受伤动画、死亡逻辑、事件 | 无敌帧、受击、死亡、复活和反馈事件 | 已具备 |
 | 14 | [三段攻击动画](https://www.bilibili.com/video/BV1Ju41187CY) | 连击动画切换 | 三段攻击和输入缓存 | 已具备 |
 | 15 | [攻击判定](https://www.bilibili.com/video/BV1bM4y177Ap) | 动画期间启停攻击范围 | `attack.gd` 与攻击时序 | 已具备 |
-| 16 | [野猪基础移动和动画](https://www.bilibili.com/video/BV1oz4y1E7aJ) | 巡逻、墙面碰撞和动画 | Boar 脚本及敌人基础层 | 部分具备，正式内容接入需复核 |
-| 17 | [野猪撞墙和等待](https://www.bilibili.com/video/BV1Lk4y1N7ZD) | 朝向检测、撞墙、等待计时 | PhysicsCheck、Patrol 状态与计时 | 部分具备 |
-| 18 | [野猪受伤和死亡](https://www.bilibili.com/video/BV1Ah4y1C7JB) | 敌人受击和死亡动画 | `enemy_combatant.gd` | 基础已具备，Boar 表现待验收 |
+| 16 | [野猪基础移动和动画](https://www.bilibili.com/video/BV1oz4y1E7aJ) | 巡逻、墙面碰撞和动画 | Boar 脚本及敌人基础层 | 已具备，正式场景已接入 level_2 |
+| 17 | [野猪撞墙和等待](https://www.bilibili.com/video/BV1Lk4y1N7ZD) | 朝向检测、撞墙、等待计时 | PhysicsCheck、Patrol 等待/恢复动画与动作回归 | 已具备 |
+| 18 | [野猪受伤和死亡](https://www.bilibili.com/video/BV1Ah4y1C7JB) | 敌人受击和死亡动画 | `enemy_combatant.gd` | 已接入 Boar Hurt/Dead 图集与战斗碰撞 |
 | 19 | [有限状态机和抽象类多态](https://www.bilibili.com/video/BV1xp4y137Xr) | 状态模式和敌人公共基类 | `base_state.gd`、Patrol/Chase/Skill | 已具备 |
 | 20 | [追击状态转换](https://www.bilibili.com/video/BV1kP411x7UW) | 感知、追击、丢失目标和返回 | 敌人感知与状态切换 | 已具备 |
 | 21 | [创建人物状态栏](https://www.bilibili.com/video/BV1Lu411E7MQ) | 血量 UI 结构 | HUD 和 `player_stat_bar.gd` | 已具备 |
 | 22 | [血量更新逻辑](https://www.bilibili.com/video/BV1Uh4y1N7pT) | 属性事件驱动 UI | GameEvents / 信号更新 HUD | 已具备 |
-| 23 | [摄像机跟随和攻击抖动](https://www.bilibili.com/video/BV1i94y1W75i) | 跟随、边界和打击震动 | Camera2D 控制和战斗反馈 | 部分具备；抖动强度需实际试玩校准 |
-| 24 | [音源设置和音效](https://www.bilibili.com/video/BV1WK4y1F7nH) | BGM、SFX 和播放接口 | `audio_manager.gd` | 逻辑已具备，正式音频资产仍是缺口 |
-| 25 | [水和荆棘逻辑](https://www.bilibili.com/video/BV1mw411Y7pM) | 环境区域、伤害与反馈 | 动态水体已有；环境伤害区需按关卡设计接入 | 部分具备 |
-| 26 | [人物可互动标识](https://www.bilibili.com/video/BV13w411c7zU) | 进入交互范围时显示提示 | `sign.gd`、交互探测和 UI 提示 | 已具备基础 |
+| 23 | [摄像机跟随和攻击抖动](https://www.bilibili.com/video/BV1i94y1W75i) | 跟随、边界和打击震动 | Camera2D 跟随、边界夹紧、反馈抖动与归零测试 | 已具备 |
+| 24 | [音源设置和音效](https://www.bilibili.com/video/BV1WK4y1F7nH) | BGM、SFX 和播放接口 | Music/SFX Bus、事件 ID、并发池和音量控制 | 外部阻塞：缺课程授权正式音源 |
+| 25 | [水和荆棘逻辑](https://www.bilibili.com/video/BV1mw411Y7pM) | 环境区域、伤害与反馈 | 独立 Hazard、统一伤害入口、间隔与 Level 2 实例 | 已具备 |
+| 26 | [人物可互动标识](https://www.bilibili.com/video/BV13w411c7zU) | 进入交互范围时显示提示 | 最近目标、课程图标、show/hide 动画与暂停规则 | 已具备 |
 | 27 | [场景互动逻辑](https://www.bilibili.com/video/BV1p94y1b7ka) | 宝箱、物品、触发和奖励 | Chest、Breakable、CollectibleReward | 已具备 |
 | 28 | [场景管理和切换](https://www.bilibili.com/video/BV1mu4y1E7de) | 场景引用、传送和切换流程 | `GameSceneResource`、`SceneLoader` | 已具备 |
-| 29 | [场景加载后的执行逻辑](https://www.bilibili.com/video/BV15C4y1S7Tc) | 出生点、加载完成和场景初始化 | SceneLoader、场景入口与运行时初始化 | 已具备基础 |
+| 29 | [场景加载后的执行逻辑](https://www.bilibili.com/video/BV15C4y1S7Tc) | 出生点、加载完成和场景初始化 | 定位/恢复后揭幕、通知、解锁及异常恢复 | 已具备 |
 | 30 | [场景淡入淡出](https://www.bilibili.com/video/BV11N411u7q9) | 切换遮罩和异步时序 | `fade_canvas.gd` + SceneLoader | 已具备 |
-| 31 | [主场景制作](https://www.bilibili.com/video/BV1MC4y127aV) | 主菜单和 UI 结构 | `warrior_menu.tscn`、MenuFlow | 已具备 |
+| 31 | [主场景制作](https://www.bilibili.com/video/BV1MC4y127aV) | 主菜单和 UI 结构 | 课程森林素材三层背景、半透明面板、菜单与 MenuFlow | 已具备 |
 | 32 | [新的冒险](https://www.bilibili.com/video/BV1sw41187WH) | 新游戏初始化和状态重置 | 新游戏流程、存档隔离和角色初始化 | 已具备 |
 | 33 | [存储点和画面效果](https://www.bilibili.com/video/BV11u4y1K7p8) | 存档点、恢复和视觉提示 | `save_point.gd` | 已具备 |
 | 34 | [数据结构及坐标保存加载](https://www.bilibili.com/video/BV1a5411B7XD) | 数据模型、场景 ID 和坐标 | DataManager、ISaveable、稳定内容 ID | 已具备并增加旧存档兼容要求 |
-| 35 | [人物数值及场景保存加载](https://www.bilibili.com/video/BV1k94y1T7hB) | 玩家状态和场景持久化 | 玩家成长、存档协议、场景状态 | 已具备基础 |
-| 36 | [游戏结束面板](https://www.bilibili.com/video/BV1RN4y1p7xm) | 失败/完成 UI 和重试 | 当前死亡、复活和菜单流程已有；完整结束面板需按章节设计确认 | 部分具备 |
+| 35 | [人物数值及场景保存加载](https://www.bilibili.com/video/BV1k94y1T7hB) | 玩家状态和场景持久化 | Continue 恢复场景、位置、生命、能量、对象状态与 HUD | 已具备 |
+| 36 | [游戏结束面板](https://www.bilibili.com/video/BV1RN4y1p7xm) | 失败/完成 UI 和重试 | GameplayOverlay、默认焦点、重试与回菜单 | 已具备 |
 | 37 | [移动设备屏幕操控](https://www.bilibili.com/video/BV1Li4y1p72V) | 触屏输入 | 当前目标平台为 Windows/Linux PC | 非当前目标 |
-| 38 | [暂停面板和声音控制](https://www.bilibili.com/video/BV1mC411B7a2) | 暂停、音量和 UI 状态 | UIManager、暂停页、AudioManager | 已具备基础 |
-| 39 | [打包生成游戏](https://www.bilibili.com/video/BV1uZ421U7Qz) | 构建配置和最终导出 | 已有 Windows/Linux ExportPreset 和构建证据；Linux 原生运行与发布精简待补 | 部分具备 |
+| 38 | [暂停面板和声音控制](https://www.bilibili.com/video/BV1mC411B7a2) | 暂停、音量和 UI 状态 | 暂停树、继续/回菜单、主/音乐/音效三路控制 | 已具备 |
+| 39 | [打包生成游戏](https://www.bilibili.com/video/BV1uZ421U7Qz) | 构建配置和最终导出 | 精简 Windows/Linux PCK 与 Windows 挂载启动 | 外部阻塞：缺 4.7 模板及原生 Linux 环境 |
 
 ## 对当前项目最重要的制作结论
 
@@ -1556,7 +1557,7 @@ Unity 教程后段才引入场景和坐标保存。本项目从一开始就要�
 1. 完成人工素材区域表，优先处理 Forest-2、Hive 和 Buildings 组合语义。
 2. 建立专用矿区 Geometry Terrain，消除森林地面作为矿区灰盒的问题。
 3. 使用经过语义审核的素材重新设计一段正式森林→矿区过渡关卡。
-4. 完成 Boar 正式场景、状态表现和关卡遭遇验证。
+4. ~~完成 Boar 正式场景、状态表现和关卡遭遇验证。~~（2026-07-15 已完成并通过实际渲染截图、装载和通路测试）
 5. 补齐水体/荆棘等环境伤害的设计、反馈和测试。
 6. 实际校准相机跟随、攻击震动、受击反馈和音效同步。
 7. 完成章节结束、失败重试和游戏结束面板闭环。

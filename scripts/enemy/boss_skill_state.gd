@@ -16,6 +16,7 @@ func on_enter(enemy: Node) -> void:
 	current_enemy.velocity = Vector2.ZERO
 	if current_enemy.has_method("set_skill_hitbox_active"):
 		current_enemy.call("set_skill_hitbox_active", false)
+	_set_telegraph_phase(&"windup")
 	if current_enemy.anim != null and current_enemy.anim.has_animation("skill_windup"):
 		current_enemy.anim.play("skill_windup")
 
@@ -49,6 +50,7 @@ func on_exit() -> void:
 		current_enemy.velocity = Vector2.ZERO
 		if current_enemy.has_method("set_skill_hitbox_active"):
 			current_enemy.call("set_skill_hitbox_active", false)
+		_set_telegraph_phase(&"off")
 	super.on_exit()
 
 
@@ -57,6 +59,7 @@ func _begin_active() -> void:
 	_phase_timer = _call_float("get_skill_active_duration")
 	if current_enemy.has_method("set_skill_hitbox_active"):
 		current_enemy.call("set_skill_hitbox_active", true)
+	_set_telegraph_phase(&"active")
 	if current_enemy.anim != null and current_enemy.anim.has_animation("skill_active"):
 		current_enemy.anim.play("skill_active")
 
@@ -66,6 +69,7 @@ func _begin_recovery() -> void:
 	_phase_timer = _call_float("get_skill_recovery_duration")
 	if current_enemy.has_method("set_skill_hitbox_active"):
 		current_enemy.call("set_skill_hitbox_active", false)
+	_set_telegraph_phase(&"off")
 	if current_enemy.anim != null and current_enemy.anim.has_animation("skill_recovery"):
 		current_enemy.anim.play("skill_recovery")
 
@@ -74,3 +78,8 @@ func _call_float(method_name: String) -> float:
 	if current_enemy != null and current_enemy.has_method(method_name):
 		return float(current_enemy.call(method_name))
 	return 0.0
+
+
+func _set_telegraph_phase(phase: StringName) -> void:
+	if current_enemy != null and current_enemy.has_method("set_skill_telegraph_phase"):
+		current_enemy.call("set_skill_telegraph_phase", phase)

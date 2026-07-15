@@ -61,7 +61,6 @@ func _physics_process(delta: float) -> void:
 
 
 func _process(delta: float) -> void:
-
 	if _shake_time_left > 0.0:
 		_shake_time_left -= delta
 		var t := clampf(_shake_time_left / max(shake_duration, 0.0001), 0.0, 1.0)
@@ -81,6 +80,8 @@ func _on_camera_shake() -> void:
 func _on_camera_shake_requested(strength: float, duration: float) -> void:
 	_shake_time_left = maxf(0.0, duration)
 	_shake_strength = shake_strength * maxf(0.0, strength)
+	if _shake_time_left <= 0.0 or _shake_strength <= 0.0:
+		offset = Vector2.ZERO
 
 
 func _on_after_scene_loaded() -> void:
@@ -101,12 +102,23 @@ func _refresh_bounds() -> void:
 
 
 func _node_aabb(node: Node2D) -> Rect2:
-	# Area2D / StaticBody2D 等带有 CollisionShape2D 的节点：用第一个矩形子节点作为限制框
+	# 用矩形碰撞体的全局变换计算 AABB，包含子节点偏移、旋转和缩放。
 	for child in node.get_children():
 		if child is CollisionShape2D and (child as CollisionShape2D).shape is RectangleShape2D:
-			var rect := (child as CollisionShape2D).shape as RectangleShape2D
-			var origin: Vector2 = node.global_position - rect.size * 0.5
-			return Rect2(origin, rect.size)
+			var collision_shape := child as CollisionShape2D
+			var rectangle := collision_shape.shape as RectangleShape2D
+			var half_size := rectangle.size * 0.5
+			var corners := [
+				Vector2(-half_size.x, -half_size.y),
+				Vector2(half_size.x, -half_size.y),
+				Vector2(half_size.x, half_size.y),
+				Vector2(-half_size.x, half_size.y),
+			]
+			var first_corner: Vector2 = collision_shape.global_transform * corners[0]
+			var bounds := Rect2(first_corner, Vector2.ZERO)
+			for corner: Vector2 in corners.slice(1):
+				bounds = bounds.expand(collision_shape.global_transform * corner)
+			return bounds
 	return Rect2(node.global_position, Vector2.ZERO)
 
 
@@ -148,6 +160,10 @@ func _clamp_position_to_bounds(value: Vector2) -> Vector2:
 	var result := value
 	if min_pos.x <= max_pos.x:
 		result.x = clampf(result.x, min_pos.x, max_pos.x)
+	else:
+		result.x = _bounds.get_center().x
 	if min_pos.y <= max_pos.y:
 		result.y = clampf(result.y, min_pos.y, max_pos.y)
+	else:
+		result.y = _bounds.get_center().y
 	return result

@@ -80,7 +80,7 @@ game_port = 9501
 
 - 仅监听 `127.0.0.1`（本地回环），不暴露到网络
 - 点击模拟通过 `push_input` 注入到 viewport，与真实鼠标事件同等处理
-- **发布版本应禁用** McpBridgeGame autoload
+- **发布版本禁用** MCP 运行时 Autoload，并通过导出过滤排除 `addons/godot_ai/` 与旧桥接脚本
 
 ## 依赖
 

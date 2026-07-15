@@ -27,6 +27,8 @@ func logic_update(_delta: float) -> void:
 	if current_enemy.has_method("found_player") and current_enemy.found_player():
 		current_enemy.switch_state(Enums.NPCState.CHASE)
 		return
+	if current_enemy.anim != null:
+		_play_if_present(current_enemy.anim, "fly")
 
 	if _wait_timer > 0.0:
 		_wait_timer -= _delta

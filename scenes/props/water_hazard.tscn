@@ -1,0 +1,27 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/general/environment_hazard.gd" id="1_hazard"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_water"]
+size = Vector2(128, 24)
+
+[node name="WaterHazard" type="Area2D"]
+collision_layer = 64
+collision_mask = 256
+monitorable = false
+script = ExtResource("1_hazard")
+
+[node name="WaterBody" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-64, -12, 64, -12, 64, 16, -64, 16)
+color = Color(0.1, 0.52, 0.72, 0.82)
+z_index = 1
+
+[node name="Surface" type="Line2D" parent="."]
+points = PackedVector2Array(-64, -11, -48, -15, -32, -11, -16, -15, 0, -11, 16, -15, 32, -11, 48, -15, 64, -11)
+width = 3.0
+default_color = Color(0.55, 0.9, 0.95, 1)
+z_index = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 2)
+shape = SubResource("RectangleShape2D_water")

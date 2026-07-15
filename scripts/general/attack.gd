@@ -39,18 +39,20 @@ func _on_target_entered(target: Node) -> void:
 
 
 func _on_target_exited(target: Node) -> void:
-	if target == null:
+	var receiver := _resolve_damage_receiver(target)
+	if receiver == null:
 		return
-	_cooldowns.erase(target.get_instance_id())
+	_cooldowns.erase(receiver.get_instance_id())
 
 
 func _try_apply_damage(target: Node) -> void:
 	if target == null or not is_instance_valid(target):
 		return
-	if not _is_damageable(target):
+	var receiver := _resolve_damage_receiver(target)
+	if receiver == null or not _is_damageable(receiver):
 		return
 
-	var id := target.get_instance_id()
+	var id := receiver.get_instance_id()
 	var now := Time.get_ticks_msec() / 1000.0
 	if per_target_one_hit:
 		if _cooldowns.has(id):
@@ -62,9 +64,20 @@ func _try_apply_damage(target: Node) -> void:
 			return
 		_cooldowns[id] = now + attack_rate
 
-	if target.has_method("take_damage"):
-		target.call("take_damage", _resolve_attacker(), float(damage))
-		_emit_hit_feedback(target)
+	if receiver.has_method("take_damage"):
+		receiver.call("take_damage", _resolve_attacker(), float(damage))
+		_emit_hit_feedback(receiver)
+
+
+func _resolve_damage_receiver(target: Node) -> Node:
+	if target == null or not is_instance_valid(target):
+		return null
+	if target.has_method("get_damage_receiver"):
+		return target.call("get_damage_receiver") as Node
+	# 配有独立 HurtBox 的角色不再用身体框承受攻击。
+	if target.get_node_or_null(^"HurtBox") is HurtBox:
+		return null
+	return target
 
 
 func _is_damageable(target: Node) -> bool:

@@ -14,15 +14,32 @@ const FADE_LAYER := 100
 var _registered: Dictionary = {}    # name -> Control
 var _is_paused: bool = false
 var _root_layer: CanvasLayer
+var _overlay: GameplayOverlay
+var _game_over_visible: bool = false
 
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_root_layer = CanvasLayer.new()
 	_root_layer.name = "UIRootLayer"
 	_root_layer.layer = HUD_LAYER
 	add_child(_root_layer)
+	_overlay = GameplayOverlay.new()
+	_root_layer.add_child(_overlay)
+	_overlay.pause_continue_pressed.connect(_on_pause_continue_pressed)
+	_overlay.pause_menu_pressed.connect(_on_pause_menu_pressed)
+	_overlay.game_over_restart_pressed.connect(_on_game_over_restart_pressed)
+	_overlay.game_over_menu_pressed.connect(_on_game_over_menu_pressed)
 
 	GameEvents.pause_toggled.connect(_on_pause_toggled)
+	GameEvents.game_over.connect(_on_game_over)
+	GameEvents.after_scene_loaded.connect(_on_after_scene_loaded)
+
+
+func _process(_delta: float) -> void:
+	if not _game_over_visible and Input.is_action_just_pressed(&"pause") \
+			and get_tree().get_first_node_in_group(&"player") != null:
+		GameEvents.raise_pause_toggled()
 
 
 # ----- 注册接口 -----------------------------------------------------------------
@@ -66,6 +83,53 @@ func is_paused() -> bool:
 # ----- 内部 ---------------------------------------------------------------------
 
 func _on_pause_toggled() -> void:
+	if _game_over_visible:
+		return
 	_is_paused = not _is_paused
 	get_tree().paused = _is_paused
+	if _is_paused:
+		_overlay.show_pause()
+	else:
+		_overlay.hide_overlay()
 	ui_pause_state_changed.emit(_is_paused)
+
+
+func _on_pause_continue_pressed() -> void:
+	GameEvents.raise_pause_toggled()
+
+
+func _on_pause_menu_pressed() -> void:
+	_unpause()
+	GameEvents.raise_back_to_menu_requested()
+
+
+func _on_game_over() -> void:
+	_game_over_visible = true
+	_is_paused = false
+	get_tree().paused = true
+	AudioManager.set_paused(true)
+	_overlay.show_game_over()
+
+
+func _on_game_over_restart_pressed() -> void:
+	_unpause()
+	_game_over_visible = false
+	GameEvents.raise_restart_requested()
+
+
+func _on_game_over_menu_pressed() -> void:
+	_unpause()
+	_game_over_visible = false
+	GameEvents.raise_back_to_menu_requested()
+
+
+func _on_after_scene_loaded() -> void:
+	_game_over_visible = false
+	_unpause()
+	_overlay.hide_overlay()
+
+
+func _unpause() -> void:
+	_is_paused = false
+	get_tree().paused = false
+	AudioManager.set_paused(false)

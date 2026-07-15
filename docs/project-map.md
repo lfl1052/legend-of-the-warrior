@@ -29,7 +29,7 @@
   - `language_manager.gd`: 中英文切换
   - `ui_manager.gd`: UI 注册和暂停状态
 - 玩家: `scripts/player/`
-  - `player_controller.gd`: 移动、跳跃、攻击、滑铲、死亡、自动化输入
+  - `player_controller.gd`: 移动、跳跃、落地、下蹲、格挡、攀梯、攻击、滑铲、死亡、自动化输入
   - `player_heal_skill.gd`: 治疗
   - `player_skill_slash.gd`: 技能斩
   - `player_progression.gd`: 代币、解锁、奖励进度
@@ -45,6 +45,7 @@
   - `character.gd`: 血量、能量、无敌帧
   - `attack.gd`: 命中盒、伤害、hit feedback
   - `physics_check.gd`: 地面、墙、前方地面检测
+  - `ladder_area.gd`: 可攀爬区域进入/离开通知与梯子像素绘制
   - `chest.gd`, `breakable.gd`, `collectible_reward.gd`: 可交互/奖励物
 - UI: `scripts/ui/`
   - `main_menu.gd`, `menu_flow.gd`
@@ -72,6 +73,7 @@
   - `scenes/props/chest.tscn`
   - `scenes/props/breakable_rock.tscn`
   - `scenes/props/collectible_reward.tscn`
+  - `scenes/props/ladder.tscn`
 
 ## 数据
 
@@ -95,6 +97,8 @@
   - `tests/integration/boss_skill_state_test.tscn`
 - 视觉回归:
   - `tests/visual/level_2_playtest_capture.tscn`
+  - `tests/visual/player_extended_actions_capture.tscn`
+  - `tests/visual/enemy_course_actions_capture.tscn`
   - `tests/visual/menu_playtest_capture.tscn`
   - `tests/visual/editor_asset_showcase.tscn`：分类素材分页 QA 长廊
 - 冒烟测试:

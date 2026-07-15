@@ -57,7 +57,7 @@ Godot 端（本决策落地后）：8 类事件全部声明在 `GameEvents` auto
 ### Constraints
 
 - Godot 不像 Unity 那样有 ScriptableObject 资产化的事件通道；强行用 Resource + 文件实例化会增加无谓的 .tres 维护成本
-- 所有 8 个 autoload（GameEvents/RuntimeData/DataManager/SceneLoader/AudioManager/LanguageManager/UIManager/McpBridgeGame）需要在 `project.godot` 注册
+- 7 个运行时 autoload（GameEvents/RuntimeData/DataManager/SceneLoader/AudioManager/LanguageManager/UIManager）需要在 `project.godot` 注册；MCP 属于编辑器工具，不得注册进发布运行时
 - 静态类型 GDScript 强制要求信号参数有显式类型
 
 ### Requirements

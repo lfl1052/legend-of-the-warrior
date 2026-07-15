@@ -1,0 +1,48 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/player/save_point.gd" id="1_save"]
+[ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/Map Assets/Props-Rocks.png" id="2_rocks"]
+[ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/HUD/SignCharacters.png" id="3_signs"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_stone"]
+atlas = ExtResource("2_rocks")
+region = Rect2(0, 160, 34, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_sign_inactive"]
+atlas = ExtResource("3_signs")
+region = Rect2(96, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_sign_active"]
+atlas = ExtResource("3_signs")
+region = Rect2(240, 0, 16, 16)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_interaction"]
+radius = 52.0
+
+[node name="SavePoint" type="Area2D" groups=["interactable"]]
+collision_layer = 32
+collision_mask = 0
+monitoring = false
+monitorable = true
+script = ExtResource("1_save")
+
+[node name="Visual" type="CanvasGroup" parent="."]
+
+[node name="Stone" type="Sprite2D" parent="Visual"]
+position = Vector2(0, -32)
+texture = SubResource("AtlasTexture_stone")
+
+[node name="InactiveSign" type="Sprite2D" parent="Visual"]
+position = Vector2(0, -39)
+scale = Vector2(1.5, 1.5)
+texture = SubResource("AtlasTexture_sign_inactive")
+
+[node name="ActiveSign" type="Sprite2D" parent="Visual"]
+position = Vector2(0, -39)
+scale = Vector2(1.5, 1.5)
+texture = SubResource("AtlasTexture_sign_active")
+visible = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -28)
+shape = SubResource("CircleShape2D_interaction")

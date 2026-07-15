@@ -36,5 +36,13 @@
       { "reward_id": "unlock-slot", "unlock_slot": "map", "amount": 1, "weight": 100 },
       { "reward_id": "map-token", "amount": 1, "weight": 100 }
     ]
+  },
+  {
+    "id": "level_2_boss_encounter",
+    "description": "Level 2 Boss 清场奖励：升级代币与能量补充",
+    "entries": [
+      { "reward_id": "upgrade-token", "amount": 3, "weight": 100, "notification_key": "ui.reward.upgrade_token" },
+      { "reward_id": "power-refill", "amount": 1, "weight": 100, "notification_chinese": "能量已补满", "notification_english": "Power restored" }
+    ]
   }
 ]

@@ -22,10 +22,12 @@ const BOSS_SKILL_STATE_SCRIPT := preload("res://scripts/enemy/boss_skill_state.g
 @export_node_path("Area2D") var skill_attack_path: NodePath = ^"SkillAttack"
 
 var _skill_attack: Attack
+var _skill_telegraph: RadialAttackTelegraph
 
 
 func _ready() -> void:
 	_skill_attack = get_node_or_null(skill_attack_path) as Attack
+	_skill_telegraph = get_node_or_null(^"SkillTelegraph") as RadialAttackTelegraph
 	if _skill_attack != null:
 		_skill_attack.set_active(false)
 	super._ready()
@@ -51,13 +53,30 @@ func _setup_states() -> void:
 
 func _on_character_damage(by: Node) -> void:
 	super._on_character_damage(by)
+	if is_hurt and current_state == Enums.NPCState.SKILL:
+		switch_state(Enums.NPCState.CHASE)
 	if lock_arena_on_engage:
 		GameEvents.encounter_focus_changed.emit(self)
+
+
+func _on_character_died() -> void:
+	set_skill_hitbox_active(false)
+	set_skill_telegraph_phase(&"off")
+	super._on_character_died()
 
 
 func set_skill_hitbox_active(active: bool) -> void:
 	if _skill_attack != null:
 		_skill_attack.set_active(active)
+
+
+func set_skill_telegraph_phase(phase: StringName) -> void:
+	if _skill_telegraph == null:
+		return
+	match phase:
+		&"windup": _skill_telegraph.show_windup()
+		&"active": _skill_telegraph.show_active()
+		_: _skill_telegraph.hide_telegraph()
 
 
 func get_skill_windup_duration() -> float:

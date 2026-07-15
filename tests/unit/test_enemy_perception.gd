@@ -15,6 +15,29 @@ func test_enemy_does_not_detect_player_through_world_collision() -> void:
 	assert_bool(enemy.found_player()).is_false()
 
 
+func test_enemy_target_memory_refreshes_while_visible_then_expires_once_hidden() -> void:
+	var setup := await _create_perception_setup(false)
+	var enemy: Enemy = setup["enemy"]
+	var player: CharacterBody2D = setup["player"]
+	enemy.lost_time = 1.5
+
+	assert_bool(enemy.found_player()).is_true()
+	enemy.current_state = Enums.NPCState.CHASE
+	enemy.set_process(false)
+	enemy._update_target_tracking(1.0)
+	assert_float(enemy.lost_time_counter).is_equal_approx(1.5, 0.001)
+
+	player.global_position = Vector2(400.0, 0.0)
+	await get_tree().physics_frame
+	enemy._update_target_tracking(0.75)
+	assert_object(enemy.attacker).is_not_null()
+	assert_float(enemy.lost_time_counter).is_equal_approx(0.75, 0.001)
+
+	enemy._update_target_tracking(0.75)
+	assert_object(enemy.attacker).is_null()
+	assert_float(enemy.lost_time_counter).is_zero()
+
+
 func _create_perception_setup(with_wall: bool) -> Dictionary:
 	var root := auto_free(Node2D.new()) as Node2D
 	add_child(root)

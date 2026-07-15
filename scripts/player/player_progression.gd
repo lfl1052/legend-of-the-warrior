@@ -41,14 +41,19 @@ func _exit_tree() -> void:
 
 # ----- 公共 API ----------------------------------------------------------------
 
-func try_apply_chest_rewards(chest_id: String, table_id: StringName) -> void:
+func try_apply_chest_rewards(chest_id: String, table_id: StringName) -> bool:
 	if chest_id.is_empty() or opened_chest_rewards.has(chest_id):
-		return
+		return false
 	opened_chest_rewards[chest_id] = true
 	var table := RuntimeData.try_get_loot_table(table_id)
 	for entry in table.get("entries", []):
 		_apply_reward(StringName(entry.get("reward_id", "")), entry)
 	_emit_progression_changed()
+	return true
+
+
+func has_chest_rewards(chest_id: String) -> bool:
+	return not chest_id.is_empty() and opened_chest_rewards.has(chest_id)
 
 
 func has_unlock_slot(slot: StringName) -> bool:

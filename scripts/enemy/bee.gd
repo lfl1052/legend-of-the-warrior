@@ -91,7 +91,7 @@ func tick_attack_window(delta: float) -> void:
 			return
 	if _attack_active_counter > 0.0:
 		_attack_active_counter = maxf(0.0, _attack_active_counter - delta)
-		_set_hitbox_active(true)
+		_set_hitbox_active(_attack_active_counter > 0.0)
 		return
 	_set_hitbox_active(false)
 
@@ -103,16 +103,24 @@ func cancel_attack_window() -> void:
 
 
 func has_attack_window_in_progress() -> bool:
+	var attack_active := false
+	if _attack_box is Attack:
+		attack_active = (_attack_box as Attack).monitoring
+	elif _attack_hitbox != null:
+		attack_active = not _attack_hitbox.disabled
 	return _attack_startup_counter > 0.0 \
 		or _attack_active_counter > 0.0 \
-		or (_attack_hitbox != null and not _attack_hitbox.disabled)
+		or attack_active
 
 
 func _set_hitbox_active(active: bool) -> void:
-	if _attack_hitbox != null:
-		_attack_hitbox.set_deferred("disabled", not active)
 	if _attack_box is Attack:
-		(_attack_box as Attack).damage = attack_damage
+		var attack := _attack_box as Attack
+		attack.damage = attack_damage
+		if attack.monitoring != active:
+			attack.set_active(active)
+	elif _attack_hitbox != null:
+		_attack_hitbox.set_deferred("disabled", not active)
 
 
 # ----- Chase 接口（被状态机调用） --------------------------------------------

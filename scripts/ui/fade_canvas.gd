@@ -4,7 +4,7 @@ extends CanvasLayer
 ##
 ## 监听 GameEvents.fade_requested(target_color, duration, fade_in)：
 ## 通过覆盖整个屏幕的 ColorRect 调整 modulate.a 实现淡入淡出。
-## 期间不阻塞输入。
+## 它只负责画面；转场期间的 gameplay input 由 SceneLoader 显式锁定。
 
 @export_node_path("ColorRect") var fade_rect_path: NodePath
 var _fade_rect: ColorRect
