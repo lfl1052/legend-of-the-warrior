@@ -1,64 +1,31 @@
 # 项目专业 Agent 索引
 
-这些角色文件把游戏开发任务拆成设计、空间实现和验证阶段。它们由根目录 `AGENTS.md` 路由，具体任务仍由当次对话提供目标、范围、非目标和验收标准。
+这些文件是按需读取的角色协议，不是常驻运行的子 Agent。根目录 `AGENTS.md` 负责根据任务类型路由；详细规则、数值、资产事实和测试命令分别放在 GDD、资产文档和 `tests/README.md`。
 
 ## 角色
 
-| 角色 | 文件 | 主要产出 | 不负责 |
+| 角色 | 文件 | 负责 | 不负责 |
 | --- | --- | --- | --- |
-| Game Designer | `game-designer.md` | 玩法规则、循环、数值、状态、反馈和验收假设 | GDScript 与场景实现 |
-| Level Designer | `level-designer.md` | 关卡灰盒、路线、遭遇、节奏、检查点和地编规格 | 在 Godot 中直接搭建关卡 |
-| Godot Level Builder | `godot-level-builder.md` | 把已批准设计落地为场景、TileMap、数据和测试 | 自行改变玩法设计 |
-| Playtest Reviewer | `playtest-reviewer.md` | 基于实际运行证据的体验发现、严重度和责任归属 | 无证据地改设计或代码 |
+| Game Designer | `game-designer.md` | 玩法、循环、状态、数值、反馈和验收假设 | GDScript、场景和 TileMap 实现 |
+| Level Designer | `level-designer.md` | 路线、平台、遭遇、教学、检查点和灰盒规格 | 最终 Godot 场景搭建 |
+| Godot Level Builder | `godot-level-builder.md` | 已批准设计的场景、TileMap、资源、数据和测试落地 | 自行改变玩法设计 |
+| Playtest Reviewer | `playtest-reviewer.md` | 实际运行证据、体验发现、严重度和责任路由 | 无证据地改设计或代码 |
 
-## 推荐流程
-
-```text
-用户目标
-→ 读取项目现状和 GDD
-→ Game Designer 明确玩法
-→ Level Designer 明确空间和遭遇
-→ 用户批准设计
-→ Godot Level Builder 实现
-→ 自动化测试
-→ Playtest Reviewer 实际试玩
-→ 发现回流到 GDD、Story 或 Bug
-```
-
-## 调用示例
-
-### 玩法设计
+## 路由
 
 ```text
-请按 docs/agents/game-designer.md 工作。
-为玩家设计一个空中下劈技能，先提供方案和机制文档，不修改代码。
+机制/玩法 → Game Designer
+空间/遭遇 → Level Designer
+批准后的 Godot 落地 → Godot Level Builder
+实际运行与体验验收 → Playtest Reviewer
 ```
 
-### 关卡设计
+跨边界任务只加载当前阶段和直接依赖的角色文档；不要为了“完整流程”一次性加载全部 Agent。
 
-```text
-请按 docs/agents/level-designer.md 工作。
-为 level_2 的 Combine 区域设计 Snail + Bee 地空组合遭遇，输出灰盒图和遭遇表。
-```
+## 模板
 
-### Godot 地编实现
-
-```text
-请按 docs/agents/godot-level-builder.md 工作。
-把已批准的 level_2 Combine 设计实现到 Godot，并运行装载、通路和截图验证。
-```
-
-### 试玩评审
-
-```text
-请按 docs/agents/playtest-reviewer.md 工作。
-实际运行 level_2，验证出生、组合战、Boss 前检查点和出口，按严重度输出发现。
-```
-
-## 交付物模板
-
-- 玩法机制：`docs/templates/mechanic-design.md`
+- 机制设计：`docs/templates/mechanic-design.md`
 - 关卡设计：`docs/templates/level-design.md`
 - 试玩报告：`docs/templates/playtest-report.md`
 
-模板是最低信息要求，可以按任务缩减不适用部分，但不得省略会影响实现或验收的关键决策。
+模板负责输出字段，角色文档负责判断原则；两者不重复抄写。
