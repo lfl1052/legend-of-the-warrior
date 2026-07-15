@@ -1,5 +1,11 @@
 # Active Session State
 
+## Session Extract — 《勇士传说》课程研究 2026-07-15
+- Goal: 分批实际观看中文课堂 50 课视频，并持续整理到 `docs/reference/warrior-legend-video-series-study.md`；每批 2–4 课，避免一次性扩大上下文。
+- Progress: 课程研究覆盖第 1–50 课并已全部完成；按用户先前决定，第 1 课导览跳过、第 2–6 课使用已完整核验的同源 B 站内容，第 7–49 课完成中文课堂实际视频画面核验，第 50 课确认是无视频资料页并核验版权提示及资料入口。最后完成第 49 课打包生成游戏（`13:54`）和第 50 课全部代码文件资料页。
+- Current comparison: 课程研究目标已完成。Godot 项目现已补充 `export_presets.cfg` 和 `production/releases/pc-build-evidence-2026-07-15.md`；Windows/Linux release 均导出成功，Windows 独立包已在编辑器外启动验证，Linux 产物已确认是 x86_64 ELF，但因本机未安装 WSL、也没有 Linux 实机，Linux 运行时验证仍待补。当前包使用 `all_resources`，尚未移除 tests、gdUnit4 和开发期 MCP 内容。Game Over、暂停面板、转场输入锁、存储点正式反馈、跨场景继续游戏和原子存档仍需后续独立任务实现。
+- Next batch: 无剩余课时。后续如进入制作，应从研究文档中的明确缺口选择 Story，而不是继续复制 Unity 课程架构。
+
 ## Session Extract — Atlas-first editor asset library 2026-07-14
 - Decision: original sheets/atlases are the texture source of truth; mechanical per-tile/per-frame crops are not runtime assets.
 - Removed: `art/processed/` and its generated PNG/import files.

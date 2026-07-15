@@ -7,6 +7,7 @@
 ## 入口
 
 - Godot 配置: `project.godot`
+- PC 导出预设: `export_presets.cfg`（Windows Desktop / Linux x86_64 release）
 - 主场景: `scenes/levels/warrior_menu.tscn`
 - 当前可玩关卡:
   - `scenes/levels/level_demo.tscn`
@@ -120,4 +121,5 @@
 - 《勇士传说》39 集视频合集的 Unity→Godot 制作映射: `docs/reference/warrior-legend-video-series-study.md`
 - 像素密度、角色比例和碰撞基线: `design/gdd/pixel-art-and-collision-standard.md`
 - 生产/故事/QA: `production/`
+- PC 独立构建证据: `production/releases/pc-build-evidence-2026-07-15.md`
 - 项目说明: `CLAUDE.md`
