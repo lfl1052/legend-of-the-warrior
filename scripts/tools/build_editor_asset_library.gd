@@ -158,10 +158,14 @@ func _build_water_tileset(catalog: Dictionary) -> bool:
 		var base_array := animation.get("base", []) as Array
 		var base := Vector2i(int(base_array[0]), int(base_array[1]))
 		var columns := int(animation.get("columns", 1))
-		for offset in range(columns):
-			reserved_frames[base + Vector2i(offset, 0)] = true
+		var frames := int(animation.get("frames", columns))
+		for frame_index in range(frames):
+			var frame_offset := Vector2i(
+				frame_index % columns,
+				floori(frame_index / float(columns)))
+			reserved_frames[base + frame_offset] = true
 
-	for y in range(13, 16):
+	for y in range(13, 17):
 		for x in range(0, 10):
 			var coords := Vector2i(x, y)
 			if reserved_frames.has(coords):
@@ -176,9 +180,10 @@ func _build_water_tileset(catalog: Dictionary) -> bool:
 		var base_array := animation.get("base", []) as Array
 		var base := Vector2i(int(base_array[0]), int(base_array[1]))
 		var columns := int(animation.get("columns", 1))
+		var frames := int(animation.get("frames", columns))
 		atlas.create_tile(base)
 		atlas.set_tile_animation_columns(base, columns)
-		atlas.set_tile_animation_frames_count(base, columns)
+		atlas.set_tile_animation_frames_count(base, frames)
 		atlas.set_tile_animation_speed(base, float(animation.get("fps", 2.0)))
 		var tile_data := atlas.get_tile_data(base, 0)
 		tile_data.set_custom_data("editor_role", "animated_water")

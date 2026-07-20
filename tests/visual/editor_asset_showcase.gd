@@ -347,8 +347,12 @@ func _add_water_preview(page: Node2D, position_value: Vector2, width: int) -> vo
 	page.add_child(water)
 	for x in range(width):
 		water.set_cell(Vector2i(x, 0), 0, Vector2i(6, 14))
-		water.set_cell(Vector2i(x, 1), 0, Vector2i(3, 13))
-		water.set_cell(Vector2i(x, 2), 0, Vector2i(3, 14))
+		water.set_cell(Vector2i(x, 1), 0, Vector2i(6, 15))
+		water.set_cell(Vector2i(x, 2), 0, Vector2i(6, 16))
+	var waterfall_left := width + 1
+	for y in range(4):
+		for column in range(3):
+			water.set_cell(Vector2i(waterfall_left + column, y), 0, Vector2i(3 + column, 13))
 
 
 func _add_ground_guide(page: Node2D, color: Color) -> void:

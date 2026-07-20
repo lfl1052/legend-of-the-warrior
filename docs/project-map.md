@@ -12,7 +12,7 @@
 - 当前可玩关卡:
   - `scenes/levels/level_demo.tscn`
   - `scenes/levels/level_2.tscn`
-  - `scenes/levels/asset_showcase_level.tscn`：森林高地、浅水石滩和矿洞入口的素材组合验收关卡
+  - `scenes/levels/asset_showcase_level.tscn`：森林高地、林间河桥和矿洞入口的素材组合验收关卡
 - 场景资源索引:
   - `data/scene_warrior_menu.tres`
   - `data/scene_level_demo.tres`

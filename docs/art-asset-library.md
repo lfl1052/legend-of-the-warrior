@@ -29,7 +29,7 @@ sheet/atlas，并使用 TileSet atlas 坐标、`AtlasTexture.region` 或 SpriteF
   - `forest_library_tileset.tres`：完整 Atlas Library，用于查找和试验。
 - `scenes/editor_library/scenes/` 当前有 218 个经语义筛选的 Scene Paint 场景；技术索引数量不等于可直接摆放数量。
 - `scenes/editor_library/animated/` 中有 10 个玩家/敌人 `AnimatedSprite2D` 动画预览。
-- 动态水体直接引用 `Forest-1.png`：4 帧水面为 3 FPS，三组 3 帧水体为 2 FPS。
+- 动态水体直接引用 `Forest-1.png`：河面三层各使用横向 4 帧、3 FPS；瀑布左/中/右三列各使用纵向 4 帧、7 FPS；河岸使用 `(0..2,13..16)` 静态组合块。
 - 宝箱和可破坏岩石使用 `AtlasTexture.region` 引用原图，不依赖裁剪图。
 
 ## TileMapLayer 调色板
@@ -124,7 +124,8 @@ scenes/editor_library/scenes/
 ## 素材验收场景
 
 - `tests/visual/editor_asset_showcase.tscn`：分页查看全部分类 TileSet、当前可绘制 Scene Paint、动画预览和主题组合；headless 会核对 catalog 的实际数量。
-- `scenes/levels/asset_showcase_level.tscn`：短关卡，按“森林高地 → 浅水石滩 → 矿洞入口”组合已确认素材；它不承担全量素材覆盖职责。
+- `scenes/levels/asset_showcase_level.tscn`：短关卡，按“森林高地 → 林间河桥 → 矿洞入口”组合已确认素材；它不承担全量素材覆盖职责。
+- `scenes/props/wooden_bridge.tscn`：课程 `Forest-1.png` 中作者原桥的正式可通行 prefab；按 1× 比例使用左桥头 `(176,116,24,44)`、一段完整延长桥面 `(177,94,46,12)` 和右桥头 `(232,116,24,44)`。延长桥面自身已包含一次自然错位，只使用一次，桥面碰撞由独立 StaticBody2D 提供；不使用 `Buildings.png` 木板套件冒充桥梁。
 
 ```powershell
 & '<Godot 4.7 path>' --path . res://tests/visual/editor_asset_showcase.tscn
@@ -134,8 +135,9 @@ scenes/editor_library/scenes/
 ## 动态素材
 
 - `forest_water_tileset.tres` 直接在 `Forest-1.png` 上配置循环 atlas 动画：
-  - 水面 `(6,14)` 起始，4 帧，3 FPS。
-  - 浅/中/深水体 `(3,13..15)` 起始，各 3 帧，2 FPS。
+  - 河面表层/主体/深层 `(6,14..16)` 起始，各横向 4 帧，3 FPS，用于可横向延展的河流与水面。
+  - 瀑布左/中/右 `(3..5,13)` 起始，各纵向 4 帧，7 FPS，三列并排绘制且保持同步。
+  - 河岸 `(0..2,13..16)` 为静态左岸/中心/右岸组合块，不作为瀑布动画帧。
 - `scenes/editor_library/animated/` 包含玩家颜色变体以及 Bee、Snail、Boar 的
   `AnimatedSprite2D` 预览场景。
 - 动画预览直接引用原始 sheet 的帧矩形，不引用独立帧 PNG。

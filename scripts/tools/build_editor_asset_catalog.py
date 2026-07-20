@@ -91,7 +91,7 @@ def classify_tile(asset: dict[str, Any]) -> dict[str, Any]:
         return editor_info("geometry_tile", "geometry", "world", "tilemap", "forest_geometry")
     if family == "forest_1" and coords in FOREGROUND_COORDS:
         return editor_info("foreground_tile", "foreground", "none", "tilemap", "forest_foreground")
-    if family == "forest_1" and 0 <= coords[0] <= 9 and 13 <= coords[1] <= 15:
+    if family == "forest_1" and 0 <= coords[0] <= 9 and 13 <= coords[1] <= 16:
         return editor_info("water_tile", "water", "none", "tilemap", "forest_water")
     if family == "forest_1" and coords[0] >= 17 and coords[1] <= 16:
         return editor_info("background_tile", "background", "none", "tilemap", "forest_background")
@@ -261,35 +261,57 @@ def main() -> None:
             "decoration_collision": "none",
             "dynamic_tiles": [
                 {
-                    "id": "forest_water_surface",
+                    "id": "forest_river_surface",
                     "source": "res://art/imported/Legacy-Fantasy-High Forest/Map Assets/Forest-1.png",
                     "base": [6, 14],
                     "columns": 4,
+                    "frames": 4,
                     "fps": 3.0,
                     "loop": True,
                 },
                 {
-                    "id": "forest_water_body_light",
+                    "id": "forest_river_body",
+                    "source": "res://art/imported/Legacy-Fantasy-High Forest/Map Assets/Forest-1.png",
+                    "base": [6, 15],
+                    "columns": 4,
+                    "frames": 4,
+                    "fps": 3.0,
+                    "loop": True,
+                },
+                {
+                    "id": "forest_river_deep",
+                    "source": "res://art/imported/Legacy-Fantasy-High Forest/Map Assets/Forest-1.png",
+                    "base": [6, 16],
+                    "columns": 4,
+                    "frames": 4,
+                    "fps": 3.0,
+                    "loop": True,
+                },
+                {
+                    "id": "forest_waterfall_left",
                     "source": "res://art/imported/Legacy-Fantasy-High Forest/Map Assets/Forest-1.png",
                     "base": [3, 13],
-                    "columns": 3,
-                    "fps": 2.0,
+                    "columns": 1,
+                    "frames": 4,
+                    "fps": 7.0,
                     "loop": True,
                 },
                 {
-                    "id": "forest_water_body_mid",
+                    "id": "forest_waterfall_middle",
                     "source": "res://art/imported/Legacy-Fantasy-High Forest/Map Assets/Forest-1.png",
-                    "base": [3, 14],
-                    "columns": 3,
-                    "fps": 2.0,
+                    "base": [4, 13],
+                    "columns": 1,
+                    "frames": 4,
+                    "fps": 7.0,
                     "loop": True,
                 },
                 {
-                    "id": "forest_water_body_deep",
+                    "id": "forest_waterfall_right",
                     "source": "res://art/imported/Legacy-Fantasy-High Forest/Map Assets/Forest-1.png",
-                    "base": [3, 15],
-                    "columns": 3,
-                    "fps": 2.0,
+                    "base": [5, 13],
+                    "columns": 1,
+                    "frames": 4,
+                    "fps": 7.0,
                     "loop": True,
                 },
             ],

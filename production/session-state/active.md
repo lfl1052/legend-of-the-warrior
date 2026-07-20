@@ -1,5 +1,11 @@
 # Active Session State
 
+## Session Extract — 素材组合验收关卡重排 2026-07-20
+- Goal: 修复 `asset_showcase_level.tscn` 素材使用少、摆放孤立、分区硬切和矿洞/建筑组件组合不合理的问题。
+- Implemented: 按课程第 2–5 课和编辑器素材目录重排“森林高地 → 林间河桥 → 矿洞入口”；森林使用完整树木 Scene Paint 分层，河桥按 1× 比例组合 `Forest-1.png` 的左桥头 `(176,116,24,44)`、一段完整延长桥面 `(177,94,46,12)` 与右桥头 `(232,116,24,44)`。延长桥面自身包含自然错位，不再重复拼接；桥梁跨越 80px 真实 Geometry 河槽。水素材已按课程重新分工：`(0..2,13..16)` 为静态河岸，`(3..5,13..16)` 为左/中/右纵向四帧瀑布，`(6..9,14..16)` 为桥下横向四帧河面；WaterTiles 位于 Geometry 后方并向下偏移 16px，使河岸与地面基线对齐、浪花位于桥板下方。矿区以完整 Mine Stone 洞口、矿石堆和双立柱木架作业区收束。Geometry 与桥面 StaticBody2D 承担 World 碰撞，水、岩石、矿石和矿区建筑组件保持 visual-only。
+- Verification: Godot 4.7 headless import PASS；水体素材库 + 素材关卡定向单测 10/10 PASS；完整 GdUnit4 基线 37 套件、196/196 PASS；headless 装载 PASS；本轮自动玩家 8.80s 到达 `x=1842.703`；Windows/OpenGL 640×360 截图已重新生成，河桥放大检查显示河岸与横向河面职责清楚，不再出现瀑布式竖纹。
+- Remaining: 当前没有专用矿区 Geometry Terrain，因此关卡只表现到矿洞入口；正式矿洞内部仍属于资产缺口。
+
 ## Session Extract — HUD 信息层级优化 2026-07-16
 - Goal: 在课程式状态栏素材修正后，清理仍常驻的成长数据面板，确保 640×360 首屏以生命/能量和战斗画面为主。
 - Implemented: `PlayerProgressionPanel` 只在下一能力满足真实代币门槛时显示，解锁后自动收起；地图仍由 `map_panel` action 按需显示。未改动状态条数据流、课程图集或玩家能力规则。

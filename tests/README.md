@@ -21,7 +21,7 @@
 | 文件 | 系统 | 用例数 |
 |------|------|--------|
 | `test_actor_visual_contracts.gd` | 角色比例 / 脚底基线 / 动画图集 / HurtBox / 受击间隔 | 13 |
-| `test_asset_showcase_level.gd` | 素材验收关卡结构 / 语义组合约束 | 2 |
+| `test_asset_showcase_level.gd` | 素材验收关卡结构 / 语义组合 / 矿区木架 / 真实河道与木桥 | 4 |
 | `test_attack.gd` | Attack 冷却 / one-shot / HurtBox 接收者去重 | 4 |
 | `test_audio_manager.gd` | Music/SFX Bus / 音效 / BGM / 真静音 / 暂停 / 停止 | 11 |
 | `test_boss_skill_state.gd` | Boss 技能状态循环 / 阶段范围伤害与节奏 / 受击中断 | 4 |
@@ -58,7 +58,7 @@
 | `test_sign.gd` | 重叠交互候选 / 最近目标 / Prompt 动画 / 暂停隐藏 | 4 |
 | `test_snail_behavior.gd` | 蜗牛感知 / 缩壳 | 3 |
 
-Godot 4.7 stable 验证基线（2026-07-16）：**37 个测试套件，193/193 用例通过**。
+Godot 4.7 stable 验证基线（2026-07-20）：**37 个测试套件，196/196 用例通过**。
 
 ### 推荐运行方式 — 编辑器内
 
@@ -117,6 +117,7 @@ E:\Godot\Godot.exe --path . res://tests/e2e/smoke_test.tscn
 
 - `tests/integration/level_2_load_test.tscn`：验证三层 `TileMapLayer`、TileSet 碰撞、关卡节点和角色落地。
 - `tests/integration/level_2_traversal_test.tscn`：自动玩家穿越完整 `level_2` 路线，防止平台布局形成死路。
+- `tests/integration/asset_showcase_traversal_test.tscn`：自动玩家穿越森林、林间河桥和矿洞入口，防止素材摆放或 Terrain 调整阻断路线。
 - `tests/visual/level_2_playtest_capture.tscn`：生成 arrival / walk / fall / wall / boar / skill_slash / combine / boss / boss_reward / water_hazard 代表状态截图到 `reports/playtest/`。
 - `tests/visual/player_hud_boss_capture.tscn`：生成课程 `Base-UI` 状态栏、已解锁地图面板和 Boss 竞技场门锁截图。
 - `tests/visual/gameplay_overlay_capture.tscn`：生成 Game Over 与 Pause 面板截图，检查 640×360 下按钮和三路音量控件完整可见。
@@ -126,7 +127,7 @@ E:\Godot\Godot.exe --path . res://tests/e2e/smoke_test.tscn
 - `tests/visual/menu_playtest_capture.tscn`：生成 640×360 逻辑视口下的菜单截图到 `reports/playtest/`。
 - `tests/visual/editor_asset_library_capture.tscn`：验证原 atlas 的树木、建筑、岩石、动画角色与动态水体可共同实例化和绘制。
 - `tests/visual/editor_asset_showcase.tscn`：分页检查分类 TileSet、经语义筛选的 Scene Paint 和动画预览；headless 会核对 catalog 数量。
-- `scenes/levels/asset_showcase_level.tscn`：可玩的森林高地、浅水石滩、矿洞入口短关卡，用于验证素材能否组成完整地点。
+- `scenes/levels/asset_showcase_level.tscn`：可玩的森林高地、林间河桥、矿洞入口短关卡，用于验证素材能否组成完整地点。
 
 ### 隔离保证
 

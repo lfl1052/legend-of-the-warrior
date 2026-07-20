@@ -1,0 +1,46 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/Map Assets/Forest-1.png" id="1_forest_atlas"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bridge_left"]
+atlas = ExtResource("1_forest_atlas")
+region = Rect2(176, 116, 24, 44)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bridge_middle"]
+atlas = ExtResource("1_forest_atlas")
+region = Rect2(177, 94, 46, 12)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bridge_right"]
+atlas = ExtResource("1_forest_atlas")
+region = Rect2(232, 116, 24, 44)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_bridge"]
+size = Vector2(90, 8)
+
+[node name="WoodenBridge" type="Node2D"]
+z_index = 3
+
+[node name="Visuals" type="Node2D" parent="."]
+
+[node name="LeftEnd" type="Sprite2D" parent="Visuals"]
+texture_filter = 1
+position = Vector2(-35, -4)
+texture = SubResource("AtlasTexture_bridge_left")
+
+[node name="Middle" type="Sprite2D" parent="Visuals"]
+texture_filter = 1
+position = Vector2(0, 6)
+texture = SubResource("AtlasTexture_bridge_middle")
+
+[node name="RightEnd" type="Sprite2D" parent="Visuals"]
+texture_filter = 1
+position = Vector2(35, -4)
+texture = SubResource("AtlasTexture_bridge_right")
+
+[node name="BridgeBody" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BridgeBody"]
+position = Vector2(0, 4)
+shape = SubResource("RectangleShape2D_bridge")

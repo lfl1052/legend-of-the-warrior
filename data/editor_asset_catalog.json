@@ -12,47 +12,75 @@
     "decoration_collision": "none",
     "dynamic_tiles": [
       {
-        "id": "forest_water_surface",
+        "id": "forest_river_surface",
         "source": "res://art/imported/Legacy-Fantasy-High Forest/Map Assets/Forest-1.png",
         "base": [
           6,
           14
         ],
         "columns": 4,
+        "frames": 4,
         "fps": 3.0,
         "loop": true
       },
       {
-        "id": "forest_water_body_light",
+        "id": "forest_river_body",
+        "source": "res://art/imported/Legacy-Fantasy-High Forest/Map Assets/Forest-1.png",
+        "base": [
+          6,
+          15
+        ],
+        "columns": 4,
+        "frames": 4,
+        "fps": 3.0,
+        "loop": true
+      },
+      {
+        "id": "forest_river_deep",
+        "source": "res://art/imported/Legacy-Fantasy-High Forest/Map Assets/Forest-1.png",
+        "base": [
+          6,
+          16
+        ],
+        "columns": 4,
+        "frames": 4,
+        "fps": 3.0,
+        "loop": true
+      },
+      {
+        "id": "forest_waterfall_left",
         "source": "res://art/imported/Legacy-Fantasy-High Forest/Map Assets/Forest-1.png",
         "base": [
           3,
           13
         ],
-        "columns": 3,
-        "fps": 2.0,
+        "columns": 1,
+        "frames": 4,
+        "fps": 7.0,
         "loop": true
       },
       {
-        "id": "forest_water_body_mid",
+        "id": "forest_waterfall_middle",
         "source": "res://art/imported/Legacy-Fantasy-High Forest/Map Assets/Forest-1.png",
         "base": [
-          3,
-          14
+          4,
+          13
         ],
-        "columns": 3,
-        "fps": 2.0,
+        "columns": 1,
+        "frames": 4,
+        "fps": 7.0,
         "loop": true
       },
       {
-        "id": "forest_water_body_deep",
+        "id": "forest_waterfall_right",
         "source": "res://art/imported/Legacy-Fantasy-High Forest/Map Assets/Forest-1.png",
         "base": [
-          3,
-          15
+          5,
+          13
         ],
-        "columns": 3,
-        "fps": 2.0,
+        "columns": 1,
+        "frames": 4,
+        "fps": 7.0,
         "loop": true
       }
     ]
@@ -69,11 +97,11 @@
       "foreground_tile": 4,
       "geometry_tile": 20,
       "internal_derived": 1,
-      "library_tile": 419,
+      "library_tile": 409,
       "prop_scene": 4,
       "structure_kit_scene": 13,
       "terrain_prop_scene": 36,
-      "water_tile": 26
+      "water_tile": 36
     },
     "by_palette": {
       "actor_animation_previews": 546,
@@ -83,10 +111,10 @@
       "forest_foliage_kit": 12,
       "forest_foreground": 4,
       "forest_geometry": 21,
-      "forest_library": 419,
+      "forest_library": 409,
       "forest_prop_scenes": 36,
       "forest_structure_kit": 13,
-      "forest_water": 26,
+      "forest_water": 36,
       "hive_reference": 14,
       "mine_props": 4
     }
@@ -48289,11 +48317,11 @@
         16
       ],
       "editor": {
-        "role": "library_tile",
-        "layer": "library",
+        "role": "water_tile",
+        "layer": "water",
         "collision": "none",
         "paint_mode": "tilemap",
-        "palette": "forest_library",
+        "palette": "forest_water",
         "editor_ready": true,
         "visual_only": false,
         "placement": "standalone",
@@ -49057,11 +49085,11 @@
         16
       ],
       "editor": {
-        "role": "library_tile",
-        "layer": "library",
+        "role": "water_tile",
+        "layer": "water",
         "collision": "none",
         "paint_mode": "tilemap",
-        "palette": "forest_library",
+        "palette": "forest_water",
         "editor_ready": true,
         "visual_only": false,
         "placement": "standalone",
@@ -49873,11 +49901,11 @@
         16
       ],
       "editor": {
-        "role": "library_tile",
-        "layer": "library",
+        "role": "water_tile",
+        "layer": "water",
         "collision": "none",
         "paint_mode": "tilemap",
-        "palette": "forest_library",
+        "palette": "forest_water",
         "editor_ready": true,
         "visual_only": false,
         "placement": "standalone",
@@ -50689,11 +50717,11 @@
         16
       ],
       "editor": {
-        "role": "library_tile",
-        "layer": "library",
+        "role": "water_tile",
+        "layer": "water",
         "collision": "none",
         "paint_mode": "tilemap",
-        "palette": "forest_library",
+        "palette": "forest_water",
         "editor_ready": true,
         "visual_only": false,
         "placement": "standalone",
@@ -51505,11 +51533,11 @@
         16
       ],
       "editor": {
-        "role": "library_tile",
-        "layer": "library",
+        "role": "water_tile",
+        "layer": "water",
         "collision": "none",
         "paint_mode": "tilemap",
-        "palette": "forest_library",
+        "palette": "forest_water",
         "editor_ready": true,
         "visual_only": false,
         "placement": "standalone",
@@ -52033,11 +52061,11 @@
         16
       ],
       "editor": {
-        "role": "library_tile",
-        "layer": "library",
+        "role": "water_tile",
+        "layer": "water",
         "collision": "none",
         "paint_mode": "tilemap",
-        "palette": "forest_library",
+        "palette": "forest_water",
         "editor_ready": true,
         "visual_only": false,
         "placement": "standalone",
@@ -52945,11 +52973,11 @@
         16
       ],
       "editor": {
-        "role": "library_tile",
-        "layer": "library",
+        "role": "water_tile",
+        "layer": "water",
         "collision": "none",
         "paint_mode": "tilemap",
-        "palette": "forest_library",
+        "palette": "forest_water",
         "editor_ready": true,
         "visual_only": false,
         "placement": "standalone",
@@ -53857,11 +53885,11 @@
         16
       ],
       "editor": {
-        "role": "library_tile",
-        "layer": "library",
+        "role": "water_tile",
+        "layer": "water",
         "collision": "none",
         "paint_mode": "tilemap",
-        "palette": "forest_library",
+        "palette": "forest_water",
         "editor_ready": true,
         "visual_only": false,
         "placement": "standalone",
@@ -54625,11 +54653,11 @@
         16
       ],
       "editor": {
-        "role": "library_tile",
-        "layer": "library",
+        "role": "water_tile",
+        "layer": "water",
         "collision": "none",
         "paint_mode": "tilemap",
-        "palette": "forest_library",
+        "palette": "forest_water",
         "editor_ready": true,
         "visual_only": false,
         "placement": "standalone",
@@ -55153,11 +55181,11 @@
         16
       ],
       "editor": {
-        "role": "library_tile",
-        "layer": "library",
+        "role": "water_tile",
+        "layer": "water",
         "collision": "none",
         "paint_mode": "tilemap",
-        "palette": "forest_library",
+        "palette": "forest_water",
         "editor_ready": true,
         "visual_only": false,
         "placement": "standalone",

@@ -1,6 +1,6 @@
 class_name AssetShowcaseLevel
 extends Node2D
-## 短而完整的素材验收关卡：森林高地 → 浅水石滩 → 矿洞入口。
+## 短而完整的素材验收关卡：森林高地 → 林间河桥 → 矿洞入口。
 ## Scene Paint 资产使用低重复的代表变体；连续 Terrain 只承担通路和碰撞。
 
 const OUTPUT_DIR := "res://reports/playtest/asset_showcase_level"
@@ -11,15 +11,26 @@ const LEVEL_RIGHT := 120
 const TERRAIN_SET := 0
 const FOREST_GROUND := 0
 const WATER_SOURCE_ID := 0
-const WATER_SURFACE := Vector2i(6, 14)
-const WATER_LIGHT := Vector2i(3, 13)
-const WATER_MID := Vector2i(3, 14)
+const RIVER_GAP_LEFT := 47
+const RIVER_GAP_RIGHT_EXCLUSIVE := 52
+const WATER_LEFT := 46
+const WATER_RIGHT_EXCLUSIVE := 53
+const RIVER_SURFACE := Vector2i(6, 14)
+const RIVER_BODY := Vector2i(6, 15)
+const RIVER_DEEP := Vector2i(6, 16)
+const RIVER_BANK_LEFT: Array[Vector2i] = [
+	Vector2i(0, 13), Vector2i(0, 14), Vector2i(0, 15), Vector2i(0, 16),
+]
+const RIVER_BANK_RIGHT: Array[Vector2i] = [
+	Vector2i(2, 13), Vector2i(2, 14), Vector2i(2, 15), Vector2i(2, 16),
+]
 const FOREGROUND_SOURCE_ID := 0
 const FOREGROUND_COORDS: Array[Vector2i] = [
 	Vector2i(10, 17), Vector2i(15, 17), Vector2i(10, 18), Vector2i(15, 18),
 ]
 
-@onready var _background_tiles := $MapVisuals/BackgroundTiles as TileMapLayer
+@export var auto_quit_headless: bool = true
+
 @onready var _geometry_tiles := $MapVisuals/GeometryTiles as TileMapLayer
 @onready var _water_tiles := $MapVisuals/WaterTiles as TileMapLayer
 @onready var _foreground_tiles := $MapVisuals/ForegroundTiles as TileMapLayer
@@ -32,7 +43,7 @@ func _ready() -> void:
 	_paint_foreground_accents()
 	if OS.get_cmdline_user_args().has("--capture-showcase"):
 		call_deferred("_capture_representative_views")
-	elif DisplayServer.get_name() == "headless":
+	elif DisplayServer.get_name() == "headless" and auto_quit_headless:
 		print("asset_showcase_level: headless structure validation passed")
 		get_tree().quit()
 
@@ -41,10 +52,13 @@ func _paint_geometry() -> void:
 	_geometry_tiles.clear()
 	var terrain_cells: Array[Vector2i] = []
 	for x in range(LEVEL_LEFT, LEVEL_RIGHT + 1):
+		if x >= RIVER_GAP_LEFT and x < RIVER_GAP_RIGHT_EXCLUSIVE:
+			continue
 		for y in range(GROUND_TOP, GROUND_BOTTOM + 1):
 			terrain_cells.append(Vector2i(x, y))
-	_add_ground_rise(terrain_cells, 16, 24, 29)
-	_add_ground_rise(terrain_cells, 88, 96, 30)
+	_add_ground_rise(terrain_cells, 16, 26, 29)
+	_add_ground_rise(terrain_cells, 83, 91, 31)
+	_add_ground_rise(terrain_cells, 92, 99, 30)
 	_geometry_tiles.set_cells_terrain_connect(terrain_cells, TERRAIN_SET, FOREST_GROUND, true)
 
 
@@ -56,17 +70,28 @@ func _add_ground_rise(cells: Array[Vector2i], left: int, right: int, top: int) -
 
 func _paint_water() -> void:
 	_water_tiles.clear()
-	for x in range(36, 65):
-		_water_tiles.set_cell(Vector2i(x, 30), WATER_SOURCE_ID, WATER_SURFACE)
-		_water_tiles.set_cell(Vector2i(x, 31), WATER_SOURCE_ID, WATER_LIGHT)
-		_water_tiles.set_cell(Vector2i(x, 32), WATER_SOURCE_ID, WATER_MID)
+	for x in range(WATER_LEFT, WATER_RIGHT_EXCLUSIVE):
+		_water_tiles.set_cell(Vector2i(x, 31), WATER_SOURCE_ID, RIVER_SURFACE)
+		_water_tiles.set_cell(Vector2i(x, 32), WATER_SOURCE_ID, RIVER_BODY)
+		for y in range(33, GROUND_BOTTOM + 3):
+			_water_tiles.set_cell(Vector2i(x, y), WATER_SOURCE_ID, RIVER_DEEP)
+	_paint_river_bank(RIVER_GAP_LEFT, RIVER_BANK_LEFT)
+	_paint_river_bank(RIVER_GAP_RIGHT_EXCLUSIVE - 1, RIVER_BANK_RIGHT)
+
+
+func _paint_river_bank(x: int, atlas_coords: Array[Vector2i]) -> void:
+	for index in range(atlas_coords.size()):
+		_water_tiles.set_cell(Vector2i(x, 31 + index), WATER_SOURCE_ID, atlas_coords[index])
 
 
 func _paint_foreground_accents() -> void:
 	_foreground_tiles.clear()
 	var placements: Array[Vector2i] = [
-		Vector2i(8, 31), Vector2i(26, 31), Vector2i(34, 31), Vector2i(67, 31),
-		Vector2i(76, 31), Vector2i(87, 31), Vector2i(104, 31), Vector2i(116, 31),
+		Vector2i(4, 31), Vector2i(5, 31), Vector2i(12, 31),
+		Vector2i(20, 28), Vector2i(24, 28), Vector2i(29, 31),
+		Vector2i(34, 30), Vector2i(36, 30), Vector2i(64, 30), Vector2i(67, 30),
+		Vector2i(72, 31), Vector2i(80, 31), Vector2i(88, 30),
+		Vector2i(96, 29), Vector2i(103, 31), Vector2i(113, 31), Vector2i(117, 31),
 	]
 	for index in range(placements.size()):
 		_foreground_tiles.set_cell(
@@ -83,7 +108,7 @@ func _capture_representative_views() -> void:
 	var views: Array[Dictionary] = [
 		{"name": "forest_entrance", "position": Vector2(320.0, 400.0)},
 		{"name": "river_ford", "position": Vector2(800.0, 390.0)},
-		{"name": "mine_entrance", "position": Vector2(1440.0, 395.0)},
+		{"name": "mine_entrance", "position": Vector2(1500.0, 395.0)},
 	]
 	var failed := false
 	for view: Dictionary in views:

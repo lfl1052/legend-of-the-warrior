@@ -1393,7 +1393,7 @@ Godot 项目采用的结论：不下载或导入完整课程代码。当前仓�
 
 - `GeometryTiles` 使用 `forest_tileset.tres` 的 Terrain 绘制可站立地形和墙体。
 - `BackgroundTiles`、`WaterTiles`、`ForegroundTiles` 只负责表现，不添加 World 碰撞。
-- 动态水体直接引用 `Forest-1.png`：4 帧水面为 3 FPS，三组 3 帧水体为 2 FPS。
+- 动态水体直接引用 `Forest-1.png`：河面表层/主体/深层使用横向 4 帧、3 FPS；瀑布左/中/右使用纵向 4 帧、7 FPS；河岸静态组合块与两类动画分开使用。
 - 水和荆棘的伤害逻辑使用独立 `Area2D`/Hazard 层，不从装饰 Tile 是否存在推断玩法状态。
 - 变尺寸树木、建筑和矿石使用 Scene Paint/正式 prefab，不强塞进 16×16 TileMapLayer。
 
