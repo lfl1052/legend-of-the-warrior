@@ -97,6 +97,8 @@ func test_block_stops_front_damage_but_not_rear_damage() -> void:
 
 func test_heal_resolves_on_active_frame_and_then_consumes_power() -> void:
 	var heal_skill := _player.get_node("HealSkill") as PlayerHealSkill
+	var progression := _player.get_node("PlayerProgression") as PlayerProgression
+	progression.unlock_slot(&"heal")
 	_character.current_health = 1.0
 	_character.current_power = _character.max_power
 

@@ -32,6 +32,7 @@ func _ready() -> void:
 	GameEvents.new_game_started.connect(_on_new_game)
 	DataManager.register(self)
 	_apply_future_unlock_slots()
+	_apply_zero_cost_milestones()
 
 
 func _exit_tree() -> void:
@@ -68,19 +69,85 @@ func unlock_slot(slot: StringName) -> void:
 	_emit_progression_changed()
 
 
+func get_unlock_slot_ids() -> Array[StringName]:
+	var result: Array[StringName] = []
+	if _config == null:
+		return result
+	for milestone in _config.milestones:
+		var slot := StringName(milestone.get("unlock_slot", ""))
+		if slot != &"" and not result.has(slot):
+			result.append(slot)
+	for slot in _config.future_unlock_slots:
+		if not result.has(slot):
+			result.append(slot)
+	return result
+
+
+func get_unlock_slot_count() -> int:
+	var count := 0
+	for slot in get_unlock_slot_ids():
+		if has_unlock_slot(slot):
+			count += 1
+	return count
+
+
+func get_next_locked_slot_id() -> String:
+	for slot in get_unlock_slot_ids():
+		if not has_unlock_slot(slot):
+			return String(slot)
+	return ""
+
+
+func get_unlock_slot_label(slot: StringName) -> String:
+	if _config != null:
+		for milestone in _config.milestones:
+			if StringName(milestone.get("unlock_slot", "")) == slot:
+				var key := StringName(milestone.get("display_name_key", ""))
+				if key != &"":
+					return LanguageManager.get_text(key)
+	return String(slot).replace("-", " ")
+
+
+func can_unlock_slot(slot: StringName) -> bool:
+	if slot == &"" or has_unlock_slot(slot) or _config == null:
+		return false
+	for milestone in _config.milestones:
+		if StringName(milestone.get("unlock_slot", "")) != slot:
+			continue
+		var tutorial_cost := int(milestone.get("tutorial_economy_tokens_required", 0))
+		var upgrade_cost := int(milestone.get("upgrade_tokens_required", 0))
+		return tutorial_economy_tokens >= tutorial_cost and upgrade_tokens >= upgrade_cost
+	return false
+
+
+func try_unlock_slot(slot: StringName) -> bool:
+	if not can_unlock_slot(slot) or _config == null:
+		return false
+	for milestone in _config.milestones:
+		if StringName(milestone.get("unlock_slot", "")) != slot:
+			continue
+		tutorial_economy_tokens -= int(milestone.get("tutorial_economy_tokens_required", 0))
+		upgrade_tokens -= int(milestone.get("upgrade_tokens_required", 0))
+		unlock_slot(slot)
+		tokens_changed.emit()
+		_emit_progression_changed()
+		return true
+	return false
+
+
 func is_future_unlock_slot_ready(slot_id: String) -> bool:
 	return has_unlock_slot(StringName(slot_id))
 
 
 func get_future_unlock_slot_count() -> int:
-	return _config.future_unlock_slots.size() if _config != null else 0
+	return get_unlock_slot_ids().size()
 
 
 func get_ready_future_unlock_slot_count() -> int:
 	if _config == null:
 		return 0
 	var ready_count := 0
-	for slot in _config.future_unlock_slots:
+	for slot in get_unlock_slot_ids():
 		if unlocked_slots.has(slot):
 			ready_count += 1
 	return ready_count
@@ -89,7 +156,7 @@ func get_ready_future_unlock_slot_count() -> int:
 func get_next_future_unlock_slot_id() -> String:
 	if _config == null:
 		return ""
-	for slot in _config.future_unlock_slots:
+	for slot in get_unlock_slot_ids():
 		if not unlocked_slots.has(slot):
 			return String(slot)
 	return ""
@@ -110,6 +177,7 @@ func _on_new_game() -> void:
 	opened_chest_rewards.clear()
 	unlocked_slots.clear()
 	_apply_future_unlock_slots()
+	_apply_zero_cost_milestones()
 	tokens_changed.emit()
 	_emit_progression_changed()
 
@@ -164,6 +232,18 @@ func _apply_future_unlock_slots() -> void:
 		unlocked_slots[slot] = true
 
 
+func _apply_zero_cost_milestones() -> void:
+	if _config == null:
+		return
+	for milestone in _config.milestones:
+		var slot := StringName(milestone.get("unlock_slot", ""))
+		if slot == &"":
+			continue
+		if int(milestone.get("tutorial_economy_tokens_required", 0)) == 0 \
+				and int(milestone.get("upgrade_tokens_required", 0)) == 0:
+			unlocked_slots[slot] = true
+
+
 func _emit_progression_changed() -> void:
 	progression_changed.emit(self)
 
@@ -191,6 +271,10 @@ func load_save_data(data: Dictionary) -> void:
 	tutorial_economy_tokens = int(floats.get(save_id + "_tut", 0.0))
 	upgrade_tokens = int(floats.get(save_id + "_up", 0.0))
 	map_tokens = int(floats.get(save_id + "_map", 0.0))
+	opened_chest_rewards.clear()
+	unlocked_slots.clear()
+	_apply_future_unlock_slots()
+	_apply_zero_cost_milestones()
 	for k in floats.keys():
 		var key_str := String(k)
 		if key_str.begins_with(save_id + "_chest_"):

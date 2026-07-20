@@ -8,8 +8,8 @@
 | **系统名称** | Encounter / Boss 战 |
 | **优先级** | 🟠 P1 |
 | **状态** | ✅ 已实现 |
-| **反向文档日期** | 2026-05-20 |
-| **源码参考** | `scripts/enemy/enemy_encounter_contracts.gd`, `scripts/enemy/enemy_encounter_combatant.gd`, `scripts/enemy/encounter_reward_controller.gd`, `scripts/enemy/boss_enemy.gd` |
+| **反向文档日期** | 2026-07-16 |
+| **源码参考** | `scripts/enemy/enemy_encounter_contracts.gd`, `scripts/enemy/enemy_encounter_combatant.gd`, `scripts/enemy/encounter_reward_controller.gd`, `scripts/enemy/boss_enemy.gd`, `scripts/enemy/boss_arena_lock.gd` |
 
 ---
 
@@ -39,6 +39,10 @@ EnemyCombatant (CharacterBody2D)
 
 Boss 级敌人，拥有独立的战斗阶段和技能循环。是 Encounter 系统管理的最高难度目标。
 
+`phase_thresholds = [0.66, 0.33]` 仍是规则真相。进入第二、第三阶段时，Boss 按自身 Inspector 基础参数应用倍率：冲击波冷却缩短为 `0.77x / 0.61x`、蓄力缩短为 `0.75x / 0.55x`、追击速度提升为 `1.14x / 1.28x`；范围扩大为 `1.28x / 1.56x`，第三阶段伤害提高到 3。所有范围变化同时写入 `SkillAttack` 圆形碰撞与预警圈，避免 HUD 阶段和实际判定分离。
+
+首次发现玩家或受到伤害时，`BossEnemy.arena_engaged` 驱动 `BossArenaLock` 关闭 Level 2 的入口/出口 `StaticBody2D` 门锁；Boss 死亡的 `arena_completed` 重新开启碰撞与视觉门线。门锁不修改玩家坐标或移动参数。
+
 ### EnemyEncounterCombatant
 
 Encounter 专属战斗者，追踪与 Encounter 管理器的绑定关系。
@@ -46,11 +50,11 @@ Encounter 专属战斗者，追踪与 Encounter 管理器的绑定关系。
 ## Encounter 流程
 
 ```
-玩家进入 Encounter 区域（Area2D 检测）
+Boss 发现玩家或首次受到伤害
     ↓
-Encounter 管理器激活
-    ├─ 激活所有关联的 EnemyMinion
-    ├─ 锁定战斗区域（可选：限制玩家移动范围）
+Boss / ArenaLock 激活
+    ├─ `BossArenaLock` 启用入口与出口 StaticBody2D
+    ├─ `BossEnemy.arena_engaged`
     ├─ GameEvents.raise_encounter_focus_changed(self)
     └─ HUD 切换到 Encounter 模式
     ↓
@@ -97,9 +101,9 @@ Encounter 完成信号
     └─ 区域解锁
 ```
 
-## 待做
+## 完成状态
 
 - [x] BossEnemy 专用 skill_state 实现
-- [ ] 多阶段 Boss 战完整流程
-- [ ] Encounter 区域锁定机制
+- [x] 多阶段 Boss 战：阶段影响冲击波范围、伤害、蓄力、冷却与追击节奏
+- [x] Encounter 区域锁定：Level 2 的入口/出口物理门锁随 Boss 信号开闭
 - [x] 战利品表与 Encounter 绑定；稳定 ID 与 PlayerProgression 存档负责防重复

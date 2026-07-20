@@ -67,6 +67,31 @@ func test_boss_hurt_cancels_active_skill_collision_and_telegraph() -> void:
 	assert_bool(telegraph.visible).is_false()
 
 
+func test_boss_phase_changes_expand_wave_and_accelerate_its_cycle() -> void:
+	var scene: Node = auto_free(TEST_SCENE.instantiate())
+	add_child(scene)
+	await get_tree().process_frame
+	var boss := scene.get_node("BossEnemy") as BossEnemy
+	var attack := boss.get_node("SkillAttack") as Attack
+	var telegraph := boss.get_node("SkillTelegraph") as RadialAttackTelegraph
+
+	boss.character.current_health = boss.character.max_health * 0.5
+	boss._evaluate_phase()
+
+	assert_int(boss.get_phase_index()).is_equal(1)
+	assert_float(boss.get_skill_windup_duration()).is_less(boss.skill_windup_duration)
+	assert_float(boss.get_skill_cooldown_duration(boss.skill_id, boss.skill_cooldown)).is_less(boss.skill_cooldown)
+	assert_float(telegraph.radius).is_greater(72.0)
+	assert_int(attack.damage).is_equal(2)
+	assert_float(boss.get_phase_chase_speed()).is_greater(boss.chase_speed)
+
+	boss.character.current_health = boss.character.max_health * 0.2
+	boss._evaluate_phase()
+	assert_int(boss.get_phase_index()).is_equal(2)
+	assert_int(attack.damage).is_equal(3)
+	assert_float(telegraph.radius).is_greater(100.0)
+
+
 func _wait_for_state(boss: BossEnemy, expected_state: int, timeout: float) -> bool:
 	var elapsed := 0.0
 	while elapsed < timeout:

@@ -60,13 +60,41 @@ func test_player_progression_unlock_slot_is_idempotent() -> void:
 	var on_changed := func(_slot: StringName) -> void: state["emit_count"] += 1
 	_progression.unlock_changed.connect(on_changed)
 	# Act：解锁同一槽位两次
-	_progression.unlock_slot(&"heal")
-	_progression.unlock_slot(&"heal")
+	_progression.unlock_slot(&"skill-1")
+	_progression.unlock_slot(&"skill-1")
 	# Assert：信号只触发一次，槽位记录稳定
 	assert_int(state["emit_count"]).is_equal(1)
-	assert_bool(_progression.has_unlock_slot(&"heal")).is_true()
+	assert_bool(_progression.has_unlock_slot(&"skill-1")).is_true()
 	# 解锁不同槽位应能正常触发
 	_progression.unlock_slot(&"map")
 	assert_int(state["emit_count"]).is_equal(2)
 	assert_bool(_progression.has_unlock_slot(&"map")).is_true()
 	_progression.unlock_changed.disconnect(on_changed)
+
+
+func test_player_progression_unlocks_free_milestone_and_spends_upgrade_token() -> void:
+	assert_bool(_progression.has_unlock_slot(&"heal")).is_true()
+	assert_bool(_progression.has_unlock_slot(&"skill-1")).is_false()
+	assert_bool(_progression.can_unlock_slot(&"skill-1")).is_false()
+
+	_progression.upgrade_tokens = 1
+	assert_bool(_progression.try_unlock_slot(&"skill-1")).is_true()
+	assert_bool(_progression.has_unlock_slot(&"skill-1")).is_true()
+	assert_int(_progression.upgrade_tokens).is_zero()
+
+
+func test_player_progression_restores_unlocked_slots_from_save_data() -> void:
+	# Arrange
+	var save_data := {
+		"float_data": {
+			"test_player_progression_slot_heal": 1.0,
+			"test_player_progression_slot_skill-1": 1.0,
+		}
+	}
+
+	# Act
+	_progression.load_save_data(save_data)
+
+	# Assert
+	assert_bool(_progression.has_unlock_slot(&"heal")).is_true()
+	assert_bool(_progression.has_unlock_slot(&"skill-1")).is_true()

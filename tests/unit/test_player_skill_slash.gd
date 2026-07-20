@@ -30,6 +30,7 @@ func after_test() -> void:
 
 func test_skill_slash_consumes_power_then_resolves_on_active_frame() -> void:
 	var target := await _add_target(Vector2(80.0, 0.0))
+	_unlock_skill()
 
 	assert_bool(_skill.try_use(_player)).is_true()
 	assert_float(_character.current_power).is_equal(65.0)
@@ -46,6 +47,7 @@ func test_skill_slash_consumes_power_then_resolves_on_active_frame() -> void:
 func test_skill_slash_uses_controller_facing_direction() -> void:
 	var left_target := await _add_target(Vector2(-80.0, 0.0))
 	var right_target := await _add_target(Vector2(80.0, 0.0))
+	_unlock_skill()
 	_player._facing = -1
 
 	assert_bool(_skill.try_use(_player)).is_true()
@@ -58,6 +60,7 @@ func test_skill_slash_uses_controller_facing_direction() -> void:
 func test_skill_slash_rejected_during_attack_without_consuming_power() -> void:
 	_player.is_attacking = true
 	var power_before := _character.current_power
+	_unlock_skill()
 
 	assert_bool(_skill.try_use(_player)).is_false()
 	assert_float(_character.current_power).is_equal(power_before)
@@ -65,6 +68,7 @@ func test_skill_slash_rejected_during_attack_without_consuming_power() -> void:
 
 
 func test_skill_slash_preview_uses_exact_hitbox_dimensions() -> void:
+	_unlock_skill()
 	assert_bool(_skill.try_use(_player)).is_true()
 	assert_bool(_skill._preview_visible).is_true()
 	assert_int(_skill._preview_facing).is_equal(_player.get_facing_direction())
@@ -79,12 +83,23 @@ func test_skill_slash_preview_uses_exact_hitbox_dimensions() -> void:
 func test_skill_slash_respects_visible_range_boundary() -> void:
 	var inside_target := await _add_target(Vector2(159.0, 0.0))
 	var outside_target := await _add_target(Vector2(173.0, 0.0))
+	_unlock_skill()
 
 	assert_bool(_skill.try_use(_player)).is_true()
 	_player.on_skill_slash_active()
 
 	assert_float(inside_target.damage_received).is_equal(2.0)
 	assert_float(outside_target.damage_received).is_zero()
+
+
+func test_skill_slash_requires_the_players_unlocked_slot() -> void:
+	var power_before := _character.current_power
+
+	assert_bool(_skill.try_use(_player)).is_false()
+	assert_float(_character.current_power).is_equal(power_before)
+
+	_unlock_skill()
+	assert_bool(_skill.try_use(_player)).is_true()
 
 
 func _add_target(position: Vector2) -> DamageTarget:
@@ -100,3 +115,8 @@ func _add_target(position: Vector2) -> DamageTarget:
 	await get_tree().physics_frame
 	await get_tree().physics_frame
 	return target
+
+
+func _unlock_skill() -> void:
+	var progression := _player.get_node("PlayerProgression") as PlayerProgression
+	progression.unlock_slot(&"skill-1")

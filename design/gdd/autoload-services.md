@@ -8,7 +8,7 @@
 | **系统名称** | Autoload 服务层 |
 | **优先级** | 🔴 P0 |
 | **状态** | ✅ 已实现 |
-| **反向文档日期** | 2026-07-15 |
+| **反向文档日期** | 2026-07-16 |
 | **源码参考** | `scripts/autoload/` 共 7 个运行时 `.gd` |
 
 ---
@@ -227,6 +227,6 @@ UIManager           → register / show / hide / is_paused
 | 场景切换时 DataManager 未及时 save | 中 | 中 | SceneLoader 在 change_scene 前强制 capture |
 | 语言切换时 UI 未刷新 | 中 | 中 | 现有 LocalizedText 节点通过 `language_changed` 信号刷新 |
 
-## 待做
+## 当前数据集
 
-- [ ] RuntimeData 的 JSON 数据文件（`loot.json`, `progression.json`, `chapters.json`, `scene_links.json`, `ui_strings.json`）大部分未创建
+`loot.json`、`progression.json`、`chapters.json`、`scene_links.json`、`ui_strings.json` 与 `level_layouts.json` 都已由 `RuntimeData._ready()` 加载。文件缺失或格式错误时仍保留空数据回退，避免损坏内容阻断启动。

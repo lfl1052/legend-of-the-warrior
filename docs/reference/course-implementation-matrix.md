@@ -27,12 +27,15 @@
 | P2 | 主场景课程视觉 | 已完成 | 复用课程森林树木图集建立三层循环 Parallax，按钮使用半透明承载层；3 项契约测试与 `warrior_menu.png` |
 | P2 | 课程式滑铲闭环 | 已完成 | 固定 140.8px 目标距离、Power 消耗、身体/HurtBox 缩短、撞墙/离地/到点/超时结束、统一恢复 mask、专用 `slide` ID；15 项单测与 `player_slide.png` |
 | P2 | 存档 Schema 迁移 | 已完成 | v0 课程字段别名迁移到 v1；未来版本安全拒绝；1 MiB 上限；场景、坐标、浮点字段校验；11 项 DataManager 单测 |
+| P2 | 成长槽位与地图面板 | 已完成 | `PlayerProgression` 挂入 Player 并持久化真实 `unlocked_slots`；Heal/SkillSlash 只读取该状态；零代价治疗自动解锁，升级代币通过上下文面板解锁斩击；面板仅在下一能力可解锁时显示，地图仅在 `map` 解锁后以 M 打开并读取 JSON 路线 | 成长/地图 8 项单测；`player_map_panel.png` |
+| P2 | Boss 阶段与竞技场门锁 | 已完成 | 两个生命阈值分别缩短蓄力/冷却、提升追击、扩大冲击波并在第三阶段提高伤害；发现玩家后关闭两侧 `StaticBody2D` 门锁，死亡后开启 | Boss/门锁 5 项单测；`boss_arena_locked.png` |
+| P2 | 人物状态栏（第 28–29 课） | 已完成 | 共享 HUD 使用课程 `HUD/Base-UI.png` 的头像框、生命即时层、生命延迟层和能量层；两个关卡同一实例，数据仍由 Character/GameEvents 驱动 | HUD 图集契约单测；`player_hud.png` |
 | P3 | 发布包收尾 | 过滤与 PCK 验证完成，可执行重导出受环境阻塞 | Windows/Linux PCK 各 308 条目、开发目录 0 条目，Windows 引擎挂载启动通过；本机缺 4.7 导出模板，无法重导过滤后的 EXE/ELF，原生 Linux 运行仍需外部环境 |
 
 ## 当前验证基线
 
 - Godot 4.7 headless import：PASS。
-- GdUnit4：34 套件，186/186 PASS。
+- GdUnit4：37 套件，193/193 PASS。
 - E2E：7/7 PASS。
 - Level 2/Demo 装载、碰撞、路线结构与 22.33 秒自动通路：PASS。
-- Windows/OpenGL 代表截图：主菜单、Game Over、Pause、水域、Boss 奖励、存储点四态、滑铲、交互提示与相机边界均已人工检查。
+- Windows/OpenGL 代表截图：主菜单、Game Over、Pause、水域、Boss 奖励、存储点四态、滑铲、交互提示、相机边界、课程状态栏、地图面板与 Boss 门锁均已人工检查。

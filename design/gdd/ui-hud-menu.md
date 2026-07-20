@@ -8,7 +8,7 @@
 | **系统名称** | UI / HUD / 菜单 |
 | **优先级** | 🟡 P2 |
 | **状态** | ✅ 已实现 |
-| **反向文档日期** | 2026-07-15 |
+| **反向文档日期** | 2026-07-16 |
 | **源码参考** | `scripts/ui/` 共 12 个 `.gd` 文件 |
 
 ---
@@ -107,7 +107,7 @@ FadeCanvas 自身不决定 gameplay input，也不修改 `process_mode`；SceneL
 ## HUD
 
 ### PlayerStatBar
-玩家血量/能量条，监听 `GameEvents.character_health_changed`。
+玩家血量/能量条位于共享 `scenes/ui/gameplay_hud.tscn`，监听 `GameEvents.character_health_changed`。它按课程第 28–29 课复用 `Legacy-Fantasy-High Forest/HUD/Base-UI.png`：头像底板、深色细条槽、生命即时层、生命延迟层和能量层均为同图集的 `AtlasTexture`；左侧头像裁入底板，右侧两条独立状态条固定在左上安全区，生命前景覆盖延迟层，能量层单独入框，不使用占据游玩区域的通栏背板。图集中的彩色按钮切片不用于状态条。前景、延迟层和能量层仍由 `PlayerStatBar` 的 `Range.value` 驱动。成长面板和地图面板同样在该 HUD 场景中实例化，但不是常驻层：成长面板仅在下一能力达到代币解锁条件时显示，地图仅在已解锁且触发 `map_panel` action 时显示；奖励通知为短时反馈。Level Demo 和 Level 2 共用该场景，避免场景间出现不同的状态栏实现。
 
 ### EnemyEncounterBar
 Encounter 专属 HP 和韧性（Poise）条。

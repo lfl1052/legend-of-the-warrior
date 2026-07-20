@@ -24,7 +24,8 @@
 | `test_asset_showcase_level.gd` | 素材验收关卡结构 / 语义组合约束 | 2 |
 | `test_attack.gd` | Attack 冷却 / one-shot / HurtBox 接收者去重 | 4 |
 | `test_audio_manager.gd` | Music/SFX Bus / 音效 / BGM / 真静音 / 暂停 / 停止 | 11 |
-| `test_boss_skill_state.gd` | Boss 技能状态循环 / 范围预警 / 受击中断 | 3 |
+| `test_boss_skill_state.gd` | Boss 技能状态循环 / 阶段范围伤害与节奏 / 受击中断 | 4 |
+| `test_boss_arena_lock.gd` | Boss 交战后物理门锁关闭、死亡后重新开启 | 1 |
 | `test_breakable.gd` | 可破坏物 / 奖励 / 存档 | 2 |
 | `test_camera_control.gd` | 逻辑视口 / 相机死区 / 边界夹紧 / 抖动归零 | 7 |
 | `test_chapter_data.gd` | 章节与关卡布局数据 | 2 |
@@ -46,16 +47,18 @@
 | `test_persistence_key_utility.gd` | 持久化键 | 4 |
 | `test_physics_check.gd` | 巡逻墙面 / 悬崖检测 | 3 |
 | `test_player_dash.gd` | 课程式滑铲 / Power / 碰撞恢复 / 撞墙离地 / 连击与墙滑 | 15 |
-| `test_player_progression.gd` | 奖励 / 解锁幂等 | 3 |
+| `test_player_progression.gd` | 奖励 / 免费里程碑 / 代币解锁 / 存档恢复 | 5 |
 | `test_player_action_states.gd` | Land / 下蹲身体与受击框 / 三段攻击框 / 格挡 / Heal / 梯子 | 8 |
-| `test_player_skill_slash.gd` | 技能斩消耗 / 生效帧 / 朝向 / 范围提示与边界 | 5 |
+| `test_player_skill_slash.gd` | 槽位门槛 / 消耗 / 生效帧 / 朝向 / 范围提示与边界 | 6 |
+| `test_player_hud.gd` | 课程 Base-UI 图集状态栏与成长/地图面板实例 | 1 |
+| `test_player_map_panel.gd` | RuntimeData 路线 JSON 读取与地图显示 | 1 |
 | `test_scene_loader.gd` | 淡出 / 线程加载 / 并发忽略 / 失败恢复 / 输入顺序 | 7 |
 | `test_scene_resource_validator.gd` | 场景资源死链校验 | 5 |
 | `test_save_point.gd` | 保存成功/失败、首次奖励、重复保存、旧档视觉恢复、交互范围 | 4 |
 | `test_sign.gd` | 重叠交互候选 / 最近目标 / Prompt 动画 / 暂停隐藏 | 4 |
 | `test_snail_behavior.gd` | 蜗牛感知 / 缩壳 | 3 |
 
-Godot 4.7 stable 验证基线（2026-07-15）：**34 个测试套件，186/186 用例通过**。
+Godot 4.7 stable 验证基线（2026-07-16）：**37 个测试套件，193/193 用例通过**。
 
 ### 推荐运行方式 — 编辑器内
 
@@ -115,6 +118,7 @@ E:\Godot\Godot.exe --path . res://tests/e2e/smoke_test.tscn
 - `tests/integration/level_2_load_test.tscn`：验证三层 `TileMapLayer`、TileSet 碰撞、关卡节点和角色落地。
 - `tests/integration/level_2_traversal_test.tscn`：自动玩家穿越完整 `level_2` 路线，防止平台布局形成死路。
 - `tests/visual/level_2_playtest_capture.tscn`：生成 arrival / walk / fall / wall / boar / skill_slash / combine / boss / boss_reward / water_hazard 代表状态截图到 `reports/playtest/`。
+- `tests/visual/player_hud_boss_capture.tscn`：生成课程 `Base-UI` 状态栏、已解锁地图面板和 Boss 竞技场门锁截图。
 - `tests/visual/gameplay_overlay_capture.tscn`：生成 Game Over 与 Pause 面板截图，检查 640×360 下按钮和三路音量控件完整可见。
 - `tests/visual/save_point_capture.tscn`：生成存储点未激活、已激活、保存成功和保存失败四个代表状态截图。
 - `tests/visual/player_extended_actions_capture.tscn`：生成 land / crouch / heal / block / climb 五个玩家扩展动作截图到 `reports/playtest/`。

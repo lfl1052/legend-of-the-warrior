@@ -6,7 +6,8 @@ var _move_dir: Vector2 = Vector2.ZERO
 
 func on_enter(enemy: Node) -> void:
 	super.on_enter(enemy)
-	current_enemy.current_speed = current_enemy.chase_speed
+	current_enemy.current_speed = current_enemy.call("get_phase_chase_speed") \
+			if current_enemy.has_method("get_phase_chase_speed") else current_enemy.chase_speed
 	current_enemy.lost_time_counter = current_enemy.lost_time
 	if current_enemy.anim != null and current_enemy.anim.has_animation("chase"):
 		current_enemy.anim.play("chase")

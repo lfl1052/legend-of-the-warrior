@@ -1,5 +1,21 @@
 # Active Session State
 
+## Session Extract — HUD 信息层级优化 2026-07-16
+- Goal: 在课程式状态栏素材修正后，清理仍常驻的成长数据面板，确保 640×360 首屏以生命/能量和战斗画面为主。
+- Implemented: `PlayerProgressionPanel` 只在下一能力满足真实代币门槛时显示，解锁后自动收起；地图仍由 `map_panel` action 按需显示。未改动状态条数据流、课程图集或玩家能力规则。
+- Verification: Godot 4.7 headless import PASS；HUD 单测新增成长面板隐藏/可解锁显示路径，2/2 PASS；Windows/OpenGL `player_hud.png` 已确认右上游玩区域清空；E2E 冒烟 7/7 PASS。
+
+## Session Extract — 第 28–29 课状态栏视觉修正 2026-07-16
+- Goal: 修正人物状态栏虽然使用课程图集、但视觉层级仍混入大面积通栏面板且误用按钮切片的问题，严格按课程头像左置、生命即时/延迟分层、能量独立细条的结构落地。
+- Implemented: `gameplay_hud.tscn` 移除 `StatBackdrop`、HP/EN 标签和错误的 `58×20` 彩色按钮切片；改用 `Base-UI.png` 右侧 `60×8` 深色槽与绿/黄/蓝 `58×6` 细条，头像裁在课程底板内。经实际画面复核，头像底板最终从 `46×46` 收至 `28×28`，状态条距头像 `2px`、两条之间相隔 `3px`，形成紧凑的左上信息组；人物同源图集按 `1.25x` 放大并裁去躯干，只保留头部和少量肩部。`test_player_hud.gd` 现在验证紧凑结构、头像裁切与尺寸、前景/延迟层顺序和课程图集引用，避免仅检查路径而漏掉实际资源或布局退化。
+- Verification: Godot 4.7 headless import PASS；HUD 单测 1/1 PASS；Windows/OpenGL `reports/playtest/player_hud.png` 已人工检查；E2E 冒烟 7/7 PASS，Continue 后生命、能量与 HUD 均正确同步。
+
+## Session Extract — 成长、Boss 与课程状态栏收口 2026-07-16
+- Goal: 完成 P2 成长槽位/场景面板、Boss 阶段/竞技场物理门锁，并确认人物状态栏按课程第 28–29 课使用对应 HUD 素材；同时更新遗留 P3 GDD。
+- Implemented: `PlayerProgression` 作为 Player 子节点存档真实 `unlocked_slots`，Heal/SkillSlash 不再读取静态配置；零代价治疗自动解锁，面板按 `progression.json` 消耗升级代币解锁斩击，地图在 `map` 解锁后以 M 展示 JSON 路线。Boss 两个阶段阈值现在缩短蓄力/冷却、提升追击、扩大范围并在末阶段提升伤害；`BossArenaLock` 关闭 Level 2 两侧 StaticBody2D 门锁，死亡后开启。共享 `gameplay_hud.tscn` 用 `HUD/Base-UI.png` 的 atlas 图块实现头像框、即时/延迟生命与能量条，并在两个关卡实例化成长/地图面板和奖励通知。
+- Fixed during verification: 地图面板此前把 RuntimeData JSON 强制为 Resource，现已直接读取 JSON，同时按玩家所属关卡解析场景名；门锁初始层在首次开门调用时明确关闭。
+- Verification: Godot 4.7 headless import PASS；GdUnit4 37 套件、193/193 PASS；Level 2/Demo 装载 PASS；自动通路 22.33s PASS；E2E 7/7 PASS；Windows/OpenGL 截图 `player_hud.png`、`player_map_panel.png`、`boss_arena_locked.png` 已人工检查。
+
 ## Session Extract — 课程主场景与文档一致性收口 2026-07-15
 - Goal: 继续审计课程剩余项，修复第 40 课主场景视觉缺口和研究/GDD 中实现前旧状态。
 - Implemented: `warrior_menu.tscn` 复用课程 `Green-Tree.png` 建立三层循环森林景深和半透明按钮承载层，保持现有按钮路径与 MenuFlow；新增 3 项菜单契约测试和新游戏清理单测；更新环境伤害、Fade、Game Over、Encounter、菜单、存档与发布状态文档。

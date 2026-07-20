@@ -21,7 +21,7 @@ func try_use(player: PlayerController) -> bool:
 	if character == null or character.is_dead():
 		return false
 
-	if not _is_unlocked():
+	if not _is_unlocked(player):
 		return false
 
 	if character.get_power_ratio() < power_threshold_ratio:
@@ -49,6 +49,6 @@ func _apply_heal(character: Character, amount: float) -> void:
 		character.current_power = maxf(0.0, character.current_power - character.max_power * power_threshold_ratio)
 
 
-func _is_unlocked() -> bool:
-	var progression := PlayerProgressionResource.from_dict(RuntimeData.get_player_progression())
-	return progression.has_unlock_slot(unlock_slot)
+func _is_unlocked(player: PlayerController) -> bool:
+	var progression := player.get_node_or_null(^"PlayerProgression") as PlayerProgression
+	return progression != null and progression.has_unlock_slot(unlock_slot)

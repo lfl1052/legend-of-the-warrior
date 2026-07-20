@@ -1,0 +1,296 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/player_stat_bar.gd" id="1_stat_bar"]
+[ext_resource type="Script" path="res://scripts/ui/player_progression_panel.gd" id="2_progression"]
+[ext_resource type="Script" path="res://scripts/ui/player_map_panel.gd" id="3_map"]
+[ext_resource type="Script" path="res://scripts/ui/reward_notification_ui.gd" id="4_reward"]
+[ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/HUD/Base-UI.png" id="5_base_ui"]
+[ext_resource type="Texture2D" path="res://art/imported/Generic-Character/png/blue/char_blue_1.png" id="6_player_portrait"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_portrait_frame"]
+atlas = ExtResource("5_base_ui")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_status_bar_frame"]
+atlas = ExtResource("5_base_ui")
+region = Rect2(306, 20, 60, 8)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_health_delay"]
+atlas = ExtResource("5_base_ui")
+region = Rect2(307, 149, 58, 6)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_health_fill"]
+atlas = ExtResource("5_base_ui")
+region = Rect2(307, 117, 58, 6)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_power_fill"]
+atlas = ExtResource("5_base_ui")
+region = Rect2(307, 53, 58, 6)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progression"]
+bg_color = Color(0.035, 0.07, 0.06, 0.84)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84, 0.72, 0.33, 0.72)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_map"]
+bg_color = Color(0.025, 0.055, 0.05, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.84, 0.72, 0.33, 0.85)
+
+[node name="HUD" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="PlayerStatBar" type="Control" parent="."]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 102.0
+offset_bottom = 42.0
+mouse_filter = 2
+script = ExtResource("1_stat_bar")
+health_fill_path = NodePath("HealthBar")
+health_delay_fill_path = NodePath("HealthDelayBar")
+power_fill_path = NodePath("PowerBar")
+base_health_color = Color(1, 1, 1, 1)
+critical_health_color = Color(1, 0.52, 0.48, 1)
+base_power_color = Color(1, 1, 1, 1)
+power_ready_color = Color(0.74, 0.92, 1, 1)
+
+[node name="PortraitFrame" type="TextureRect" parent="PlayerStatBar"]
+layout_mode = 0
+offset_right = 28.0
+offset_bottom = 28.0
+texture = SubResource("AtlasTexture_portrait_frame")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PortraitClip" type="Control" parent="PlayerStatBar"]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 26.0
+offset_bottom = 26.0
+mouse_filter = 2
+clip_contents = true
+
+[node name="PlayerPortrait" type="Sprite2D" parent="PlayerStatBar/PortraitClip"]
+position = Vector2(12, 13)
+scale = Vector2(1.25, 1.25)
+texture = ExtResource("6_player_portrait")
+hframes = 8
+vframes = 11
+frame = 0
+
+[node name="HealthFrame" type="TextureRect" parent="PlayerStatBar"]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 5.0
+offset_right = 90.0
+offset_bottom = 13.0
+texture = SubResource("AtlasTexture_status_bar_frame")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HealthDelayBar" type="TextureProgressBar" parent="PlayerStatBar"]
+layout_mode = 0
+offset_left = 31.0
+offset_top = 6.0
+offset_right = 89.0
+offset_bottom = 12.0
+max_value = 100.0
+value = 100.0
+show_percentage = false
+texture_progress = SubResource("AtlasTexture_health_delay")
+
+[node name="HealthBar" type="TextureProgressBar" parent="PlayerStatBar"]
+layout_mode = 0
+offset_left = 31.0
+offset_top = 6.0
+offset_right = 89.0
+offset_bottom = 12.0
+max_value = 100.0
+value = 100.0
+show_percentage = false
+texture_progress = SubResource("AtlasTexture_health_fill")
+
+[node name="PowerFrame" type="TextureRect" parent="PlayerStatBar"]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 16.0
+offset_right = 90.0
+offset_bottom = 24.0
+texture = SubResource("AtlasTexture_status_bar_frame")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PowerBar" type="TextureProgressBar" parent="PlayerStatBar"]
+layout_mode = 0
+offset_left = 31.0
+offset_top = 17.0
+offset_right = 89.0
+offset_bottom = 23.0
+max_value = 100.0
+value = 100.0
+show_percentage = false
+texture_progress = SubResource("AtlasTexture_power_fill")
+
+[node name="ProgressionPanel" type="Control" parent="."]
+layout_mode = 0
+offset_left = 472.0
+offset_top = 10.0
+offset_right = 630.0
+offset_bottom = 112.0
+mouse_filter = 2
+script = ExtResource("2_progression")
+header_label_path = NodePath("Panel/Header")
+summary_label_path = NodePath("Panel/Summary")
+metrics_label_path = NodePath("Panel/Metrics")
+next_slot_label_path = NodePath("Panel/NextSlot")
+unlock_button_path = NodePath("Panel/UnlockButton")
+
+[node name="Panel" type="Panel" parent="ProgressionPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_progression")
+
+[node name="Header" type="Label" parent="ProgressionPanel/Panel"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 5.0
+offset_right = 150.0
+offset_bottom = 20.0
+theme_override_colors/font_color = Color(0.98, 0.84, 0.43, 1)
+theme_override_font_sizes/font_size = 12
+
+[node name="Summary" type="Label" parent="ProgressionPanel/Panel"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 21.0
+offset_right = 150.0
+offset_bottom = 35.0
+theme_override_colors/font_color = Color(0.83, 0.91, 0.79, 1)
+theme_override_font_sizes/font_size = 10
+
+[node name="Metrics" type="Label" parent="ProgressionPanel/Panel"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 36.0
+offset_right = 150.0
+offset_bottom = 70.0
+theme_override_colors/font_color = Color(0.9, 0.92, 0.86, 1)
+theme_override_font_sizes/font_size = 9
+
+[node name="NextSlot" type="Label" parent="ProgressionPanel/Panel"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 72.0
+offset_right = 150.0
+offset_bottom = 86.0
+theme_override_font_sizes/font_size = 9
+
+[node name="UnlockButton" type="Button" parent="ProgressionPanel/Panel"]
+layout_mode = 0
+offset_left = 96.0
+offset_top = 87.0
+offset_right = 150.0
+offset_bottom = 105.0
+theme_override_font_sizes/font_size = 10
+
+[node name="MapPanel" type="Control" parent="."]
+layout_mode = 0
+offset_left = 92.0
+offset_top = 72.0
+offset_right = 548.0
+offset_bottom = 290.0
+mouse_filter = 2
+script = ExtResource("3_map")
+header_label_path = NodePath("Panel/Header")
+scene_info_label_path = NodePath("Panel/SceneInfo")
+route_info_label_path = NodePath("Panel/Routes")
+footer_label_path = NodePath("Panel/Footer")
+
+[node name="Panel" type="Panel" parent="MapPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_map")
+
+[node name="Header" type="Label" parent="MapPanel/Panel"]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 14.0
+offset_right = 438.0
+offset_bottom = 36.0
+theme_override_colors/font_color = Color(0.98, 0.84, 0.43, 1)
+theme_override_font_sizes/font_size = 17
+horizontal_alignment = 1
+
+[node name="SceneInfo" type="Label" parent="MapPanel/Panel"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 53.0
+offset_right = 432.0
+offset_bottom = 84.0
+theme_override_colors/font_color = Color(0.84, 0.93, 0.82, 1)
+theme_override_font_sizes/font_size = 13
+
+[node name="Routes" type="Label" parent="MapPanel/Panel"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 96.0
+offset_right = 432.0
+offset_bottom = 167.0
+theme_override_colors/font_color = Color(0.91, 0.92, 0.88, 1)
+theme_override_font_sizes/font_size = 12
+
+[node name="Footer" type="Label" parent="MapPanel/Panel"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 183.0
+offset_right = 432.0
+offset_bottom = 204.0
+theme_override_colors/font_color = Color(0.74, 0.84, 0.74, 1)
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 2
+
+[node name="RewardNotification" type="Control" parent="."]
+layout_mode = 0
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -300.0
+offset_top = 32.0
+offset_right = 300.0
+offset_bottom = 70.0
+mouse_filter = 2
+script = ExtResource("4_reward")
+label_path = NodePath("Label")
+
+[node name="Label" type="Label" parent="RewardNotification"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1

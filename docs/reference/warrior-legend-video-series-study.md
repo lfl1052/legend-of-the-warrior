@@ -924,7 +924,7 @@ Godot 项目采用的结论：`BeeChaseState` 每帧在范围判断前递减 `_a
 
 玩家体验与制作影响：常驻 HUD 只应回答当前立即决策所需的问题——剩余生命、可用能量和危险状态。状态栏需要避开核心移动/战斗区域，头像与装饰不能挤压有效条长。生命即时层与延迟层应有清楚颜色差异，让玩家同时读出“当前剩余”和“刚刚损失”，但延迟不能慢到误导实际生存状态。
 
-Godot 项目采用的结论：项目使用 CanvasLayer/UIRootLayer 管理常驻 UI，`PlayerStatBar` 以 Control 和 Range/TextureProgressBar 节点显示生命、延迟生命与能量；布局应按 640×360 逻辑视口、整数缩放和 SafeArea 规范验收，而不是复制 Unity Canvas 尺寸。现有 HUD 已包含角色状态条和 Encounter 专属条，符合“常驻区只展示即时可操作信息”的项目约束。课程素材切片、锚点和填充层次可作为视觉结构参考。
+Godot 项目采用的结论：项目使用 CanvasLayer/UIRootLayer 管理常驻 UI，`scenes/ui/gameplay_hud.tscn` 在 640×360 逻辑视口中按第 28 课复用课程 `HUD/Base-UI.png`：头像底板、生命即时层、生命延迟层和能量层均是该图集的 `AtlasTexture`，而不是默认 `ProgressBar`。状态条必须使用图集右侧的深色细条槽（`60×8`）以及绿/黄/蓝细填充（`58×6`）；同图集左侧的 `58×20` 彩色按钮不属于状态条素材，不能替代填充。布局固定在左上安全区，头像左置并裁入底板；右侧两条独立细条分别容纳生命的前景/延迟层和能量层，不使用会侵占画面的通栏深色面板或文字标签。`PlayerStatBar` 仍以 Control 和 Range/TextureProgressBar 节点显示生命、延迟生命与能量；布局按整数缩放与安全区验收，不复制 Unity Canvas 的像素尺寸。第 29 课的数据流也已闭环：Character/GameEvents 更新即时条，延迟层平滑追赶，存档恢复主动同步。`test_player_hud.gd` 固定图集和层级契约，Windows/OpenGL `player_hud.png` 检查实际可读性。
 
 ### 中文课堂第 29 课：血量更新逻辑的实现
 

@@ -8,7 +8,7 @@
 | **系统名称** | 玩家控制 |
 | **优先级** | 🔴 P0 |
 | **状态** | ✅ 已实现 |
-| **反向文档日期** | 2026-07-15 |
+| **反向文档日期** | 2026-07-16 |
 | **源码参考** | `scripts/player/player_controller.gd`, `scripts/player/player_animation.gd`, `scripts/player/player_skill_slash.gd`, `scripts/player/player_heal_skill.gd`, `scripts/player/player_progression.gd` |
 
 ---
@@ -149,13 +149,13 @@ PlayerController (CharacterBody2D)
 
 ### 治疗 (Heal)
 - 按 `heal` 键
-- 通过 `HealSkill.try_use(self)` 调用；需要 `HealSkill` 节点存在、已解锁治疗、能量达到 95% 且生命未满
+- 通过 `HealSkill.try_use(self)` 调用；需要 `Player/PlayerProgression.unlocked_slots` 中有 `heal`、能量达到 95% 且生命未满
 - 播放独立 `heal` 施法动画，0.32s 生效帧才恢复 45% 最大生命并结算能量，0.62s 结束回调、0.64s 动画长度
 - 攻击、受击、死亡、滑铲、下蹲、格挡、攀梯或其他技能中不能开始；生效帧前被受击/死亡打断时不治疗、不扣能量
 
 ### 技能斩 (Skill Slash)
 - 按 `skill_slash` 键
-- 通过 `SkillSlash.try_use(self)` 调用；需要 `SkillSlash` 节点存在
+- 通过 `SkillSlash.try_use(self)` 调用；需要 `Player/PlayerProgression.unlocked_slots` 中有 `skill-1`
 - 消耗 35 点能量，对朝向前方 `160×80` 范围内的每个目标造成 2 点伤害
 - 播放 `skill_slash` 动画（`spell_cast` 序列帧 64–71），0.32s 进入生效帧并结算伤害，0.64s 收招结束
 - 前摇和 Active 期间绘制覆盖 `160×80` 逻辑边界的前向弧形斩击轨迹，取消技能时同步清除

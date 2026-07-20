@@ -60,8 +60,7 @@ func refresh() -> void:
 	if _header != null:
 		_header.text = LanguageManager.get_text("ui.map.header")
 
-	var scene_path := get_tree().current_scene.scene_file_path if get_tree().current_scene != null else ""
-	var scene_name := scene_path.get_file().get_basename()
+	var scene_name := _get_player_scene_name()
 
 	var routes := _collect_routes(scene_name)
 	if _scene_info != null:
@@ -75,7 +74,7 @@ func refresh() -> void:
 func _can_show() -> bool:
 	if _progression == null or not is_instance_valid(_progression):
 		_resolve_progression()
-	return _progression != null and _progression.is_future_unlock_slot_ready("map")
+	return _progression != null and _progression.has_unlock_slot(&"map")
 
 
 func _resolve_progression() -> void:
@@ -100,12 +99,15 @@ func _on_language_changed(_language: String) -> void:
 func _collect_routes(scene_name: String) -> Array:
 	var result: Array = []
 	for link_id in RuntimeData.scene_links.keys():
-		var link: SceneLinkResource = RuntimeData.scene_links[link_id]
-		if link == null:
-			continue
-		if String(link.from_scene).to_lower() != scene_name.to_lower():
-			continue
-		result.append(link)
+		var link: Variant = RuntimeData.scene_links[link_id]
+		if link is Dictionary:
+			var link_data := link as Dictionary
+			if String(link_data.get("from_scene", "")).to_lower() == scene_name.to_lower():
+				result.append(link_data)
+		elif link is SceneLinkResource:
+			var resource := link as SceneLinkResource
+			if String(resource.from_scene).to_lower() == scene_name.to_lower():
+				result.append(resource)
 	return result
 
 
@@ -121,8 +123,19 @@ func _build_route_info(routes: Array) -> String:
 		lines.append(LanguageManager.get_text("ui.map.no_routes"))
 		return "\n".join(lines)
 	for link in routes:
-		var sl := link as SceneLinkResource
-		if sl == null:
-			continue
-		lines.append("- %s -> %s" % [sl.id, sl.to_scene])
+		if link is Dictionary:
+			var link_data := link as Dictionary
+			lines.append("- %s -> %s" % [link_data.get("id", ""), link_data.get("to_scene", "")])
+		elif link is SceneLinkResource:
+			var resource := link as SceneLinkResource
+			lines.append("- %s -> %s" % [resource.id, resource.to_scene])
 	return "\n".join(lines)
+
+
+func _get_player_scene_name() -> String:
+	for player in get_tree().get_nodes_in_group(&"player"):
+		var scene_root := player.get_parent()
+		if scene_root != null and not scene_root.scene_file_path.is_empty():
+			return scene_root.scene_file_path.get_file().get_basename()
+	var current_scene := get_tree().current_scene
+	return current_scene.scene_file_path.get_file().get_basename() if current_scene != null else ""

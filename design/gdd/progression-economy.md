@@ -7,9 +7,9 @@
 | **System ID** | SYS-PROGRESSION |
 | **系统名称** | 进度 & 经济 |
 | **优先级** | 🟡 P2 |
-| **状态** | 🟡 部分实现 |
-| **反向文档日期** | 2026-05-20 |
-| **源码参考** | `scripts/player/player_progression.gd`, `scripts/resources/player_progression_resource.gd`, `scripts/resources/loot_table_resource.gd`, `scripts/resources/chapter_resource.gd` |
+| **状态** | ✅ 已实现 |
+| **反向文档日期** | 2026-07-16 |
+| **源码参考** | `scripts/player/player_progression.gd`, `scripts/player/player_heal_skill.gd`, `scripts/player/player_skill_slash.gd`, `scripts/ui/player_progression_panel.gd`, `scripts/ui/player_map_panel.gd` |
 
 ---
 
@@ -39,6 +39,8 @@
 | `try_apply_chest_rewards(chest_id, table_id)` | 开宝箱：检查是否已开 → 查 loot_table → 发放奖励 |
 | `has_unlock_slot(slot) -> bool` | 检查槽位是否解锁 |
 | `unlock_slot(slot)` | 解锁槽位 |
+| `try_unlock_slot(slot) -> bool` | 按 `progression.json` 的代币门槛原子消费并解锁 |
+| `get_unlock_slot_ids()` | 返回配置的能力槽位，供面板显示 |
 
 **事件通信**:
 - `GameEvents.reward_notification.connect(_on_reward_notification)` — 接收奖励
@@ -64,7 +66,8 @@
 进阶配置的 Resource 封装，通过 `from_dict(RuntimeData.get_player_progression())` 创建。
 
 关键字段:
-- `future_unlock_slots`: `@export var future_unlock_slots: Array[StringName]` — 开局即解锁的槽位
+- `milestones`: 每项以 `unlock_slot` 和两类代币门槛定义实际解锁规则；两个门槛均为 0 的项在新局/读档时自动解锁。
+- `future_unlock_slots`: 保留用于未来内容默认解锁的槽位；当前也会并入面板总览。
 
 ### LootTableResource
 
@@ -107,8 +110,12 @@
 存档点 (SavePoint)
     └─ first_activation_reward → power-refill
     ↓
-暂停菜单 / ProgressionPanel
-    └─ 消耗代币解锁能力槽位
+场景 HUD / ProgressionPanel
+    ├─ 零代价里程碑在新局与读档后自动可用
+    └─ 点击明确的解锁命令，按 JSON 门槛消费代币解锁下一能力
+    ↓
+HealSkill / SkillSlash
+    └─ 只读取 Player/PlayerProgression.unlocked_slots；不会把静态配置误当作已解锁状态
 ```
 
 ## 依赖
@@ -120,10 +127,6 @@
 | `DataManager` | Autoload | ISaveable 注册/持久化 |
 | `Chest` | Node | 宝箱触发入口 |
 
-## 待做
+## 已知后续工作
 
-- [ ] `data/loot.json` 未创建
-- [ ] `data/progression.json` 未创建
-- [ ] `data/chapters.json` 未创建
-- [ ] `PlayerProgressionPanel` 完整实现
-- [ ] 升阶里程碑的经济平衡数值
+- [ ] 为后续章节补充更多里程碑、代币来源和经济平衡验证；当前三项槽位使用现有 JSON 配置。

@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://b1plyrwarrior"]
+[gd_scene load_steps=34 format=3 uid="uid://b1plyrwarrior"]
 
 [ext_resource type="Script" path="res://scripts/player/player_controller.gd" id="1_player"]
 [ext_resource type="Script" path="res://scripts/general/character.gd" id="2_character"]
@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" path="res://art/imported/Legacy-Fantasy-High Forest/HUD/GameButtons.png" id="9_buttons"]
 [ext_resource type="Texture2D" uid="uid://c7p8h43qdksin" path="res://art/imported/Generic-Character/png/blue/char_blue_2.png" id="10_sprite_actions"]
 [ext_resource type="Script" path="res://scripts/general/hurt_box.gd" id="11_hurtbox"]
+[ext_resource type="Script" path="res://scripts/player/player_progression.gd" id="12_progression"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_body"]
 radius = 12.0
@@ -344,6 +345,9 @@ script = ExtResource("5_heal")
 
 [node name="SkillSlash" type="Node2D" parent="."]
 script = ExtResource("6_slash")
+
+[node name="PlayerProgression" type="Node" parent="."]
+script = ExtResource("12_progression")
 
 [node name="Sign" type="Area2D" parent="."]
 position = Vector2(0, -12)

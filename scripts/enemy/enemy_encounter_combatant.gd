@@ -96,9 +96,16 @@ func trigger_skill(id: StringName) -> bool:
 	var entry: Dictionary = skill_cooldowns[key]
 	if float(entry.get("time_left", 0.0)) > 0.0:
 		return false
-	entry["time_left"] = float(entry.get("total", 1.0))
+	var configured_total := float(entry.get("total", 1.0))
+	var total := get_skill_cooldown_duration(id, configured_total)
+	entry["total"] = total
+	entry["time_left"] = total
 	skill_cooldowns[key] = entry
 	return true
+
+
+func get_skill_cooldown_duration(_id: StringName, default_duration: float) -> float:
+	return maxf(0.0, default_duration)
 
 
 # ----- 契约接口（HUD 端 has_method 检测） --------------------------------------

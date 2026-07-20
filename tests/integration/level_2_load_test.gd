@@ -7,6 +7,7 @@ const LEVEL_CHECKS := {
 		"surface_y": 512.0,
 		"required_nodes": [
 			"Player",
+			"Player/PlayerProgression",
 			"Player/Sign",
 			"DistantForest",
 			"MidForest",
@@ -20,12 +21,17 @@ const LEVEL_CHECKS := {
 			"BeeA",
 			"BoarA",
 			"BossEnemy",
+			"BossArenaLock",
+			"World/BossArenaEntranceGate",
+			"World/BossArenaExitGate",
 			"ChestA",
 			"BreakableRockA",
 			"SavePoint",
 			"TeleportToDemo",
 			"Camera2D",
 			"UI/HUD/PlayerStatBar",
+			"UI/HUD/ProgressionPanel",
+			"UI/HUD/MapPanel",
 			"UI/HUD/RewardNotification",
 		],
 		"min_enemy_count": 4,
@@ -35,6 +41,7 @@ const LEVEL_CHECKS := {
 		"surface_y": 512.0,
 		"required_nodes": [
 			"Player",
+			"Player/PlayerProgression",
 			"Player/Sign",
 			"DistantForest",
 			"MidForest",
@@ -52,6 +59,8 @@ const LEVEL_CHECKS := {
 			"TeleportToLevel2",
 			"Camera2D",
 			"UI/HUD/PlayerStatBar",
+			"UI/HUD/ProgressionPanel",
+			"UI/HUD/MapPanel",
 			"UI/HUD/RewardNotification",
 		],
 		"min_enemy_count": 2,
@@ -103,6 +112,7 @@ func _check_level(level_path: String, check: Dictionary) -> void:
 	if level_name == "level_2":
 		_assert(_level_2_encounter_order_is_valid(scene), "level_2 encounter ladder progresses left to right")
 		_assert(_level_2_terrain_tiles_follow_atlas_contract(scene), "level_2 uses extended tops and connected inner corners")
+		_assert(_boss_arena_starts_open(scene), "level_2 Boss arena gates start open before engagement")
 	scene.queue_free()
 	await get_tree().process_frame
 
@@ -275,6 +285,14 @@ func _level_2_encounter_order_is_valid(scene: Node) -> bool:
 			return false
 		previous_x = node.global_position.x
 	return true
+
+
+func _boss_arena_starts_open(scene: Node) -> bool:
+	var lock := scene.get_node_or_null("BossArenaLock") as BossArenaLock
+	var entrance := scene.get_node_or_null("World/BossArenaEntranceGate") as StaticBody2D
+	var exit_gate := scene.get_node_or_null("World/BossArenaExitGate") as StaticBody2D
+	return lock != null and not lock.is_locked() and entrance != null and exit_gate != null \
+			and entrance.collision_layer == 0 and exit_gate.collision_layer == 0
 
 
 func _sprite_bottom_y(sprite: Sprite2D) -> float:

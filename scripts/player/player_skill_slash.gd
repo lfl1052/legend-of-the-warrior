@@ -35,7 +35,7 @@ func try_use(player: PlayerController) -> bool:
 	if character == null or character.is_dead():
 		return false
 
-	if not _is_unlocked():
+	if not _is_unlocked(player):
 		return false
 	if not player.can_begin_skill_slash():
 		return false
@@ -98,9 +98,9 @@ func cancel_preview() -> void:
 	queue_redraw()
 
 
-func _is_unlocked() -> bool:
-	var progression := PlayerProgressionResource.from_dict(RuntimeData.get_player_progression())
-	return progression.has_unlock_slot(unlock_slot)
+func _is_unlocked(player: PlayerController) -> bool:
+	var progression := player.get_node_or_null(^"PlayerProgression") as PlayerProgression
+	return progression != null and progression.has_unlock_slot(unlock_slot)
 
 
 func _apply_aoe(player: PlayerController) -> void:

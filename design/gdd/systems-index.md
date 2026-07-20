@@ -1,6 +1,6 @@
 # Systems Index — Legend of the Warrior
 
-**日期**: 2026-05-20
+**日期**: 2026-07-16
 **阶段**: Production
 **总系统数**: 10
 
@@ -13,13 +13,13 @@
 | 1 | SYS-AUTOLOAD | Autoload 服务层 | 🔴 P0 | ✅ 已实现 | ✅ `gdd/autoload-services.md` | `scripts/autoload/` | 7 |
 | 2 | SYS-PLAYER | Player Controller | 🔴 P0 | ✅ 已实现 | ✅ `gdd/player-controller.md` | `scripts/player/` | 6 |
 | 3 | SYS-ENEMY-AI | Enemy AI 状态机 | 🔴 P0 | ✅ 已实现 | ✅ `gdd/enemy-ai-state-machine.md` | `scripts/enemy/` | 16 |
-| 4 | SYS-SAVE | Save / 持久化 | 🟠 P1 | ✅ 已实现 | 📋 待补 | `scripts/player/save_point.gd`, `scripts/utilities/i_saveable.gd`, `scripts/utilities/persistence_key_utility.gd` | 3 |
-| 5 | SYS-ENCOUNTER | Encounter / Boss 战 | 🟠 P1 | ✅ 已实现 | 📋 待补 | `scripts/enemy/enemy_encounter_*.gd`, `scripts/enemy/elite_enemy.gd`, `scripts/enemy/boss_enemy.gd` | 5 |
-| 6 | SYS-SCENE-TRANS | 场景切换 / 传送 | 🟠 P1 | ✅ 已实现 | 📋 待补 | `scripts/transition/teleport_point.gd`, `scripts/transition/initial_load.gd` | 2 |
-| 7 | SYS-UI | UI / HUD / 菜单 | 🟡 P2 | ✅ 已实现 | 📋 待补 | `scripts/ui/` | 12 |
-| 8 | SYS-PROGRESSION | 进度 & 经济 | 🟡 P2 | 🟡 部分实现 | 📋 待补 | `scripts/player/player_progression.gd`, `scripts/resources/loot_table_resource.gd`, `scripts/resources/player_progression_resource.gd`, `scripts/resources/chapter_resource.gd` | 4 |
-| 9 | SYS-COMBAT | 战斗判定 | 🟡 P2 | ✅ 已实现 | 📋 待补 | `scripts/general/character.gd`, `scripts/general/attack.gd`, `scripts/general/physics_check.gd` | 3 |
-| 10 | SYS-MCP | MCP 集成（开发期） | 🟢 P3 | ✅ 已实现 | 📋 待补 | `mcp_bridge_game.gd`, `addons/mcp_bridge/` | N/A |
+| 4 | SYS-SAVE | Save / 持久化 | 🟠 P1 | ✅ 已实现 | ✅ `gdd/save-persistence.md` | `scripts/player/save_point.gd`, `scripts/utilities/i_saveable.gd`, `scripts/utilities/persistence_key_utility.gd` | 3 |
+| 5 | SYS-ENCOUNTER | Encounter / Boss 战 | 🟠 P1 | ✅ 已实现 | ✅ `gdd/encounter-boss.md` | `scripts/enemy/enemy_encounter_*.gd`, `scripts/enemy/boss_enemy.gd`, `scripts/enemy/boss_arena_lock.gd` | 6 |
+| 6 | SYS-SCENE-TRANS | 场景切换 / 传送 | 🟠 P1 | ✅ 已实现 | ✅ `gdd/scene-transition.md` | `scripts/autoload/scene_loader.gd`, `scripts/transition/teleport_point.gd` | 2 |
+| 7 | SYS-UI | UI / HUD / 菜单 | 🟡 P2 | ✅ 已实现 | ✅ `gdd/ui-hud-menu.md` | `scripts/ui/`, `scenes/ui/gameplay_hud.tscn` | 13 |
+| 8 | SYS-PROGRESSION | 进度 & 经济 | 🟡 P2 | ✅ 已实现 | ✅ `gdd/progression-economy.md` | `scripts/player/player_progression.gd`, `scripts/resources/loot_table_resource.gd`, `scripts/resources/player_progression_resource.gd` | 5 |
+| 9 | SYS-COMBAT | 战斗判定 | 🟡 P2 | ✅ 已实现 | ✅ `gdd/combat.md` | `scripts/general/character.gd`, `scripts/general/attack.gd`, `scripts/general/physics_check.gd` | 3 |
+| 10 | SYS-MCP | MCP 集成（开发期） | 🟢 P3 | ✅ 已实现 | ✅ `docs/architecture/adr-001-autoload-event-bus.md` | `addons/godot_ai/` | N/A |
 
 ---
 
