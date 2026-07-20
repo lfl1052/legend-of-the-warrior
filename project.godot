@@ -25,6 +25,7 @@ SceneLoader="*res://scripts/autoload/scene_loader.gd"
 AudioManager="*res://scripts/autoload/audio_manager.gd"
 LanguageManager="*res://scripts/autoload/language_manager.gd"
 UIManager="*res://scripts/autoload/ui_manager.gd"
+_mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 
 [display]
 
