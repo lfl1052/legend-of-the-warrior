@@ -1,5 +1,14 @@
 # Active Session State
 
+## Session Extract — 16-Bit 独立像素美术生成、三关卡差异化与桥梁防穿模收口 2026-10-17
+- Goal: 解决原始图集零散切片导致的矩形裁切硬边、拼接缝和黑洞问题；重做三个关卡的空间拓扑与主题差异化；修复敌人在过桥及斜坡/单向平台上的穿模下坠问题。
+- Implemented:
+  - 新增 `scripts/tools/generate_pixel_art_assets.cjs`，基于 `Legacy-Fantasy-High Forest` 原生 16-bit 调色板、1px 深色轮廓描边与 Bayer 有序抖动算法生成 100% 透明底完整独立像素资产（`art/generated/`）：包含三张 `640×360` 视差画卷（`bg_emerald_forest.png`、`bg_golden_groves.png`、`bg_twilight_sanctuary.png`）、三个大型地标建筑（`prop_ancient_hollow_tree.png`、`prop_dwarven_mine_entrance.png`、`prop_forest_watchtower.png`）以及 `256×64` 自然轮廓巨石/晶簇/符文石碑/倒木图集（`prop_mossy_boulders.png`）。
+  - 在 `assetLoader.ts`、`forestTilemapEngine.ts`、`GameCanvas.tsx` 和 `TitleScreen.tsx` 中全面接入上述完整像素精灵，彻底移除未闭合的模块切片。
+  - 三个关卡（Zone 1 翡翠高地森林、Zone 2 黄金树冠林地、Zone 3 暮光古树圣殿）具备独立地面高度拓扑、多层树冠/矿道路径和专属昼夜/黄昏视觉主题。
+  - 为所有跨越深渊的木桥补齐实心物理碰撞面，并在敌人 AI 物理步进中启用桥梁与单向平台支撑检测及桥头巡逻边界，消除敌人过桥穿模。
+- Verification: `tsc --noEmit` 零错误通过；`vite build` 生产构建通过；生成的全部 PNG 精灵经视觉检查确认轮廓完整、透明通道干净。
+
 ## Session Extract — 素材组合验收关卡重排 2026-07-20
 - Goal: 修复 `asset_showcase_level.tscn` 素材使用少、摆放孤立、分区硬切和矿洞/建筑组件组合不合理的问题。
 - Implemented: 按课程第 2–5 课和编辑器素材目录重排“森林高地 → 林间河桥 → 矿洞入口”；森林使用完整树木 Scene Paint 分层，河桥按 1× 比例组合 `Forest-1.png` 的左桥头 `(176,116,24,44)`、一段完整延长桥面 `(177,94,46,12)` 与右桥头 `(232,116,24,44)`。延长桥面自身包含自然错位，不再重复拼接；桥梁跨越 80px 真实 Geometry 河槽。水素材已按课程重新分工：`(0..2,13..16)` 为静态河岸，`(3..5,13..16)` 为左/中/右纵向四帧瀑布，`(6..9,14..16)` 为桥下横向四帧河面；WaterTiles 位于 Geometry 后方并向下偏移 16px，使河岸与地面基线对齐、浪花位于桥板下方。矿区以完整 Mine Stone 洞口、矿石堆和双立柱木架作业区收束。Geometry 与桥面 StaticBody2D 承担 World 碰撞，水、岩石、矿石和矿区建筑组件保持 visual-only。

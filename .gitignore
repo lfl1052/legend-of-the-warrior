@@ -59,3 +59,8 @@ output/imagegen/
 # ---------- 备份文件 ----------
 *.bak
 *.orig
+
+# ---------- Web Runtime / AI Studio ----------
+node_modules/
+.aistudio/
+

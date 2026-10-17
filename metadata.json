@@ -1,0 +1,8 @@
+{
+  "name": "Legend of the Warrior",
+  "description": "2D side-scrolling action-adventure game featuring warrior combat combos, responsive platforming, enemy AI state machines, equipment progression, and GdUnit testing inspector.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
